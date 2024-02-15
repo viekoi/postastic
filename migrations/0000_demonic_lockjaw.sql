@@ -22,6 +22,15 @@ CREATE TABLE IF NOT EXISTS "user" (
 	"password" text
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "verificationToken" (
+	"id" uuid DEFAULT gen_random_uuid() NOT NULL,
+	"email" text NOT NULL,
+	"token" text NOT NULL,
+	"expires" timestamp with time zone NOT NULL,
+	CONSTRAINT "verificationToken_id_token_pk" PRIMARY KEY("id","token"),
+	CONSTRAINT "verificationToken_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION

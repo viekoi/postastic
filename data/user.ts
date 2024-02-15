@@ -1,5 +1,4 @@
 import db from "@/lib/db";
-import { User } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export const getUserByEmail = async (email: string) => {

@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, foreignKey, primaryKey, integer } from "drizzle-orm/pg-core"
+import { pgTable, uuid, text, timestamp, primaryKey, unique, foreignKey, integer } from "drizzle-orm/pg-core"
   import { sql } from "drizzle-orm"
 
 
@@ -10,6 +10,19 @@ export const user = pgTable("user", {
 	emailVerified: timestamp("emailVerified", { withTimezone: true, mode: 'date' }),
 	image: text("image"),
 	password: text("password"),
+});
+
+export const verificationToken = pgTable("verificationToken", {
+	id: uuid("id").defaultRandom().notNull(),
+	email: text("email").notNull(),
+	token: text("token").notNull(),
+	expires: timestamp("expires", { withTimezone: true, mode: 'date' }).notNull(),
+},
+(table) => {
+	return {
+		verificationTokenIdTokenPk: primaryKey({ columns: [table.id, table.token], name: "verificationToken_id_token_pk"}),
+		verificationTokenTokenUnique: unique("verificationToken_token_unique").on(table.token),
+	}
 });
 
 export const account = pgTable("account", {

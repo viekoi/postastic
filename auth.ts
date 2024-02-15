@@ -29,7 +29,11 @@ export const authConfig = {
 
           const passwordsMatch = await bcrypt.compare(password, user.password);
 
-          if (passwordsMatch) return user;
+          if (passwordsMatch){
+            return user
+          }else{
+            return null
+          }
         }
 
         return null;

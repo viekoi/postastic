@@ -13,12 +13,15 @@ export const users = pgTable("user", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  emailVerified: timestamp("emailVerified", {withTimezone:true, mode: "date" }),
+  emailVerified: timestamp("emailVerified", {
+    withTimezone: true,
+    mode: "date",
+  }),
   image: text("image"),
-  password:text("password")
+  password: text("password"),
 });
 
-export type User = InferModel<typeof users>
+export type User = InferModel<typeof users>;
 
 export const accounts = pgTable(
   "account",
@@ -44,7 +47,18 @@ export const accounts = pgTable(
   })
 );
 
+export type Account = InferModel<typeof accounts>;
 
-export type Account = InferModel<typeof accounts>
 
-
+export const verificationTokens = pgTable(
+  "verificationToken",
+  {
+    id: uuid("id").defaultRandom().notNull(),
+    email:text("email").notNull(),
+    token: text("token").notNull().unique(),
+    expires: timestamp("expires", {withTimezone:true, mode: "date" }).notNull(),
+  },
+  (vt) => ({
+    compoundKey: primaryKey({ columns: [vt.id, vt.token] }),
+  })
+ )
