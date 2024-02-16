@@ -8,6 +8,7 @@ import { user } from "@/migrations/schema";
 import { generateVerificationToken } from "@/lib/token";
 import db from "@/lib/db";
 import { sendMail } from "./send-mail";
+import pageUrl from "@/lib/config";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -32,19 +33,20 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   const newUser = await db
     .insert(user)
-    .values({ email, password: hashedPassword, name });
+    .values({ email, password: hashedPassword, name })
+    .returning();
 
   if (newUser) {
-    const vertificationToken = await generateVerificationToken(email);
-    const data = {
-      name: name,
-      confirmLink: `http://localhost:3000/auth/new-verification?token=${vertificationToken.token}`,
-    };
+    const vertificationToken = await generateVerificationToken(
+      email,
+      newUser[0].id
+    );
 
     await sendMail({
       email: email,
       subject: "Activate your account",
-      data,
+      name: name,
+      confirmLink: `${pageUrl}/new-verification?token=${vertificationToken.token}`,
     });
 
     return { success: "User created!" };

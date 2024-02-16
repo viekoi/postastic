@@ -4,7 +4,7 @@ const Home = async () => {
   const session = await auth();
 
   return ( 
-    <div>
+    <div className="text-white">
       {JSON.stringify(session)}
       <form action={async () => {
         "use server";

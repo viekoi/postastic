@@ -22,6 +22,7 @@ import { FormSuccess } from "@/components/form-success";
 import { Eye, EyeOff } from "lucide-react";
 import { useState, useTransition } from "react";
 import { login } from "@/actions/login";
+import Link from "next/link";
 
 export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState("password");
@@ -66,6 +67,7 @@ export const LoginForm = () => {
       backButtonLabel="Don't have an account?"
       backButtonHref="/register"
       showSocial
+      showForgot
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, primaryKey, unique, foreignKey, integer } from "drizzle-orm/pg-core"
+import { pgTable, uuid, text, timestamp, foreignKey, primaryKey, unique, integer } from "drizzle-orm/pg-core"
   import { sql } from "drizzle-orm"
 
 
@@ -12,11 +12,26 @@ export const user = pgTable("user", {
 	password: text("password"),
 });
 
+export const passwordResetToken = pgTable("passwordResetToken", {
+	userId: uuid("userId").notNull().references(() => user.id, { onDelete: "cascade" } ),
+	id: uuid("id").defaultRandom().notNull(),
+	email: text("email").notNull(),
+	token: text("token").notNull(),
+	expires: timestamp("expires", { withTimezone: true, mode: 'date' }).notNull(),
+},
+(table) => {
+	return {
+		passwordResetTokenIdTokenPk: primaryKey({ columns: [table.id, table.token], name: "passwordResetToken_id_token_pk"}),
+		passwordResetTokenTokenUnique: unique("passwordResetToken_token_unique").on(table.token),
+	}
+});
+
 export const verificationToken = pgTable("verificationToken", {
 	id: uuid("id").defaultRandom().notNull(),
 	email: text("email").notNull(),
 	token: text("token").notNull(),
 	expires: timestamp("expires", { withTimezone: true, mode: 'date' }).notNull(),
+	userId: uuid("userId").notNull().references(() => user.id, { onDelete: "cascade" } ),
 },
 (table) => {
 	return {

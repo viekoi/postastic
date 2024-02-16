@@ -49,16 +49,40 @@ export const accounts = pgTable(
 
 export type Account = InferModel<typeof accounts>;
 
-
 export const verificationTokens = pgTable(
   "verificationToken",
   {
+    userId: uuid("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     id: uuid("id").defaultRandom().notNull(),
-    email:text("email").notNull(),
+    email: text("email").notNull(),
     token: text("token").notNull().unique(),
-    expires: timestamp("expires", {withTimezone:true, mode: "date" }).notNull(),
+    expires: timestamp("expires", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.id, vt.token] }),
   })
- )
+);
+
+export const passwordResetTokens = pgTable(
+  "passwordResetToken",
+  {
+    userId: uuid("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    id: uuid("id").defaultRandom().notNull(),
+    email: text("email").notNull(),
+    token: text("token").notNull().unique(),
+    expires: timestamp("expires", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+  },
+  (prt) => ({
+    compoundKey: primaryKey({ columns: [prt.id, prt.token] }),
+  })
+);

@@ -7,8 +7,6 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  console.log(isLoggedIn);
-
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
@@ -17,13 +15,10 @@ export default auth((req) => {
   }
 
   if (!isAuthRoute && !isLoggedIn) {
-    console.log(".....ran1");
     return Response.redirect(new URL("/login", nextUrl));
   }
 
   if (isApiAuthRoute && isLoggedIn) {
-    console.log(".....ran2");
-
     return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
   }
 

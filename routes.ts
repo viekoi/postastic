@@ -13,7 +13,10 @@
   export const authRoutes = [
     "/login",
     "/register",
-    "/error"
+    "/error",
+    "/new-verification",
+    "/reset",
+    "/new-password"
   ];
   
   /**
@@ -28,3 +31,5 @@
    * @type {string}
    */
   export const DEFAULT_LOGIN_REDIRECT = "/";
+
+  

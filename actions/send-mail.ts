@@ -4,13 +4,11 @@ import nodeMailer, { Transporter } from "nodemailer";
 interface EmailOption {
   email: string;
   subject: string;
-  data: {
-    name:string,
-    confirmLink:string
-  };
+  name: string;
+  confirmLink: string;
 }
 
-export const  sendMail = async (options: EmailOption) => {
+export const sendMail = async (options: EmailOption) => {
   const transporter: Transporter = nodeMailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || "587"),
@@ -21,7 +19,7 @@ export const  sendMail = async (options: EmailOption) => {
     },
   });
 
-  const { email, subject, data } = options;
+  const { email, subject,name,confirmLink } = options;
 
   const mailOptions = {
     from: process.env.SMTP_MAIL,
@@ -31,7 +29,7 @@ export const  sendMail = async (options: EmailOption) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>POSTASTIC ACTIVE EMAIL</title>
+        <title>POSTASTIC CONFIRMATION LINK</title>
         <style type="text/css">
             /* Base  */
     
@@ -100,22 +98,21 @@ export const  sendMail = async (options: EmailOption) => {
     <body>
         <div class="email-wrapper">
             <div class="email-header">
-                <h1>Welcome to POSTASTIC</h1>
+                <h1>Postastic</h1>
             </div>
             <div class="email-body">
-                <p>Hello ${data.name}</p>
-                <p>Thanks you for registering with LMS. To activate your account, please use the following activation code</p>
-                <h2>${data.confirmLink}</h2>
-                <p>Please enter this code on the activation page within the next 5 minutes</p>
-                <p>If you this not register for a Becodemy account , please ignore this email</p>
+                <p>Hello ${name}</p>
+                <p>To ${subject.toLowerCase()}, please use the following confirmation link</p>
+                <h2>${confirmLink}</h2>
+                <p>Please confirm this link within 1 hour</p>
             </div>
             <div class="email-footer">
-                <p>If you have any question, please dont hestiate to contact us at <a href="mailto:khoinguyenviet1807@gmail.com">supporer@email.com</a></p>
+                <p>If you have any question, please dont hestiate to contact us at <a href="mailto:khoinguyenviet1807@gmail.com">support mail</a></p>
             </div>
         </div>
     </body>
     </html>`,
   };
 
-  await transporter.sendMail(mailOptions)
+  await transporter.sendMail(mailOptions);
 };

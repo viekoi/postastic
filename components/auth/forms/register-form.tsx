@@ -65,6 +65,7 @@ export const RegisterForm = () => {
       backButtonLabel="Already have an account?"
       backButtonHref="/login"
       showSocial
+      showForgot
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -125,6 +126,7 @@ export const RegisterForm = () => {
                           formErrors.password ? "destructive" : "outline"
                         }
                         {...field}
+                        disabled={isPending}
                         placeholder="password"
                         type={showPassword}
                       />
@@ -159,10 +161,11 @@ export const RegisterForm = () => {
                   <FormControl>
                     <div className="w-full relative">
                       <Input
-                         variant={
+                        variant={
                           formErrors.confirmPassword ? "destructive" : "outline"
                         }
                         {...field}
+                        disabled={isPending}
                         placeholder="password"
                         type={showPassword}
                       />

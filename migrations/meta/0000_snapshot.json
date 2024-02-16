@@ -1,5 +1,5 @@
 {
-  "id": "eae305f5-19b1-4c47-a1c2-072604ed9065",
+  "id": "4380acdd-ad90-4eb1-9a54-e38f813ed632",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -102,6 +102,77 @@
       },
       "uniqueConstraints": {}
     },
+    "passwordResetToken": {
+      "name": "passwordResetToken",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires": {
+          "name": "expires",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "passwordResetToken_userId_user_id_fk": {
+          "name": "passwordResetToken_userId_user_id_fk",
+          "tableFrom": "passwordResetToken",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "passwordResetToken_id_token_pk": {
+          "name": "passwordResetToken_id_token_pk",
+          "columns": [
+            "id",
+            "token"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "passwordResetToken_token_unique": {
+          "name": "passwordResetToken_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      }
+    },
     "user": {
       "name": "user",
       "schema": "",
@@ -153,6 +224,12 @@
       "name": "verificationToken",
       "schema": "",
       "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -180,7 +257,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "verificationToken_userId_user_id_fk": {
+          "name": "verificationToken_userId_user_id_fk",
+          "tableFrom": "verificationToken",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "verificationToken_id_token_pk": {
           "name": "verificationToken_id_token_pk",
