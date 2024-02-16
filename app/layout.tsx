@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -16,10 +14,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <div className="mx-auto grid grid-cols-4 max-w-[1280px]">
+          <div className="">left-side-bar</div>
+          <div className="col-span-2">{children}</div>
+          <div className="">right-side-bar</div>
+        </div>
+      </body>
     </html>
   );
 }
