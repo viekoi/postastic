@@ -1,47 +1,77 @@
-import {Twitter,Search} from "lucide-react"
+import {
+  Home,
+  Search,
+  MessageSquareText,
+  Bell,
+  BookMarked,
+  Settings2,
+} from "lucide-react";
 
 export const sidebarLinks = [
-    {
-      icon: Twitter,
-      route: "/",
-      label: "Home",
-    },
-    {
-      icon: Search,
-      route: "/search",
-      label: "Search",
-    },
-    {
-      icon: "/assets/icons/people.svg",
-      route: "/message",
-      label: "Message",
-    },
-    {
-      icon: "/assets/icons/bookmark.svg",
-      route: "/notification",
-      label: "Notification",
-    },
-  ];
-  
-  export const bottombarLinks = [
-    {
-        icon: Twitter,
-        route: "/",
-        label: "Home",
-      },
-      {
-        icon: Search,
-        route: "/search",
-        label: "Search",
-      },
-      {
-        icon: "/assets/icons/people.svg",
-        route: "/message",
-        label: "Message",
-      },
-      {
-        icon: "/assets/icons/bookmark.svg",
-        route: "/notification",
-        label: "Notification",
-      },
-  ];
+  {
+    icon: Home,
+    route: "/",
+    label: "Home",
+  },
+  {
+    icon: Search,
+    route: "/search",
+    label: "Search",
+  },
+  {
+    icon: MessageSquareText,
+    route: "/message",
+    label: "Message",
+  },
+  {
+    icon: Bell,
+    route: "/notification",
+    label: "Notification",
+  },
+  {
+    icon: BookMarked,
+    route: "/saved",
+    label: "Saved",
+  },
+  {
+    icon: Settings2,
+    route: "/setting",
+    label: "Setting",
+  },
+];
+
+export const userSheetLinks = [
+  {
+    icon: BookMarked,
+    route: "/saved",
+    label: "Saved",
+  },
+  {
+    icon: Settings2,
+    route: "/setting",
+    label: "Setting",
+  },
+];
+
+export const bottombarLinks = [
+  {
+    icon: Home,
+    route: "/",
+    label: "Home",
+  },
+  {
+    icon: Search,
+    route: "/search",
+    label: "Search",
+  },
+  {
+    icon: MessageSquareText,
+    route: "/message",
+    label: "Message",
+  },
+  {
+    icon: Bell,
+    route: "/notification",
+    label: "Notification",
+  },
+];

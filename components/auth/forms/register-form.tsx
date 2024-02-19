@@ -156,7 +156,7 @@ export const RegisterForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-muted-foreground font-bold">
-                    Password
+                    Confirm Password
                   </FormLabel>
                   <FormControl>
                     <div className="w-full relative">
@@ -166,7 +166,7 @@ export const RegisterForm = () => {
                         }
                         {...field}
                         disabled={isPending}
-                        placeholder="password"
+                        placeholder="confirm password"
                         type={showPassword}
                       />
                       <Button

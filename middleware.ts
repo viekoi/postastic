@@ -3,7 +3,7 @@ import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes } from "@/routes";
 import { NextResponse } from "next/server";
 
 export default auth((req) => {
-  console.log("💩💩💩💩");
+  console.log("💩💩💩💩",req.nextUrl.pathname);
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 

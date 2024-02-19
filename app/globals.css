@@ -86,3 +86,9 @@ body{
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .side-link-active {
+    @apply after:absolute after:content-[""] after:h-2 after:w-2 after:rounded-[50%] after:-top-1 after:-right-1 after:bg-blue-500;
+  }
+}

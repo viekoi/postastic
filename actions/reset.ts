@@ -33,5 +33,5 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
     confirmLink: `${pageUrl}/new-password?token=${passwordResetToken.token}`,
   });
 
-  return { success: "Reset email sent!" };
+  return { success: "Reset email sent!, the request will expire in 5 mins!" };
 };

@@ -66,7 +66,7 @@ export const ResetForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-muted-foreground font-bold">Email</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
