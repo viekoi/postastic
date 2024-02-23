@@ -7,6 +7,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import PostFormCard from "@/components/protected/cards/post-form-card";
 
 const Home = async () => {
   const queryClient = new QueryClient();
@@ -29,7 +30,7 @@ const Home = async () => {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NewPostForm />
+      <PostFormCard/>
       <PostList />
     </HydrationBoundary>
   );

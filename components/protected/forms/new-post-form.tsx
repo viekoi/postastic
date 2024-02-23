@@ -30,13 +30,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import UserAvatar from "../user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { Separator } from "@radix-ui/react-separator";
 import { newPost } from "@/actions/new-post";
-import { Laugh } from "lucide-react";
+import { Image, Laugh } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions } from "@/constansts";
 import FileUploader from "../file-uploadr";
-import { convertFileToUrl } from "@/lib/utils";
+import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -46,6 +45,7 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
 
 const NewPostForm = () => {
   const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
+  const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
 
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
@@ -65,8 +65,6 @@ const NewPostForm = () => {
     },
   });
 
-  const uploadedMedias = form.watch("medias");
-
   useLayoutEffect(() => {
     updateTextAreaSize(textAreaRef.current);
   }, [form.watch("content")]);
@@ -84,9 +82,8 @@ const NewPostForm = () => {
     });
   };
   return (
-    <div className="hidden lg:flex w-full  p-4 pb-0 border-b   border-gray-600 ">
+    <div className="flex w-full  p-4 pb-0 ">
       <UserAvatar user={user} />
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -110,23 +107,7 @@ const NewPostForm = () => {
                 </FormItem>
               )}
             />
-          </div>
-          <div className="inline-flex">
-            {uploadedMedias.map((media, index) => {
-              return (
-                <div className="" key={index}>
-                  <img
-                    src={convertFileToUrl(media)}
-                    alt="image"
-                    className=" h-10 w-10 lg:h-[50px]  rounded-[24px] object-cover object-top"
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <Separator className="w- h-[1px] bg-gray-600" />
-          <div className="flex items-center justify-between py-2">
-            <div className="inline-flex items-center">
+            {isAddingFiles && (
               <FormField
                 control={form.control}
                 name="medias"
@@ -136,6 +117,21 @@ const NewPostForm = () => {
                   </FormItem>
                 )}
               />
+            )}
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div className="inline-flex items-center">
+              <Button
+                disabled={isAddingFiles}
+                type="button"
+                variant={"ghost"}
+                size={"icon"}
+                onClick={() => {
+                  onAdd();
+                }}
+              >
+                <Image />
+              </Button>
 
               <Button type="button" variant={"ghost"} size={"icon"}>
                 <Laugh />

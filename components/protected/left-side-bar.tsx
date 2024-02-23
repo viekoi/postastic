@@ -6,10 +6,11 @@ import UserButton from "./user-button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Twitter } from "lucide-react";
+import { useModal } from "@/hooks/use-modal-store";
 
 const LeftSidebar = () => {
   const pathName = usePathname();
-
+  const { onOpen } = useModal();
   return (
     <div className="col-span-1 hidden lg:block sticky top-0  h-screen">
       <div className="w-full h-full flex">
@@ -41,7 +42,7 @@ const LeftSidebar = () => {
                 );
               })}
             </div>
-            <Button variant={"blue"} className="rounded-full w-full">
+            <Button onClick={()=>onOpen("newPostModal")} variant={"blue"} className="rounded-full w-full">
               Post
             </Button>
           </div>

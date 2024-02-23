@@ -28,7 +28,7 @@ const PostCard = ({ post, className }: PostCardProps) => {
         className
       )}
     >
-      <CardHeader className="px-4 py-2 ">
+      <CardHeader>
         <div className="flex items-start gap-x-2">
           <UserAvatar user={post.user} />
           <div className="flex flex-col ">
@@ -37,12 +37,16 @@ const PostCard = ({ post, className }: PostCardProps) => {
             </h4>
             <h4 className=" items-center flex gap-x-1 text-[12px] font-medium text-muted-foreground">
               {multiFormatDateString(post.createdAt.toUTCString())}
-              {post.privacyType === privacyTypeValue.PRIVATE ? <Lock size={12} /> : <Globe size={12} />}
+              {post.privacyType === privacyTypeValue.PRIVATE ? (
+                <Lock size={12} />
+              ) : (
+                <Globe size={12} />
+              )}
             </h4>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-4  overflow-hidden  border-solid">
+      <CardContent className="  overflow-hidden  border-solid">
         <CardDescription
           className={`text-white over ${
             post.isOverFlowContent && "line-clamp-3"
