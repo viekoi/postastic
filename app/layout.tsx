@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "../auth";
+import QueryProvider from "@/providers/query-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +23,24 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <body className={inter.className}>{children}</body>
+        <body className={inter.className}>
+          <QueryProvider>
+            {children}
+            <Toaster
+              theme="dark"
+              toastOptions={{
+                actionButtonStyle: {
+                  backgroundColor: "white",
+                  color: "black",
+                  fontWeight: 500,
+                },
+              }}
+              closeButton
+              duration={2000}
+              className="text-white"
+            />
+          </QueryProvider>
+        </body>
       </html>
     </SessionProvider>
   );

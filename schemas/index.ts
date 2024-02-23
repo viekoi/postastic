@@ -39,3 +39,12 @@ export const NewPasswordSchema = z.object({
   }),
 });
 
+
+export const NewPostShcema = z.object({
+  content:z.string().max(2200,{message:"Exceeded the maximum character"}),
+  isWithMedia:z.boolean(),
+  isReply:z.boolean(),
+  privacyType:z.enum(["private","public","more"]),
+
+})
+

@@ -4,11 +4,12 @@ import Github from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import db from "./lib/db";
-import { LoginSchema } from "./schema";
-import { getUserByEmail, getUserById } from "./data/user";
-import { user } from "@/migrations/schema";
+import { LoginSchema } from "./schemas";
+import { getUserByEmail, getUserById } from "./queries/user";
+
 import { eq } from "drizzle-orm";
-import { getAccountByUserId } from "./data/account";
+import { getAccountByUserId } from "./queries/account";
+import { users } from "./lib/db/schema";
 
 export const authConfig = {
   adapter: DrizzleAdapter(db),
@@ -30,10 +31,10 @@ export const authConfig = {
 
           const passwordsMatch = await bcrypt.compare(password, user.password);
 
-          if (passwordsMatch){
-            return user
-          }else{
-            return null
+          if (passwordsMatch) {
+            return user;
+          } else {
+            return null;
           }
         }
 
@@ -44,6 +45,7 @@ export const authConfig = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider !== "credentials") return true;
+
       const existingUser = await getUserById(user.id!);
 
       if (!existingUser?.emailVerified) return false;
@@ -51,12 +53,13 @@ export const authConfig = {
       return true;
     },
     async session({ token, session }) {
+
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
 
       if (session.user) {
-        session.user.name = token.name;
+        session.user.name = token.name!;
         session.user.email = token.email!;
         session.user.isOAuth = token.isOAuth as boolean;
       }
@@ -69,9 +72,7 @@ export const authConfig = {
 
       if (!existingUser) return token;
 
-      const existingAccount = await getAccountByUserId(
-        existingUser.id
-      );
+      const existingAccount = await getAccountByUserId(existingUser.id);
 
       token.isOAuth = !!existingAccount;
       token.name = existingUser.name;
@@ -85,9 +86,13 @@ export const authConfig = {
     error: "/error",
   },
   events: {
-    async linkAccount({ user:data}) {
-      data.id && await db.update(user).set({emailVerified:new Date()}).where(eq(user.id,data.id))
-    }
+    async linkAccount({ user: data }) {
+      data.id &&
+        (await db
+          .update(users)
+          .set({ emailVerified: new Date() })
+          .where(eq(users.id, data.id)));
+    },
   },
   session: { strategy: "jwt" },
 } satisfies NextAuthConfig;

@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { NewPasswordSchema } from "@/schema";
+import { NewPasswordSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -39,7 +39,6 @@ export const NewPasswordForm = () => {
     }
   };
 
-
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
@@ -66,6 +65,7 @@ export const NewPasswordForm = () => {
       headerLabel="Enter a new password"
       backButtonLabel="Back to login"
       backButtonHref="/login"
+      isPending={isPending}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

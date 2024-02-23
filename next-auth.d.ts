@@ -1,7 +1,6 @@
+import { User } from "./lib/db/schema";
 
-import NextAuth, { type DefaultSession } from "next-auth";
-
-export type ExtendedUser = DefaultSession["user"] & {
+export type ExtendedUser = User & {
   isOAuth: boolean;
 };
 

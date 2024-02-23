@@ -18,6 +18,7 @@ interface AuthFormCardProps {
   backButtonHref: string;
   showSocial?: boolean;
   showForgot?: boolean;
+  isPending?: boolean;
 }
 
 export const AuthFormCard = ({
@@ -27,6 +28,7 @@ export const AuthFormCard = ({
   backButtonHref,
   showSocial,
   showForgot = false,
+  isPending,
 }: AuthFormCardProps) => {
   return (
     <Card className="w-full h-full md:h-auto md:w-fit md:min-w-[400px] flex flex-col justify-center border-none bg-black ">
@@ -42,15 +44,23 @@ export const AuthFormCard = ({
         )}
         <CardContent>
           <div className="w-full flex items-center justify-center gap-1">
-            <Separator className="w-full h-[1px] bg-gray-500" />
-            <span className="text-gray-500 leading-[16px]">or</span>
-            <Separator className="w-full h-[1px] bg-gray-500" />
+            <Separator className="w-full h-[1px] bg-gray-600" />
+            <span className="text-white leading-[16px]">or</span>
+            <Separator className="w-full h-[1px] bg-gray-600" />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <BackButton label={backButtonLabel} href={backButtonHref} />
+          <BackButton
+            isPending={isPending}
+            label={backButtonLabel}
+            href={backButtonHref}
+          />
           {showForgot && (
-            <BackButton label={"Forgot your password?"} href={"/reset"} />
+            <BackButton
+              isPending={isPending}
+              label={"Forgot your password?"}
+              href={"/reset"}
+            />
           )}
         </CardFooter>
       </div>

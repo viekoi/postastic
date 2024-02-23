@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 
 export const getPasswordResetTokenByEmail = async (email: string) => {
   try {
-    const passwordResetToken = await db.query.passwordResetToken.findFirst({
+    const passwordResetToken = await db.query.passwordResetTokens.findFirst({
       where: (prt) => eq(prt.email, email),
     });
 
@@ -15,7 +15,7 @@ export const getPasswordResetTokenByEmail = async (email: string) => {
 
 export const getPasswordResetTokenByToken = async (token: string) => {
     try {
-      const passwordResetToken = await db.query.passwordResetToken.findFirst({
+      const passwordResetToken = await db.query.passwordResetTokens.findFirst({
         where: (prt) => eq(prt.token, token),
       });
   

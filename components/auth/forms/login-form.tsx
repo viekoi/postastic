@@ -5,7 +5,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { LoginSchema } from "@/schema";
+import { LoginSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -22,9 +22,9 @@ import { FormSuccess } from "@/components/form-success";
 import { Eye, EyeOff } from "lucide-react";
 import { useState, useTransition } from "react";
 import { login } from "@/actions/login";
-import Link from "next/link";
 
 export const LoginForm = () => {
+
   const [showPassword, setShowPassword] = useState("password");
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -51,12 +51,12 @@ export const LoginForm = () => {
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     setError("");
     setSuccess("");
-
     startTransition(() => {
       login(values).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
       });
+
     });
   };
 
@@ -67,6 +67,7 @@ export const LoginForm = () => {
       backButtonHref="/register"
       showSocial
       showForgot
+      isPending={isPending}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -85,6 +86,7 @@ export const LoginForm = () => {
                       variant={formErrors.email ? "destructive" : "outline"}
                       placeholder="john.doe@example.com"
                       type="email"
+                      disabled={isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -108,6 +110,7 @@ export const LoginForm = () => {
                         {...field}
                         placeholder="password"
                         type={showPassword}
+                        disabled={isPending}
                       />
                       <Button
                         className={"absolute top-0 right-0 h-full"}
@@ -131,7 +134,7 @@ export const LoginForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button type="submit" className="w-full">
+          <Button disabled={isPending} type="submit" className="w-full">
             Login
           </Button>
         </form>

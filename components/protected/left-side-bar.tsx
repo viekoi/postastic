@@ -17,7 +17,7 @@ const LeftSidebar = () => {
           <div className="flex flex-col items-center space-y-4 h-full   ">
             <div className="flex flex-col space-y-4 w-full ">
               <Link className="group" href={"/"}>
-                <Button variant={"link"}>
+                <Button variant={"ghost"} size={"link"}>
                   <Twitter fill={"white"} />
                 </Button>
               </Link>
@@ -26,7 +26,7 @@ const LeftSidebar = () => {
 
                 return (
                   <Link className="group" href={link.route} key={link.route}>
-                    <Button variant={"link"}>
+                    <Button variant={"ghost"} size={"link"}>
                       <div
                         className={cn(
                           "relative",

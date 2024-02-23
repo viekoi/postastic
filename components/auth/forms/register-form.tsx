@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RegisterSchema } from "@/schema";
+import { RegisterSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -21,7 +21,10 @@ import { FormSuccess } from "@/components/form-success";
 import { register } from "@/actions/register";
 import { Eye, EyeOff } from "lucide-react";
 
+
+
 export const RegisterForm = () => {
+
   const [showPassword, setShowPassword] = useState("password");
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -52,10 +55,12 @@ export const RegisterForm = () => {
     setSuccess("");
 
     startTransition(() => {
+      
       register(values).then((data) => {
         setError(data.error);
         setSuccess(data.success);
       });
+      
     });
   };
 
@@ -66,6 +71,8 @@ export const RegisterForm = () => {
       backButtonHref="/login"
       showSocial
       showForgot
+      isPending={isPending}
+
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

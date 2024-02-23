@@ -5,7 +5,17 @@ import {
   Bell,
   BookMarked,
   Settings2,
+  Globe,
+  Lock,
+  LucideIcon,
 } from "lucide-react";
+
+export enum privacyTypeValue {
+  PUBLIC = "public",
+  PRIVATE = "private",
+}
+
+
 
 export const sidebarLinks = [
   {
@@ -73,5 +83,18 @@ export const bottombarLinks = [
     icon: Bell,
     route: "/notification",
     label: "Notification",
+  },
+];
+
+export const postPrivacyOtptions = [
+  {
+    label: "Public",
+    icon: Globe,
+    value: privacyTypeValue.PUBLIC,
+  },
+  {
+    label: "Private",
+    icon: Lock,
+    value: privacyTypeValue.PRIVATE,
   },
 ];

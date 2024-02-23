@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { ResetSchema } from "@/schema";
+import { ResetSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -13,7 +13,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,  
+  FormMessage,
 } from "@/components/ui/form";
 import { AuthFormCard } from "../cards/auth-form-card";
 import { Button } from "@/components/ui/button";
@@ -33,18 +33,17 @@ export const ResetForm = () => {
     },
   });
 
-  const formErrors = form.formState.errors
+  const formErrors = form.formState.errors;
 
   const onSubmit = (values: z.infer<typeof ResetSchema>) => {
     setError("");
     setSuccess("");
 
     startTransition(() => {
-      reset(values)
-        .then((data) => {
-          setError(data?.error);
-          setSuccess(data?.success);
-        });
+      reset(values).then((data) => {
+        setError(data?.error);
+        setSuccess(data?.success);
+      });
     });
   };
 
@@ -53,24 +52,23 @@ export const ResetForm = () => {
       headerLabel="Forgot your password?"
       backButtonLabel="Back to login"
       backButtonHref="/auth/login"
-   
+      isPending={isPending}
     >
       <Form {...form}>
-        <form 
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-muted-foreground font-bold">Email</FormLabel>
+                  <FormLabel className="text-muted-foreground font-bold">
+                    Email
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      variant={formErrors.email ? "destructive":"outline"}
+                      variant={formErrors.email ? "destructive" : "outline"}
                       disabled={isPending}
                       placeholder="john.doe@example.com"
                       type="email"
@@ -83,11 +81,7 @@ export const ResetForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button
-            disabled={isPending}
-            type="submit"
-            className="w-full"
-          >
+          <Button disabled={isPending} type="submit" className="w-full">
             Send reset email
           </Button>
         </form>

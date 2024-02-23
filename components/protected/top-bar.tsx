@@ -15,8 +15,9 @@ import UserAvatar from "./user-avatar";
 const Topbar = () => {
   const { user } = useCurrentUser();
   const pathName = usePathname();
+
   return (
-    <section className=" sticky top-0 z-50 lg:hidden w-full border-[0.5px] border-gray-500">
+    <section className=" sticky top-0 z-50 lg:hidden w-full border-[0.5px] border-gray-600 bg-black/90">
       <div className="flex justify-between py-4 px-5 items-center">
         <Link href="/" className="flex items-center justify-center ">
           <Twitter size={30} fill="white" />
@@ -28,7 +29,7 @@ const Topbar = () => {
           </SheetTrigger>
           <SheetContent
             side={"left"}
-            className="border-none shadow-md shadow-gray-400 flex flex-col justify-between"
+            className="border-none shadow-md shadow-white flex flex-col justify-between"
           >
             <div className="space-y-8 flex flex-col ">
               <div className="space-y-4">
@@ -37,9 +38,9 @@ const Topbar = () => {
                   className="inline-flex flex-col text-start gap-y-4"
                 >
                   <UserAvatar user={user} />
-                  {user?.name}
+                  <div className="font-bold">{user?.name}</div>
                 </Link>
-                <Separator className="w-full h-[1px]" />
+                <Separator className="w-full h-[1px] bg-gray-600" />
               </div>
               <div className="flex flex-col space-y-8 ">
                 {userSheetLinks.map((link) => {
@@ -51,7 +52,11 @@ const Topbar = () => {
                       className={"group"}
                       key={link.route}
                     >
-                      <Button variant={"link"} className="text-sm">
+                      <Button
+                        variant={"ghost"}
+                        className="text-sm"
+                        size={"link"}
+                      >
                         <div
                           className={cn(
                             "relative",
@@ -83,3 +88,20 @@ const Topbar = () => {
 };
 
 export default Topbar;
+
+export const LayoutTopbar = () => {
+  const pathName = usePathname();
+
+  const topbarTitle = () => {
+    if (pathName === "/") return "Home";
+
+    const name = pathName.split("/")[1];
+
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+  return (
+    <h1 className=" bg-black/90 z-50 hidden lg:block text-xl font-medium p-6 backdrop-blur border-b-[0.5px] border-gray-600 sticky top-0">
+      {topbarTitle()}
+    </h1>
+  );
+};
