@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 
 interface BackButtonProps {
   href: string;
   label: string;
+  isPending?:boolean
 }
 
-export const BackButton = ({ href, label }: BackButtonProps) => {
+export const BackButton = ({ href, label,isPending }: BackButtonProps) => {
+
   return (
-    <Button  className="font-normal w-full" asChild>
+    <Button disabled={isPending} className="font-normal w-full">
       <Link href={href}>{label}</Link>
     </Button>
   );

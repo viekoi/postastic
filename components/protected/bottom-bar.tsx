@@ -8,7 +8,7 @@ const Bottombar = () => {
   const pathName = usePathname();
 
   return (
-    <div className=" border-t-[0.5px] border-gray-600 z-50 justify-evenly w-full flex sticky bottom-0  bg-dark-2 px-5 py-4 lg:hidden">
+    <div className=" border-t-[0.5px] bg-black border-gray-600 z-50 justify-evenly w-full flex sticky bottom-0  bg-dark-2 px-5 py-4 lg:hidden">
       {bottombarLinks.map((link) => {
         const isActive = pathName === link.route;
         return (

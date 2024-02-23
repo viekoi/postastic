@@ -18,7 +18,11 @@ const UserButton = () => {
 
   return (
     <Link href={`/user/${user?.id}`} className="group">
-      <Button variant={"link"} className="h-auto w-full justify-between">
+      <Button
+        variant={"ghost"}
+        className="h-auto justify-between"
+        size={"link"}
+      >
         <div className="flex space-x-2 items-center">
           <UserAvatar user={user} />
           <div className="text-left text-sm">
@@ -27,8 +31,8 @@ const UserButton = () => {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="outline-none">
-            <div className="rounded-[50%] hover:bg-background/25 p-1">
-              <MoreHorizontal />
+            <div className="rounded-[50%] hover:bg-black  p-1">
+              <MoreHorizontal className="hover text-white" />
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent

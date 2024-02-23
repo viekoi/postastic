@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "../../migrations/schema";
+import * as schema from "../db/schema";
 
 if (!process.env.DATABASE_URL) {
   console.log("🔴 no database URL");

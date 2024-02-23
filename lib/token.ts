@@ -1,12 +1,17 @@
 import { v4 as uuidv4 } from "uuid";
-
 import db from "./db";
-import { getVerificationTokenByEmail } from "@/data/verification-token";
-import { verificationToken as dbVerificationToken, passwordResetToken as dbPasswordResetToken } from "@/migrations/schema";
+import { getVerificationTokenByEmail } from "@/queries/verification-token";
+import {
+  verificationTokens as dbVerificationToken,
+  passwordResetTokens as dbPasswordResetToken,
+} from "../lib/db/schema";
 import { eq } from "drizzle-orm";
-import { getPasswordResetTokenByEmail } from "@/data/password-reset-token";
+import { getPasswordResetTokenByEmail } from "@/queries/password-reset-token";
 
-export const generateVerificationToken = async (email: string,userId:string) => {
+export const generateVerificationToken = async (
+  email: string,
+  userId: string
+) => {
   const token = uuidv4();
 
   const expires = new Date(new Date().getTime() + 3600 * 1000);
@@ -21,13 +26,16 @@ export const generateVerificationToken = async (email: string,userId:string) => 
 
   const verficationToken = await db
     .insert(dbVerificationToken)
-    .values({userId, email, token, expires })
-    .returning()
+    .values({ userId, email, token, expires })
+    .returning();
 
   return verficationToken[0];
 };
 
-export const generatePasswordResetToken = async (email: string,userId:string) => {
+export const generatePasswordResetToken = async (
+  email: string,
+  userId: string
+) => {
   const token = uuidv4();
 
   const expires = new Date(new Date().getTime() + 60 * 1000);
@@ -42,8 +50,8 @@ export const generatePasswordResetToken = async (email: string,userId:string) =>
 
   const passwordResetToken = await db
     .insert(dbPasswordResetToken)
-    .values({userId, email, token, expires })
-    .returning()
+    .values({ userId, email, token, expires })
+    .returning();
 
   return passwordResetToken[0];
 };

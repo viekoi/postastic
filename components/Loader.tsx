@@ -8,5 +8,5 @@ import { ClipLoader } from "react-spinners";
 
 
 export const Loader = ({size = 50}:LoaderProps) => {
-  return <ClipLoader color="#3498db" size={50} />;
+  return <ClipLoader color="white" size={size} />;
 };

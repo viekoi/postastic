@@ -2,13 +2,15 @@
 import bcrypt from "bcryptjs";
 import * as z from "zod";
 import { AuthError } from "next-auth";
-import { LoginSchema } from "@/schema";
-import { getUserByEmail } from "@/data/user";
+import { LoginSchema } from "@/schemas";
+import { getUserByEmail } from "@/queries/user";
 import { signIn } from "@/auth";
 import { sendMail } from "./send-mail";
-import { generateVerificationToken } from "@/lib/token";
+
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import pageUrl from "@/lib/config";
+import { generateVerificationToken } from "@/lib/token";
+
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
@@ -33,7 +35,8 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 
   if (!existingUser.emailVerified) {
     const verificationToken = await generateVerificationToken(
-      existingUser.email,existingUser.id
+      existingUser.email,
+      existingUser.id
     );
 
     await sendMail({

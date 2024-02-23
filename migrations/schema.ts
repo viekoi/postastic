@@ -1,6 +1,8 @@
-import { pgTable, uuid, text, timestamp, foreignKey, primaryKey, unique, integer } from "drizzle-orm/pg-core"
+import { pgTable, pgEnum, uuid, text, timestamp, foreignKey, boolean, primaryKey, unique, integer } from "drizzle-orm/pg-core"
   import { sql } from "drizzle-orm"
 
+export const mediaType = pgEnum("mediaType", ['video', 'image'])
+export const privacyType = pgEnum("privacyType", ['more', 'private', 'public'])
 
 
 export const user = pgTable("user", {
@@ -10,6 +12,42 @@ export const user = pgTable("user", {
 	emailVerified: timestamp("emailVerified", { withTimezone: true, mode: 'date' }),
 	image: text("image"),
 	password: text("password"),
+});
+
+export const media = pgTable("media", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	type: mediaType("type").notNull(),
+	url: text("url").notNull(),
+	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
+});
+
+export const post = pgTable("post", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	content: text("content").notNull(),
+	userId: uuid("userId").notNull().references(() => user.id, { onDelete: "cascade" } ),
+	createAt: timestamp("createAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	updatedAt: timestamp("updatedAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	isReply: boolean("isReply").default(false).notNull(),
+	replyId: uuid("replyId"),
+	isOverFlowContent: boolean("isOverFlowContent").notNull(),
+	privacyType: privacyType(" privacyType").default('public').notNull(),
+},
+(table) => {
+	return {
+		postReplyIdPostIdFk: foreignKey({
+			columns: [table.replyId],
+			foreignColumns: [table.id],
+			name: "post_replyId_post_id_fk"
+		}),
+	}
+});
+
+export const like = pgTable("like", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	userId: uuid("userId").notNull().references(() => user.id),
+	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
+	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 });
 
 export const passwordResetToken = pgTable("passwordResetToken", {

@@ -39,3 +39,9 @@ export const NewPasswordSchema = z.object({
   }),
 });
 
+export const NewPostShcema = z.object({
+  content: z.string().max(2200, { message: "Exceeded the maximum character" }),
+  medias: z.custom<File[]>().refine(()=>length <= 10,{message:"You can only upload 10 files!!!"}),
+  isReply: z.boolean(),
+  privacyType: z.enum(["private", "public", "more"]),
+});
