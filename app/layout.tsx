@@ -38,7 +38,7 @@ export default async function RootLayout({
                 },
               }}
               closeButton
-              duration={2000}
+              duration={3000}
               className="text-white"
             />
           </QueryProvider>

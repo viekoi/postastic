@@ -34,7 +34,7 @@ import { newPost } from "@/actions/new-post";
 import { Image, Laugh } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions } from "@/constansts";
-import FileUploader from "../file-uploadr";
+import FileUploader from "../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
@@ -81,6 +81,7 @@ const NewPostForm = () => {
       });
     });
   };
+
   return (
     <div className="flex w-full  p-4 pb-0 ">
       <UserAvatar user={user} />
@@ -113,7 +114,10 @@ const NewPostForm = () => {
                 name="medias"
                 render={({ field }) => (
                   <FormItem>
-                    <FileUploader fieldChange={field.onChange} />
+                    <FormControl>
+                      <FileUploader fieldChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
