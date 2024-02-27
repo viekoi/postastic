@@ -21,11 +21,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 
 import {
-  startTransition,
   useCallback,
   useLayoutEffect,
   useRef,
   useState,
+  useTransition,
 } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import UserAvatar from "../user-avatar";
@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { postPrivacyOtptions } from "@/constansts";
 import FileUploader from "../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
+import { useModal } from "@/hooks/use-modal-store";
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -45,7 +46,9 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
 
 const NewPostForm = () => {
   const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
+  const [isPending, startTransition] = useTransition();
   const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
+  const { onClose } = useModal();
 
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
@@ -59,7 +62,6 @@ const NewPostForm = () => {
     resolver: zodResolver(NewPostShcema),
     defaultValues: {
       content: "",
-      isReply: false,
       medias: [],
       privacyType: privacyOption.value,
     },
@@ -70,11 +72,25 @@ const NewPostForm = () => {
   }, [form.watch("content")]);
 
   const onSubmit = (values: z.infer<typeof NewPostShcema>) => {
+    const validatedFields = NewPostShcema.safeParse(values);
+
+    if (!validatedFields.success) {
+      return toast.error("Invalid fields!");
+    }
+    const { content, medias, privacyType } = validatedFields.data;
+
+    const data = new FormData();
+    data.append("content", content);
+    data.append("medias", JSON.stringify(medias));
+    data.append("privacyType", privacyType);
+
     startTransition(() => {
-      newPost(values).then((data) => {
+      newPost(data).then((data) => {
         if (data.success) {
           toast.success(data.success);
           form.reset();
+          onCancel();
+          onClose();
         } else if (data.error) {
           toast.error(data.error);
         }
@@ -98,6 +114,7 @@ const NewPostForm = () => {
                 <FormItem>
                   <FormControl>
                     <Textarea
+                      disabled={isPending}
                       className="border-none overflow-hidden flex-grow resize-none"
                       {...field}
                       ref={inputRef}
@@ -115,7 +132,10 @@ const NewPostForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FileUploader fieldChange={field.onChange} />
+                      <FileUploader
+                        disabled={isPending}
+                        fieldChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -126,7 +146,7 @@ const NewPostForm = () => {
           <div className="flex items-center justify-between py-2">
             <div className="inline-flex items-center">
               <Button
-                disabled={isAddingFiles}
+                disabled={isAddingFiles || isPending}
                 type="button"
                 variant={"ghost"}
                 size={"icon"}
@@ -137,7 +157,12 @@ const NewPostForm = () => {
                 <Image />
               </Button>
 
-              <Button type="button" variant={"ghost"} size={"icon"}>
+              <Button
+                disabled={isPending}
+                type="button"
+                variant={"ghost"}
+                size={"icon"}
+              >
                 <Laugh />
               </Button>
 
@@ -147,7 +172,11 @@ const NewPostForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild className="outline-none">
+                      <DropdownMenuTrigger
+                        disabled={isPending}
+                        asChild
+                        className="outline-none"
+                      >
                         <Button type="button" variant={"ghost"} size={"icon"}>
                           <privacyOption.icon />
                         </Button>
@@ -184,6 +213,7 @@ const NewPostForm = () => {
               />
             </div>
             <Button
+              disabled={isPending}
               type="submit"
               variant={"blue"}
               className="rounded-3xl  px-6 text-sm"

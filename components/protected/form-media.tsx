@@ -1,29 +1,34 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn, convertFileToUrl } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Trash } from "lucide-react";
 
 interface FormMediaProps {
-  url: string;
   containerClassName?: string;
   mediaClassName?: string;
-  type: "image" | "video";
+  file: File;
   onRemove?: () => void;
+  disabled: boolean;
 }
 
 const FormMedia = ({
-  url,
+  disabled,
   containerClassName,
   mediaClassName,
-  type,
+  file,
   onRemove,
 }: FormMediaProps) => {
   const onRemoveFile = (e: any) => {
     onRemove && onRemove();
   };
   // revent re-render when type
+
   const callbackReturn = useCallback(() => {
+    const url = convertFileToUrl(file);
+
+
+
     return (
       <div
         className={cn(
@@ -31,7 +36,7 @@ const FormMedia = ({
           containerClassName
         )}
       >
-        {type === "image" ? (
+        {file.type === "image" ? (
           <div
             className={cn(
               `pt-[50%] relative bg-cover bg-no-repeat bg-center`,
@@ -48,6 +53,7 @@ const FormMedia = ({
         )}
 
         <Button
+          disabled={disabled}
           size={"icon"}
           variant={"destructive"}
           type="button"
@@ -58,7 +64,7 @@ const FormMedia = ({
         </Button>
       </div>
     );
-  }, [containerClassName, mediaClassName]);
+  }, [containerClassName, mediaClassName, file]);
 
   return callbackReturn();
 };

@@ -14,14 +14,6 @@ export const user = pgTable("user", {
 	password: text("password"),
 });
 
-export const media = pgTable("media", {
-	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	type: mediaType("type").notNull(),
-	url: text("url").notNull(),
-	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
-});
-
 export const post = pgTable("post", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
 	content: text("content").notNull(),
@@ -41,6 +33,14 @@ export const post = pgTable("post", {
 			name: "post_replyId_post_id_fk"
 		}),
 	}
+});
+
+export const media = pgTable("media", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	type: mediaType("type").notNull(),
+	url: text("url").notNull(),
+	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
 });
 
 export const like = pgTable("like", {

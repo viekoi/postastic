@@ -150,6 +150,9 @@ export const mediasRelations = relations(medias, ({ one }) => ({
   }),
 }));
 
+export type Media = InferModel<typeof medias>
+
+
 export const likes = pgTable("like", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("userId")

@@ -2,30 +2,33 @@
 import { convertFileToUrl } from "@/lib/utils";
 import { Image, Plus, X } from "lucide-react";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { toast } from "sonner";
 import FormMedia from "./form-media";
 
+
 type FileUploaderProps = {
   fieldChange: (files: File[]) => void;
+  disabled: boolean;
 };
 
-const FileUploader = ({ fieldChange }: FileUploaderProps) => {
+const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
   const [files, setFiles] = useState<File[]>([]);
 
-  const filesRef = useRef<Set<File>>(new Set());
   const { onCancel } = useIsAddingFiles();
 
   const handleSetFiles = (acceptedFiles: FileWithPath[]) => {
     if (files.length + acceptedFiles.length > 5) {
       return toast.error(`Error: One post can only have 5 files`);
     }
-    acceptedFiles.forEach((file) => filesRef.current.add(file));
-    setFiles([...filesRef.current]);
-    fieldChange([...filesRef.current]);
+    setFiles((prev) => {
+      
+
+      return [...prev, ...acceptedFiles];
+    });
   };
 
   const onDrop = useCallback(
@@ -36,20 +39,24 @@ const FileUploader = ({ fieldChange }: FileUploaderProps) => {
   );
 
   const onRemoveFileFiles = () => {
-    fieldChange([]);
     setFiles([]);
-    filesRef.current.clear();
   };
 
   const onRemoveFileFile = (index: number) => {
-    const upadtedFiles = [...filesRef.current].filter((file, fIndex) => {
-      return fIndex !== index;
+    setFiles((prev) => {
+      const updatedFiles = [...prev].filter((file, fIndex) => {
+        return fIndex !== index;
+      });
+
+      return updatedFiles;
     });
-    filesRef.current.clear();
-    upadtedFiles.map((file) => filesRef.current.add(file));
-    setFiles(upadtedFiles);
-    fieldChange(upadtedFiles);
   };
+
+  useEffect(() => {
+    fieldChange(files);
+
+    
+  }, [files]);
 
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
@@ -74,13 +81,10 @@ const FileUploader = ({ fieldChange }: FileUploaderProps) => {
           className="grid grid-cols-2 justify-center relative group border-[3px] border-gray-600 border-dashed p-5 rounded-3xl"
         >
           {files.map((file, index) => {
-            const url = convertFileToUrl(file);
-            const mediaType =
-              file.type.split("/")[0] === "image" ? "image" : "video";
             return (
               <FormMedia
-                type={mediaType}
-                url={url}
+                disabled={disabled}
+                file={file}
                 key={index}
                 onRemove={() => onRemoveFileFile(index)}
                 containerClassName={
@@ -99,6 +103,7 @@ const FileUploader = ({ fieldChange }: FileUploaderProps) => {
 
           <div className="absolute inline-flex lg:hidden group-hover:inline-flex -top-5 -left-5 gap-x-1">
             <Button
+              disabled={disabled}
               type="button"
               variant={"secondary"}
               size={"icon"}
@@ -107,6 +112,7 @@ const FileUploader = ({ fieldChange }: FileUploaderProps) => {
               <Plus />
             </Button>
             <Button
+              disabled={disabled}
               className=""
               type="button"
               size={"link"}
@@ -121,6 +127,7 @@ const FileUploader = ({ fieldChange }: FileUploaderProps) => {
           </div>
 
           <Button
+            disabled={disabled}
             className="absolute inline-flex lg:hidden group-hover:inline-flex -top-5 -right-5 rounded-full"
             type="button"
             variant={"secondary"}
@@ -136,6 +143,7 @@ const FileUploader = ({ fieldChange }: FileUploaderProps) => {
       ) : (
         <div className="relative border h-[300px] rounded-xl border-dashed items-center justify-center flex flex-col py-4 gap-1">
           <Button
+            disabled={disabled}
             className="absolute x -top-5 -right-5 rounded-full"
             type="button"
             variant={"secondary"}
