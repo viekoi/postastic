@@ -14,6 +14,7 @@ import { Globe, Lock, MessageCircle, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../like-button";
 import { privacyTypeValue } from "@/constansts";
+import Media from "../media";
 
 interface PostCardProps {
   post: PostWithData;
@@ -46,7 +47,7 @@ const PostCard = ({ post, className }: PostCardProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="  overflow-hidden  border-solid">
+      <CardContent className="  overflow-hidden  border-solid flex-col flex gap-2">
         <CardDescription
           className={`text-white over ${
             post.isOverFlowContent && "line-clamp-3"
@@ -54,17 +55,30 @@ const PostCard = ({ post, className }: PostCardProps) => {
         >
           {post.content}
         </CardDescription>
-        {/* <Link href={""} target="_blank">
-          <div
-            className="pt-[50%] relative"
-            style={{
-              backgroundImage: `url(${""})`,
-              backgroundSize: "cover",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "top center",
-            }}
-          ></div>
-        </Link> */}
+
+        {post.medias.length > 0 && (
+          <div className="grid grid-cols-2 justify-center relative group  rounded-3xl">
+            {post.medias.map((media, index) => {
+              return (
+                <Media
+                  containerClassName={
+                    index === 0 && post.medias.length % 2 === 1
+                      ? "col-span-2"
+                      : "col-span-1"
+                  }
+                  mediaClassName={
+                    index === 0 && post.medias.length % 2 === 1
+                      ? "bg-contain"
+                      : "bg-cover"
+                  }
+                  url={media.url}
+                  type={media.type}
+                  key={media.id}
+                />
+              );
+            })}
+          </div>
+        )}
       </CardContent>
       <CardFooter className="grid p-0 grid-cols-3 border-t-[0.5px] border-gray-600">
         <Button variant={"ghost"} className=" col-span-1 space-x-2">

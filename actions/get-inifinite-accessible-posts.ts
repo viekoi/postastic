@@ -24,6 +24,7 @@ export const getInfiniteaccessiblePosts = async (pageParam: number) => {
       with: {
         user: true,
         likes: true,
+        medias:true
       },
       orderBy: (p) => [desc(p.createdAt)],
       offset: pageParam * limit,

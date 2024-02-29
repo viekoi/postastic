@@ -5,7 +5,7 @@ import db from "@/lib/db";
 import { posts, medias as dbMedias } from "@/lib/db/schema";
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
-import { getMediaType } from "@/lib/utils";
+import { Base64File } from "@/type";
 import { revalidatePath } from "next/cache";
 
 export const newPost = async (data: FormData) => {
@@ -19,7 +19,9 @@ export const newPost = async (data: FormData) => {
     if (content === null && jsonMedias === null && privacyType === null) {
       return { error: "Coud not create post" };
     }
-    const medias = JSON.parse(jsonMedias) as File[];
+    const medias = JSON.parse(jsonMedias) as Base64File[];
+    console.log(medias)
+ 
 
     const user = await currentUser();
 
@@ -61,10 +63,12 @@ export const newPost = async (data: FormData) => {
         url: string;
         type: "image" | "video";
         postId: string;
+        publicId: string;
       }[] = uploadedFiles.map((file) => {
         return {
-          url: file.url,
-          type: getMediaType(file.type),
+          url: file.secure_url,
+          publicId: file.public_id,
+          type: file.resource_type as "image" | "video",
           postId: newPost[0].id,
         };
       });

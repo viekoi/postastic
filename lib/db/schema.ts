@@ -138,6 +138,7 @@ export const medias = pgTable("media", {
   createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),
+  publicId: text("publicId").notNull(),
   postId: uuid("postId")
     .notNull()
     .references(() => posts.id, { onDelete: "cascade" }),
@@ -150,8 +151,7 @@ export const mediasRelations = relations(medias, ({ one }) => ({
   }),
 }));
 
-export type Media = InferModel<typeof medias>
-
+export type Media = InferModel<typeof medias>;
 
 export const likes = pgTable("like", {
   id: uuid("id").primaryKey().defaultRandom(),

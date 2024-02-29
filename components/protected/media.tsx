@@ -1,34 +1,32 @@
 "use client";
-import { cn, convertFileToUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { Trash } from "lucide-react";
 
-interface FormMediaProps {
+interface MediaProps {
   containerClassName?: string;
   mediaClassName?: string;
-  file: File;
+  url: string;
+  type: "image" | "video";
   onRemove?: () => void;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
-const FormMedia = ({
+const Media = ({
   disabled,
   containerClassName,
   mediaClassName,
-  file,
+  url,
+  type,
   onRemove,
-}: FormMediaProps) => {
+}: MediaProps) => {
   const onRemoveFile = (e: any) => {
     onRemove && onRemove();
   };
+
   // revent re-render when type
-
   const callbackReturn = useCallback(() => {
-    const url = convertFileToUrl(file);
-
-
-
     return (
       <div
         className={cn(
@@ -36,7 +34,7 @@ const FormMedia = ({
           containerClassName
         )}
       >
-        {file.type === "image" ? (
+        {type === "image" ? (
           <div
             className={cn(
               `pt-[50%] relative bg-cover bg-no-repeat bg-center`,
@@ -52,21 +50,22 @@ const FormMedia = ({
           </video>
         )}
 
-        <Button
-          disabled={disabled}
-          size={"icon"}
-          variant={"destructive"}
-          type="button"
-          className=" absolute top-1 right-1 inline-flex lg:hidden group-hover:inline-flex"
-          onClick={(e) => onRemoveFile(e)}
-        >
-          <Trash />
-        </Button>
+        {!disabled && onRemove && (
+          <Button
+            size={"icon"}
+            variant={"destructive"}
+            type="button"
+            className=" absolute top-1 right-1 inline-flex lg:hidden group-hover:inline-flex"
+            onClick={(e) => onRemoveFile(e)}
+          >
+            <Trash />
+          </Button>
+        )}
       </div>
     );
-  }, [containerClassName, mediaClassName, file]);
+  }, [containerClassName, mediaClassName, url, disabled]);
 
   return callbackReturn();
 };
 
-export default FormMedia;
+export default Media;

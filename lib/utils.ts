@@ -52,20 +52,4 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
   }
 };
 
-export const getMediaType=(cloudinaryFileType: string)=> {
-  const supportedImageTypes = [
-    "jpg",
-    "jpeg",
-    "png",
-    "gif",
-    "webp",
-    "bmp",
-    "tiff",
-    "psd",
-  ];
-  const supportedVideoTypes = ["mp4", "mov", "webm", "avi"];
 
-  return supportedImageTypes.includes(cloudinaryFileType.toLowerCase())
-    ? "image"
-    : "video";
-}

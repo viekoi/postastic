@@ -2,21 +2,22 @@
 import { convertFileToUrl } from "@/lib/utils";
 import { Image, Plus, X } from "lucide-react";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { toast } from "sonner";
-import FormMedia from "./form-media";
-
+import Media from "./media";
+import { Base64File } from "@/type";
 
 type FileUploaderProps = {
-  fieldChange: (files: File[]) => void;
+  fieldChange: (files: Base64File[]) => void;
   disabled: boolean;
 };
 
 const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<Base64File[]>([]);
+
 
   const { onCancel } = useIsAddingFiles();
 
@@ -24,10 +25,21 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
     if (files.length + acceptedFiles.length > 5) {
       return toast.error(`Error: One post can only have 5 files`);
     }
-    setFiles((prev) => {
-      
 
-      return [...prev, ...acceptedFiles];
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFiles((prev) => [
+          ...prev,
+          {
+            base64Url: reader.result,
+            blobUrl: convertFileToUrl(file),
+            type: file.type.includes("image") ? "image" : "video",
+          },
+        ]);
+      };
+
+      reader.readAsDataURL(file);
     });
   };
 
@@ -54,9 +66,13 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
 
   useEffect(() => {
     fieldChange(files);
-
-    
   }, [files]);
+
+  useEffect(() => {
+    return () => {
+      files.map((file) => URL.revokeObjectURL(file.blobUrl));
+    };
+  }, []);
 
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
@@ -65,9 +81,7 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
       "video/*": [".mp4", ".MP4"],
     },
     onDropRejected: (rejectedFiles) => {
-      toast.error(
-        `Error: ${rejectedFiles[0].errors[0].message}, One post can only have 5 files`
-      );
+      toast.error(`Error: ${rejectedFiles[0].errors[0].message}`);
     },
     maxFiles: 5,
   });
@@ -82,9 +96,10 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
         >
           {files.map((file, index) => {
             return (
-              <FormMedia
+              <Media
                 disabled={disabled}
-                file={file}
+                type={file.type}
+                url={file.blobUrl}
                 key={index}
                 onRemove={() => onRemoveFileFile(index)}
                 containerClassName={

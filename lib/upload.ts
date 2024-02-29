@@ -1,5 +1,5 @@
 import { UploadApiResponse, v2 as cloudinary } from "cloudinary";
-import { convertFileToUrl } from "./utils";
+import { Base64File } from "@/type";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -7,10 +7,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const cloudinaryUpload = async (files: File[]) => {
+export const cloudinaryUpload = async (files: Base64File[]) => {
+  console.log("here");
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
-      const result = await cloudinary.uploader.upload(convertFileToUrl(file));
+      const result = cloudinary.uploader.upload(file.base64Url as string, {
+        resource_type: file.type,
+        folder: "postatic",
+      });
       return result; // Return the upload result object
     })
   );
@@ -20,7 +24,9 @@ export const cloudinaryUpload = async (files: File[]) => {
 
 export const cloudinaryDelete = async (files: UploadApiResponse[]) => {
   const filesToDelete = files.map(async (file) => {
-    return await cloudinary.uploader.destroy(file.public_id);
+    return cloudinary.uploader.destroy(file.public_id, {
+      resource_type: file.resource_type,
+    });
   });
 
   const deletedFiles = await Promise.all(filesToDelete);

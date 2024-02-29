@@ -1,5 +1,5 @@
 {
-  "id": "c9fb0b4e-bfc2-4732-8492-ee7341269023",
+  "id": "d5b7e069-475b-45fe-9330-99ee213014a3",
   "prevId": "c639a800-bc2e-465a-9f63-9a2e1967a25b",
   "version": "5",
   "dialect": "pg",
@@ -194,6 +194,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "publicId": {
+          "name": "publicId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         },
         "postId": {
           "name": "postId",

@@ -7,9 +7,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Twitter } from "lucide-react";
 import { useModal } from "@/hooks/use-modal-store";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useSession } from "next-auth/react";
 
 const LeftSidebar = () => {
   const pathName = usePathname();
+  const data  = useSession()
+  console.log(data)
+  
   const { onOpen } = useModal();
   return (
     <div className="col-span-1 hidden lg:block sticky top-0  h-screen">

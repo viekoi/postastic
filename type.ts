@@ -1,5 +1,10 @@
-import { Like, Post, User } from "./lib/db/schema";
+import { Like, Post, User,Media } from "./lib/db/schema";
 
-export type PostWithData = Post & { user: User } & { likes: Like[] };
+export type PostWithData = Post & { user: User } & { likes: Like[] } &{medias:Media[]};
 
+export type Base64File = {
+    base64Url:(string | ArrayBuffer | null),
+    blobUrl:string,
+    type:"image" | "video"
+}
 
