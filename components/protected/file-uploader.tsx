@@ -6,20 +6,19 @@ import { useCallback, useEffect, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import Media from "./media";
-import { Base64File } from "@/type";
+import { MediaFile } from "@/type";
 import { videoMaxSize } from "@/constansts";
 import { useFormContext } from "react-hook-form";
+import MediaDisplayer from "./media-displayer";
 
 type FileUploaderProps = {
-  fieldChange: (files: Base64File[]) => void;
+  fieldChange: (files: MediaFile[]) => void;
   disabled: boolean;
 };
 
 const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
-  const {setError} = useFormContext();
-  const [files, setFiles] = useState<(Base64File & { error: boolean })[]>([]);
-
+  const { setError } = useFormContext();
+  const [files, setFiles] = useState<(MediaFile & { error: boolean })[]>([]);
   const { onCancel } = useIsAddingFiles();
 
   const handleSetFiles = (acceptedFiles: FileWithPath[]) => {
@@ -37,7 +36,7 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
         setFiles((prev) => [
           ...prev,
           {
-            base64Url: reader.result,
+            url: reader.result,
             type: type,
             error: isFileTooLarge,
             size: file.size,
@@ -56,11 +55,11 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
     [files]
   );
 
-  const onRemoveFileFiles = () => {
+  const onRemoveFiles = () => {
     setFiles([]);
   };
 
-  const onRemoveFileFile = (index: number) => {
+  const onRemoveFile = (index: number) => {
     setFiles((prev) => {
       const updatedFiles = [...prev].filter((file, fIndex) => {
         return fIndex !== index;
@@ -94,72 +93,17 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
     <div {...getRootProps()}>
       <input {...getInputProps()} />
       {files.length > 0 ? (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="grid grid-cols-2 justify-center relative group border-[3px] border-gray-600 border-dashed p-5 rounded-3xl"
-        >
-          {files.map((file, index) => {
-            return (
-              <Media
-                disabled={disabled}
-                type={file.type}
-                url={file.base64Url as string}
-                key={index}
-                isError={file.error}
-                onRemove={() => onRemoveFileFile(index)}
-                containerClassName={
-                  index === 0 && files.length % 2 === 1
-                    ? "col-span-2"
-                    : "col-span-1"
-                }
-                mediaClassName={
-                  index === 0 && files.length % 2 === 1
-                    ? "bg-contain"
-                    : "bg-cover"
-                }
-              />
-            );
-          })}
-
-          <div className="absolute inline-flex lg:hidden group-hover:inline-flex -top-5 -left-5 gap-x-1">
-            <Button
-              disabled={disabled}
-              type="button"
-              variant={"secondary"}
-              size={"icon"}
-              onClick={open}
-            >
-              <Plus />
-            </Button>
-            <Button
-              disabled={disabled}
-              className=""
-              type="button"
-              size={"link"}
-              variant={"secondary"}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveFileFiles();
-              }}
-            >
-              clear all
-            </Button>
-          </div>
-
-          <Button
-            disabled={disabled}
-            className="absolute inline-flex lg:hidden group-hover:inline-flex -top-5 -right-5 rounded-full"
-            type="button"
-            variant={"secondary"}
-            size={"icon"}
-            onClick={(e) => {
-              e.stopPropagation();
-              onCancel();
-            }}
-          >
-            <X />
-          </Button>
-        </div>
+        <MediaDisplayer
+          control
+          medias={files}
+          variant={"outline"}
+          size={"outline"}
+          onRemoveMedia={onRemoveFile}
+          onRemoveAll={onRemoveFiles}
+          disabled={disabled}
+          onOpen={open}
+          onCancel={onCancel}
+        />
       ) : (
         <div className="relative border h-[300px] rounded-xl border-dashed items-center justify-center flex flex-col py-4 gap-1">
           <Button

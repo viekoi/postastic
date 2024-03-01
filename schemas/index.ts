@@ -45,14 +45,29 @@ function refineFiles(files: Base64File[]): boolean {
   return files.every((file: Base64File) => !isTooLarge(file, file.type));
 }
 
-export const NewPostShcema = z.object({
-  content: z.string().max(2200, { message: "Exceeded the maximum character" }),
-  medias: z
-    .array(z.custom<Base64File>())
-    .max(5, { message: "Maximum of 5 media allowed" })
-    .refine((data) => refineFiles(data), {
-      message:
-        "Images must be smaller than 8mb, videos must be smaller than 20mb",
-    }),
-  privacyType: z.enum(["private", "public", "more"]),
-});
+export const NewPostShcema = z
+  .object({
+    content: z
+      .string()
+      .max(2200, { message: "Exceeded the maximum character" }),
+    medias: z
+      .array(z.custom<Base64File>())
+      .max(5, { message: "Maximum of 5 media allowed" })
+      .refine((data) => refineFiles(data), {
+        message:
+          "Images must be smaller than 8mb, videos must be smaller than 20mb",
+      }),
+    privacyType: z.enum(["private", "public", "more"]),
+    isEmpty: z.any().nullish(),
+  })
+  .refine(
+    (data) => {
+      if (!data.content.trim().length && !data.medias.length) return false;
+      return true;
+    },
+    {
+      path: ["isEmpty"],
+      params: { empy: "empty" },
+      message: "Post is empty!!!",
+    }
+  );

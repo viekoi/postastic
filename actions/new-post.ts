@@ -21,7 +21,7 @@ export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
 
     if (!user) return { error: "Email does not exist!" };
 
-    if (medias.length === 0 && !content.length)
+    if (medias.length === 0 && !content.trim().length)
       return { error: "Your post is empty" };
 
     const isOverFlowContent = content.length > 300;

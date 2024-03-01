@@ -112,6 +112,8 @@ export const posts = pgTable("post", {
   updatedAt: timestamp("updatedAt", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
+  likesCount: integer("likesCount").default(0).notNull(),
+  isLikedByUser:boolean("isLikedByUser").default(false).notNull(),
   isOverFlowContent: boolean("isOverFlowContent").notNull(),
   isReply: boolean("isReply").notNull().default(false),
   replyId: uuid("replyId").references((): AnyPgColumn => posts.id),

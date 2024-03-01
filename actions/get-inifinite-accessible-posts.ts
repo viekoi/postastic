@@ -6,6 +6,7 @@ import { privacyTypeValue } from "@/constansts";
 
 export const getInfiniteaccessiblePosts = async (pageParam: number) => {
   try {
+  
     const limit = 10;
 
     const user = await currentUser();
@@ -23,17 +24,17 @@ export const getInfiniteaccessiblePosts = async (pageParam: number) => {
 
       with: {
         user: true,
-        likes: true,
         medias:true
       },
       orderBy: (p) => [desc(p.createdAt)],
-      offset: pageParam * limit,
+      offset: (pageParam -1) * limit,
       limit: limit,
     });
 
     return {
       success: posts,
-      pageParam,
+      currentPage:pageParam,
+      nextPage:pageParam + 1,
     };
   } catch (error) {
     console.log(error);

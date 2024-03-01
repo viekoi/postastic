@@ -55,8 +55,11 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
   }
 };
 
-
-export const isTooLarge = (file: Base64File | FileWithPath , type: "video" | "image") => {
+export const isTooLarge = (
+  file: Base64File | FileWithPath,
+  type: "video" | "image"
+) => {
+  if (!file.size) return false;
   if (type === "image" && file.size > imageMaxSize) {
     return true;
   }
@@ -67,4 +70,3 @@ export const isTooLarge = (file: Base64File | FileWithPath , type: "video" | "im
 
   return false;
 };
-

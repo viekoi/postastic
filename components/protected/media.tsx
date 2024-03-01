@@ -71,7 +71,15 @@ const Media = ({
         )}
       </div>
     );
-  }, [containerClassName, mediaClassName, url, disabled]);
+  }, [
+    disabled,
+    containerClassName,
+    mediaClassName,
+    url,
+    type,
+    isError,
+    onRemove,
+  ]);
 
   return callbackReturn();
 };

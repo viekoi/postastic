@@ -14,14 +14,15 @@ import { Globe, Lock, MessageCircle, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../like-button";
 import { privacyTypeValue } from "@/constansts";
-import Media from "../media";
+import MediaDisplayer from "../media-displayer";
 
 interface PostCardProps {
   post: PostWithData;
   className?: string;
+  currentPage: number;
 }
 
-const PostCard = ({ post, className }: PostCardProps) => {
+const PostCard = ({ post, className, currentPage }: PostCardProps) => {
   return (
     <Card
       className={cn(
@@ -56,29 +57,7 @@ const PostCard = ({ post, className }: PostCardProps) => {
           {post.content}
         </CardDescription>
 
-        {post.medias.length > 0 && (
-          <div className="grid grid-cols-2 justify-center relative group  rounded-3xl">
-            {post.medias.map((media, index) => {
-              return (
-                <Media
-                  containerClassName={
-                    index === 0 && post.medias.length % 2 === 1
-                      ? "col-span-2"
-                      : "col-span-1"
-                  }
-                  mediaClassName={
-                    index === 0 && post.medias.length % 2 === 1
-                      ? "bg-contain"
-                      : "bg-cover"
-                  }
-                  url={media.url}
-                  type={media.type}
-                  key={media.id}
-                />
-              );
-            })}
-          </div>
-        )}
+       <MediaDisplayer control={false} medias={post.medias}/>
       </CardContent>
       <CardFooter className="grid p-0 grid-cols-3 border-t-[0.5px] border-gray-600">
         <Button variant={"ghost"} className=" col-span-1 space-x-2">
@@ -90,7 +69,7 @@ const PostCard = ({ post, className }: PostCardProps) => {
           <span>10</span>
         </Button>
 
-        <LikeButton post={post} />
+        <LikeButton post={post} currentPage={currentPage} />
       </CardFooter>
     </Card>
   );

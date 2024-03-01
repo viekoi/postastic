@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { startTransition, useOptimistic } from "react";
 import { Button } from "../ui/button";
 import { Heart } from "lucide-react";
 import { useLikePost } from "@/queries/react-query/queris";
@@ -10,11 +10,12 @@ import { Loader } from "../Loader";
 
 interface LikeButtonProps {
   post: PostWithData;
+  currentPage: number;
 }
 
-const LikeButton = ({ post }: LikeButtonProps) => {
+const LikeButton = ({ post, currentPage }: LikeButtonProps) => {
   const { user } = useCurrentUser();
-  const { mutate: likePost, isPending } = useLikePost();
+  const { mutate: likePost } = useLikePost();
   if (!user)
     return (
       <Button
@@ -25,19 +26,15 @@ const LikeButton = ({ post }: LikeButtonProps) => {
         <Loader size={18} />
       </Button>
     );
-  const { id: postId, likes } = post;
-
-  const isLikeByMe = likes.some((like) => like.userId === user.id);
 
   return (
     <Button
-      disabled={isPending}
       variant={"ghost"}
       className="col-span-1 space-x-2 transition"
-      onClick={() => likePost({ postId })}
+      onClick={() => likePost({ likedPost: post, currentPage })}
     >
-      <Heart fill={isLikeByMe ? "red" : ""} size={18} />
-      <span>{likes.length}</span>
+      <Heart fill={post.isLikedByUser ? "red" : ""} size={18} />
+      <span>{post.likesCount}</span>
     </Button>
   );
 };

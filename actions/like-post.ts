@@ -4,6 +4,7 @@ import db from "@/lib/db";
 import { likes } from "@/lib/db/schema";
 import { currentUser } from "@/lib/user";
 import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 export const likePost = async (postId: string) => {
   try {

@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -31,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import UserAvatar from "../user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { newPost } from "@/actions/new-post";
-import { Image, Laugh } from "lucide-react";
+import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions } from "@/constansts";
 import FileUploader from "../file-uploader";
@@ -57,7 +58,7 @@ const NewPostForm = () => {
     textAreaRef.current = textArea;
   }, []);
 
-  const { user, isLoading } = useCurrentUser();
+  const { user } = useCurrentUser();
 
   const form = useForm<z.infer<typeof NewPostShcema>>({
     resolver: zodResolver(NewPostShcema),
@@ -68,23 +69,14 @@ const NewPostForm = () => {
     },
   });
 
+  const contentValue = form.watch("content");
+  const mediasValue = form.watch("medias");
+
   useLayoutEffect(() => {
     updateTextAreaSize(textAreaRef.current);
-  }, [form.watch("content")]);
+  }, [contentValue]);
 
   const onSubmit = (values: z.infer<typeof NewPostShcema>) => {
-    const validatedFields = NewPostShcema.safeParse(values);
-
-    if (!validatedFields.success) {
-      return toast.error("Invalid fields!");
-    }
-    const { content, medias, privacyType } = validatedFields.data;
-
-    const data = new FormData();
-    data.append("content", content);
-    data.append("medias", JSON.stringify(medias));
-    data.append("privacyType", privacyType);
-
     startTransition(() => {
       newPost(values).then((data) => {
         if (data.success) {
@@ -99,6 +91,11 @@ const NewPostForm = () => {
     });
   };
 
+  useEffect(() => {
+    if (mediasValue.length > 0 || contentValue.trim().length) {
+      form.formState.errors.isEmpty && form.clearErrors("isEmpty");
+    }
+  }, [contentValue, mediasValue]);
   return (
     <div className="flex w-full  p-4 pb-0 ">
       <UserAvatar user={user} />
@@ -143,6 +140,17 @@ const NewPostForm = () => {
                 )}
               />
             )}
+            {form.formState.errors.isEmpty && (
+              <FormField
+                control={form.control}
+                name="isEmpty"
+                render={() => (
+                  <FormItem className=" px-3">
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
           <div className="flex items-center justify-between py-2">
             <div className="inline-flex items-center">
@@ -165,6 +173,7 @@ const NewPostForm = () => {
                   <FormItem>
                     <FormControl>
                       <EmojiPicker
+                        disabled={isPending}
                         onChange={(emoji: string) =>
                           field.onChange(`${field.value} ${emoji}`)
                         }

@@ -50,7 +50,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         confirmLink: `${pageUrl}/new-verification?token=${vertificationToken.token}`,
       });
 
-      return { success: "User created!" };
+      return { success: "A vertification mail have been sended to your email!!!" };
     } else {
       return { error: "Something went wrong!" };
     }
