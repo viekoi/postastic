@@ -1,14 +1,15 @@
 "use client";
-import { convertFileToUrl } from "@/lib/utils";
+import { isTooLarge } from "@/lib/utils";
 import { Image, Plus, X } from "lucide-react";
 
 import { useCallback, useEffect, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { toast } from "sonner";
 import Media from "./media";
 import { Base64File } from "@/type";
+import { videoMaxSize } from "@/constansts";
+import { useFormContext } from "react-hook-form";
 
 type FileUploaderProps = {
   fieldChange: (files: Base64File[]) => void;
@@ -16,25 +17,30 @@ type FileUploaderProps = {
 };
 
 const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
-  const [files, setFiles] = useState<Base64File[]>([]);
-
+  const {setError} = useFormContext();
+  const [files, setFiles] = useState<(Base64File & { error: boolean })[]>([]);
 
   const { onCancel } = useIsAddingFiles();
 
   const handleSetFiles = (acceptedFiles: FileWithPath[]) => {
     if (files.length + acceptedFiles.length > 5) {
-      return toast.error(`Error: One post can only have 5 files`);
+      return;
     }
 
     acceptedFiles.forEach((file) => {
+      const type = file.type.includes("image") ? "image" : "video";
+
+      const isFileTooLarge = isTooLarge(file, type);
+
       const reader = new FileReader();
       reader.onload = () => {
         setFiles((prev) => [
           ...prev,
           {
             base64Url: reader.result,
-            blobUrl: convertFileToUrl(file),
-            type: file.type.includes("image") ? "image" : "video",
+            type: type,
+            error: isFileTooLarge,
+            size: file.size,
           },
         ]);
       };
@@ -68,22 +74,20 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
     fieldChange(files);
   }, [files]);
 
-  useEffect(() => {
-    return () => {
-      files.map((file) => URL.revokeObjectURL(file.blobUrl));
-    };
-  }, []);
-
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
     accept: {
       "image/*": [".png", ".jpeg", ".jpg"],
       "video/*": [".mp4", ".MP4"],
     },
-    onDropRejected: (rejectedFiles) => {
-      toast.error(`Error: ${rejectedFiles[0].errors[0].message}`);
+    onDropRejected: () => {
+      setError("medias", {
+        message:
+          "Can only have 5 medias per post, images must be smaller than 8mb, videos must be smaller than 20mb",
+      });
     },
     maxFiles: 5,
+    maxSize: videoMaxSize,
   });
 
   return (
@@ -99,8 +103,9 @@ const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
               <Media
                 disabled={disabled}
                 type={file.type}
-                url={file.blobUrl}
+                url={file.base64Url as string}
                 key={index}
+                isError={file.error}
                 onRemove={() => onRemoveFileFile(index)}
                 containerClassName={
                   index === 0 && files.length % 2 === 1

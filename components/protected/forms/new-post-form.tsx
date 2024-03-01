@@ -37,6 +37,7 @@ import { postPrivacyOtptions } from "@/constansts";
 import FileUploader from "../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { useModal } from "@/hooks/use-modal-store";
+import { EmojiPicker } from "../emoji-picker";
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -85,14 +86,14 @@ const NewPostForm = () => {
     data.append("privacyType", privacyType);
 
     startTransition(() => {
-      newPost(data).then((data) => {
+      newPost(values).then((data) => {
         if (data.success) {
-          toast.success(data.success);
+          toast.success(data.success, { closeButton: false });
           form.reset();
           onCancel();
           onClose();
         } else if (data.error) {
-          toast.error(data.error);
+          toast.error(data.error, { closeButton: false });
         }
       });
     });
@@ -157,14 +158,21 @@ const NewPostForm = () => {
                 <Image />
               </Button>
 
-              <Button
-                disabled={isPending}
-                type="button"
-                variant={"ghost"}
-                size={"icon"}
-              >
-                <Laugh />
-              </Button>
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <EmojiPicker
+                        onChange={(emoji: string) =>
+                          field.onChange(`${field.value} ${emoji}`)
+                        }
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

@@ -1,27 +1,21 @@
 "use server";
 
-import { privacyTypeValue } from "@/constansts";
 import db from "@/lib/db";
 import { posts, medias as dbMedias } from "@/lib/db/schema";
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
-import { Base64File } from "@/type";
+import { NewPostShcema } from "@/schemas";
+import * as z from "zod";
 import { revalidatePath } from "next/cache";
 
-export const newPost = async (data: FormData) => {
+export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
   try {
-    const content = data.get("content") as string;
-    const jsonMedias = data.get("medias") as string;
-    const privacyType = data.get("privacyType") as
-      | privacyTypeValue.PRIVATE
-      | privacyTypeValue.PUBLIC;
+    const validatedFields = NewPostShcema.safeParse(values);
 
-    if (content === null && jsonMedias === null && privacyType === null) {
-      return { error: "Coud not create post" };
+    if (!validatedFields.success) {
+      return { error: "Invalid fields!!!!" };
     }
-    const medias = JSON.parse(jsonMedias) as Base64File[];
-    console.log(medias)
- 
+    const { content, medias, privacyType } = validatedFields.data;
 
     const user = await currentUser();
 

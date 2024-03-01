@@ -98,3 +98,8 @@ export const postPrivacyOtptions = [
     value: privacyTypeValue.PRIVATE,
   },
 ];
+
+
+export const imageMaxSize = 8388608
+export const videoMaxSize = 20971520
+

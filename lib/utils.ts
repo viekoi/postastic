@@ -1,4 +1,7 @@
+import { imageMaxSize, videoMaxSize } from "@/constansts";
+import { Base64File } from "@/type";
 import { type ClassValue, clsx } from "clsx";
+import { FileWithPath } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -52,4 +55,16 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
   }
 };
 
+
+export const isTooLarge = (file: Base64File | FileWithPath , type: "video" | "image") => {
+  if (type === "image" && file.size > imageMaxSize) {
+    return true;
+  }
+
+  if (type === "video" && file.size > videoMaxSize) {
+    return true;
+  }
+
+  return false;
+};
 

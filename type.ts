@@ -4,7 +4,7 @@ export type PostWithData = Post & { user: User } & { likes: Like[] } &{medias:Me
 
 export type Base64File = {
     base64Url:(string | ArrayBuffer | null),
-    blobUrl:string,
-    type:"image" | "video"
+    type:"image" | "video",
+    size:number,
 }
 

@@ -8,7 +8,6 @@ cloudinary.config({
 });
 
 export const cloudinaryUpload = async (files: Base64File[]) => {
-  console.log("here");
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
       const result = cloudinary.uploader.upload(file.base64Url as string, {

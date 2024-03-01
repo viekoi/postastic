@@ -14,7 +14,7 @@ interface LikeButtonProps {
 
 const LikeButton = ({ post }: LikeButtonProps) => {
   const { user } = useCurrentUser();
-
+  const { mutate: likePost, isPending } = useLikePost();
   if (!user)
     return (
       <Button
@@ -29,7 +29,6 @@ const LikeButton = ({ post }: LikeButtonProps) => {
 
   const isLikeByMe = likes.some((like) => like.userId === user.id);
 
-  const { mutate: likePost, isPending } = useLikePost();
   return (
     <Button
       disabled={isPending}

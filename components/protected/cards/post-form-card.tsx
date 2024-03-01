@@ -23,7 +23,7 @@ const PostFormCard = () => {
             variant={"ghost"}
             className="justify-start w-full rounded-full text-muted-foreground"
           >
-            What's happening?
+            What is happening?
           </Button>
         </div>
       </CardHeader>

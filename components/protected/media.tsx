@@ -11,6 +11,7 @@ interface MediaProps {
   type: "image" | "video";
   onRemove?: () => void;
   disabled?: boolean;
+  isError?: boolean;
 }
 
 const Media = ({
@@ -19,6 +20,7 @@ const Media = ({
   mediaClassName,
   url,
   type,
+  isError,
   onRemove,
 }: MediaProps) => {
   const onRemoveFile = (e: any) => {
@@ -31,7 +33,8 @@ const Media = ({
       <div
         className={cn(
           " col-span-2 overflow-hidden p-1 border border-gray-600 relative group",
-          containerClassName
+          containerClassName,
+          isError && "border-rose-600 border-[3px]"
         )}
       >
         {type === "image" ? (
@@ -45,7 +48,12 @@ const Media = ({
             }}
           />
         ) : (
-          <video className="h-full w-full rounded-lg" controls autoPlay muted>
+          <video
+            className="h-full w-full rounded-lg"
+            controls
+            autoPlay={false}
+            muted
+          >
             <source src={url} type="video/mp4" />
           </video>
         )}
