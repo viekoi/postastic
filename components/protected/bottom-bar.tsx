@@ -3,6 +3,7 @@
 import { bottombarLinks } from "@/constansts";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import MobilePostButton from "./mobile-post-button";
 
 const Bottombar = () => {
   const pathName = usePathname();
@@ -26,6 +27,7 @@ const Bottombar = () => {
           </Link>
         );
       })}
+      <MobilePostButton />
     </div>
   );
 };

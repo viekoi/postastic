@@ -1,6 +1,6 @@
 {
-  "id": "c639a800-bc2e-465a-9f63-9a2e1967a25b",
-  "prevId": "e5c8812a-d94f-4282-b49a-5c26dd85d3f1",
+  "id": "0bb992fe-033f-4693-b247-60d1eb0dea20",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -102,6 +102,145 @@
       },
       "uniqueConstraints": {}
     },
+    "comment": {
+      "name": "comment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "postId": {
+          "name": "postId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createAt": {
+          "name": "createAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "isOverFlowContent": {
+          "name": "isOverFlowContent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        " privacyType": {
+          "name": " privacyType",
+          "type": "privacyType",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'public'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "comment_userId_user_id_fk": {
+          "name": "comment_userId_user_id_fk",
+          "tableFrom": "comment",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "comment_postId_post_id_fk": {
+          "name": "comment_postId_post_id_fk",
+          "tableFrom": "comment",
+          "tableTo": "post",
+          "columnsFrom": [
+            "postId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "like": {
+      "name": "like",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parentId": {
+          "name": "parentId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "like_userId_user_id_fk": {
+          "name": "like_userId_user_id_fk",
+          "tableFrom": "like",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "media": {
       "name": "media",
       "schema": "",
@@ -132,29 +271,21 @@
           "notNull": true,
           "default": "now()"
         },
-        "postId": {
-          "name": "postId",
+        "publicId": {
+          "name": "publicId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parentId": {
+          "name": "parentId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "media_postId_post_id_fk": {
-          "name": "media_postId_post_id_fk",
-          "tableFrom": "media",
-          "tableTo": "post",
-          "columnsFrom": [
-            "postId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -272,18 +403,12 @@
           "primaryKey": false,
           "notNull": true
         },
-        "isReply": {
-          "name": "isReply",
-          "type": "boolean",
+        " privacyType": {
+          "name": " privacyType",
+          "type": "privacyType",
           "primaryKey": false,
           "notNull": true,
-          "default": false
-        },
-        "replyId": {
-          "name": "replyId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
+          "default": "'public'"
         }
       },
       "indexes": {},
@@ -298,15 +423,110 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "reply": {
+      "name": "reply",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "postId": {
+          "name": "postId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "commentId": {
+          "name": "commentId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createAt": {
+          "name": "createAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "isOverFlowContent": {
+          "name": "isOverFlowContent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        " privacyType": {
+          "name": " privacyType",
+          "type": "privacyType",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'public'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "reply_userId_user_id_fk": {
+          "name": "reply_userId_user_id_fk",
+          "tableFrom": "reply",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "post_replyId_post_id_fk": {
-          "name": "post_replyId_post_id_fk",
-          "tableFrom": "post",
+        "reply_postId_post_id_fk": {
+          "name": "reply_postId_post_id_fk",
+          "tableFrom": "reply",
           "tableTo": "post",
           "columnsFrom": [
-            "replyId"
+            "postId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reply_commentId_comment_id_fk": {
+          "name": "reply_commentId_comment_id_fk",
+          "tableFrom": "reply",
+          "tableTo": "comment",
+          "columnsFrom": [
+            "commentId"
           ],
           "columnsTo": [
             "id"
@@ -443,6 +663,14 @@
       "values": {
         "image": "image",
         "video": "video"
+      }
+    },
+    "privacyType": {
+      "name": "privacyType",
+      "values": {
+        "public": "public",
+        "private": "private",
+        "more": "more"
       }
     }
   },

@@ -5,14 +5,13 @@ import { likes } from "@/lib/db/schema";
 import { currentUser } from "@/lib/user";
 import { and, eq } from "drizzle-orm";
 
-export const likePost = async (postId: string) => {
+export const like = async (id: string) => {
+  const user = await currentUser();
+
+  if (!user) return { error: "Unauthenticated!!!" };
   try {
-    const user = await currentUser();
-
-    if (!user) return { error: "Unauthenticated!!!" };
-
     const existingLike = await db.query.likes.findFirst({
-      where: and(eq(likes.postId, postId), eq(likes.userId, user.id)),
+      where: and(eq(likes.parentId, id), eq(likes.userId, user.id)),
     });
     if (existingLike) {
       await db.delete(likes).where(eq(likes.id, existingLike.id));
@@ -24,18 +23,17 @@ export const likePost = async (postId: string) => {
       const like = await db
         .insert(likes)
         .values({
-          postId,
+          parentId: id,
           userId: user.id,
         })
         .returning()
         .catch((error) => {
           if (error) return { error: error };
         });
-
       return { success: like };
     }
   } catch (error) {
-    console.log(error)
-   return { error:"Coud not like post!!!" }
+    console.log(error);
+    return { error: "Coud not like post!!!" };
   }
 };

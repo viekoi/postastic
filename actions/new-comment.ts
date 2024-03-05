@@ -1,55 +1,57 @@
 "use server";
 
 import db from "@/lib/db";
-import { posts, medias as dbMedias, Post } from "@/lib/db/schema";
+import { medias as dbMedias, comments, Comment } from "@/lib/db/schema";
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
-import { NewPostShcema } from "@/schemas";
+import { NewCommentShcema} from "@/schemas";
 import * as z from "zod";
 
-export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
+export const newComment = async (values: z.infer<typeof NewCommentShcema>) => {
   try {
-    const validatedFields = NewPostShcema.safeParse(values);
+    const validatedFields = NewCommentShcema.safeParse(values);
 
     if (!validatedFields.success) {
       return { error: "Invalid fields!!!!" };
     }
-    const { content, medias, privacyType } = validatedFields.data;
+    const { content, medias, privacyType,postId } = validatedFields.data;
 
     const user = await currentUser();
 
     if (!user) return { error: "Email does not exist!" };
 
     if (medias.length === 0 && !content.trim().length)
-      return { error: "Your post is empty" };
+      return { error: "Your comment is empty" };
 
     const isOverFlowContent = content.length > 300;
 
     if (medias.length === 0 && content.length) {
-      const newPost = await db
-        .insert(posts)
+      const newComment = await db
+        .insert(comments)
         .values({
           content,
           userId: user.id,
           isOverFlowContent,
           privacyType,
+          postId
         })
         .returning();
-      return { success: "Post created!", data: { ...newPost[0], medias: [] } };
+      return { success: "comment created!", data: { ...newComment[0], medias: [] } };
     } else {
       const uploadedFiles = await cloudinaryUpload(medias);
 
-      const newPost: Post[] = await db
-        .insert(posts)
+      const newComment: Comment[] = await db
+        .insert(comments)
         .values({
           content,
           userId: user.id,
           isOverFlowContent,
           privacyType,
+          postId
         })
         .returning();
 
-      if (!newPost) {
+      if (!newComment) {
         const deletedFiles = await cloudinaryDelete(uploadedFiles);
         return { error: "Coud not create post" };
       }
@@ -64,7 +66,7 @@ export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
           url: file.secure_url,
           publicId: file.public_id,
           type: file.resource_type as "image" | "video",
-          parentId: newPost[0].id,
+          parentId: newComment[0].id,
         };
       });
 
@@ -73,12 +75,12 @@ export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
         .values(formatedUploadedFiles)
         .returning();
       return {
-        success: "Post created!",
-        data: { ...newPost[0], medias: newMedias },
+        success: "Comment created!",
+        data: { ...newComment[0], medias: newMedias },
       };
     }
   } catch (error) {
     console.log(error);
-    return { error: "Coud not create post" };
+    return { error: "Coud not create Comment" };
   }
 };

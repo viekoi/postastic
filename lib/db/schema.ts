@@ -29,6 +29,8 @@ export type User = InferModel<typeof users>;
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
   likes: many(likes),
+  comments: many(comments),
+  replies: many(replies),
 }));
 
 export const accounts = pgTable(
@@ -113,8 +115,6 @@ export const posts = pgTable("post", {
     .defaultNow()
     .notNull(),
   isOverFlowContent: boolean("isOverFlowContent").notNull(),
-  isReply: boolean("isReply").notNull().default(false),
-  replyId: uuid("replyId").references((): AnyPgColumn => posts.id),
   privacyType: privacyType(" privacyType").notNull().default("public"),
 });
 
@@ -127,6 +127,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   }),
   medias: many(medias),
   likes: many(likes),
+  comments: many(comments),
 }));
 
 export const mediaType = pgEnum("mediaType", ["image", "video"]);
@@ -139,15 +140,21 @@ export const medias = pgTable("media", {
     .notNull()
     .defaultNow(),
   publicId: text("publicId").notNull(),
-  postId: uuid("postId")
-    .notNull()
-    .references(() => posts.id, { onDelete: "cascade" }),
+  parentId: uuid("parentId").notNull(),
 });
 
 export const mediasRelations = relations(medias, ({ one }) => ({
   post: one(posts, {
-    fields: [medias.postId],
+    fields: [medias.parentId],
     references: [posts.id],
+  }),
+  reply: one(replies, {
+    fields: [medias.parentId],
+    references: [replies.id],
+  }),
+  comment: one(comments, {
+    fields: [medias.parentId],
+    references: [comments.id],
   }),
 }));
 
@@ -158,9 +165,7 @@ export const likes = pgTable("like", {
   userId: uuid("userId")
     .notNull()
     .references(() => users.id),
-  postId: uuid("postId")
-    .notNull()
-    .references(() => posts.id, { onDelete: "cascade" }),
+  parentId: uuid("parentId").notNull(),
   created_at: timestamp("createdAt", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
@@ -174,7 +179,99 @@ export const likesRelations = relations(likes, ({ one }) => ({
     references: [users.id],
   }),
   post: one(posts, {
-    fields: [likes.postId],
+    fields: [likes.parentId],
+    references: [posts.id],
+  }),
+  reply: one(replies, {
+    fields: [likes.parentId],
+    references: [replies.id],
+  }),
+  comment: one(comments, {
+    fields: [likes.parentId],
+    references: [comments.id],
+  }),
+}));
+
+export const comments = pgTable("comment", {
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
+  content: text("content").notNull(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  postId: uuid("postId")
+    .notNull()
+    .references(() => posts.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createAt", {
+    withTimezone: true,
+    mode: "date",
+  })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  isOverFlowContent: boolean("isOverFlowContent").notNull(),
+  privacyType: privacyType(" privacyType").notNull().default("public"),
+});
+
+
+export const replies = pgTable("reply", {
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
+  content: text("content").notNull(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  postId: uuid("postId")
+    .notNull()
+    .references(() => posts.id, { onDelete: "cascade" }),
+  commentId: uuid("commentId").notNull().references((): AnyPgColumn => comments.id),
+  createdAt: timestamp("createAt", {
+    withTimezone: true,
+    mode: "date",
+  })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  isOverFlowContent: boolean("isOverFlowContent").notNull(),
+  privacyType: privacyType(" privacyType").notNull().default("public"),
+});
+
+
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.id],
+  }),
+
+  medias: many(medias),
+  likes: many(likes),
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+  replies: many(replies),
+}));
+
+export type Comment = InferModel<typeof comments>;
+export type Reply = InferModel<typeof replies>;
+
+export const repliesRelations = relations(replies, ({ one, many }) => ({
+  comment: one(comments, {
+    fields: [replies.id],
+    references: [comments.id],
+  }),
+  user: one(users, {
+    fields: [replies.userId],
+    references: [users.id],
+  }),
+
+  medias: many(medias),
+  likes: many(likes),
+  post: one(posts, {
+    fields: [replies.postId],
     references: [posts.id],
   }),
 }));

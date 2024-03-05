@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 
 interface ModalProps {
@@ -15,14 +16,17 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children?: React.ReactNode;
+  className?: string;
 }
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   title,
   description,
   children,
+  className,
   onClose,
 }) => {
   const onChange = (open: boolean) => {
@@ -36,28 +40,21 @@ const Modal: React.FC<ModalProps> = ({
       <DialogContent
         className={cn(
           `
+        flex
+        flex-col
         custom-scrollbar
-        overflow-y-auto
-        fixed 
-        drop-shadow-md 
+        overflow-y-scroll
         border 
         border-gray-600 
-        top-[50%]
-        left-[50%] 
-        max-h-full 
         h-full 
-        lg:h-auto 
-        lg:max-h-[85vh] 
-        w-full 
-        lg:max-w-[800px] 
-        translate-x-[-50%]
-        translate-y-[-50%]
+        w-full  
         rounded-md 
         bg-black
         p-[25px] 
         focus:outline-none
         z-50
-        `
+        `,
+          className
         )}
       >
         {title && (
@@ -67,13 +64,17 @@ const Modal: React.FC<ModalProps> = ({
               text-xl 
               text-center 
               font-bold 
-              pb-4
               border-b-[0.5px]
               border-solid
               border-gray-600
+              p-4
+              relative
               "
           >
             {title}
+            <DialogClose className=" absoluteborder-none bg-red-400 opacity-70 hover:opacity-100 rounded-full absolute top-2 right-2 ">
+              <X size={40} />
+            </DialogClose>
           </DialogTitle>
         )}
         {description && (
@@ -91,6 +92,11 @@ const Modal: React.FC<ModalProps> = ({
         )}
 
         {children}
+        {!title && (
+          <DialogClose className="border-none bg-red-400 opacity-70 hover:opacity-100 rounded-full absolute top-2 right-2 ">
+            <X size={40} />
+          </DialogClose>
+        )}
       </DialogContent>
     </Dialog>
   );

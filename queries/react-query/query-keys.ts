@@ -1,4 +1,5 @@
 export enum QUERY_KEYS {
-    GET_INFINITE_ACCESSIBLE_POSTS = "getInfiniteAccessiblePosts",
+    GET_HOME_POSTS = "getHomePosts",
+    GET_POST_COMMENTS = "getPostComments"
   }
   

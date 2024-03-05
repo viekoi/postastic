@@ -3,12 +3,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useCallback } from "react";
 import { Trash } from "lucide-react";
+import Image from "next/image";
 
 interface MediaProps {
   containerClassName?: string;
   mediaClassName?: string;
   url: string;
   type: "image" | "video";
+  onClick?: () => void;
   onRemove?: () => void;
   disabled?: boolean;
   isError?: boolean;
@@ -22,6 +24,7 @@ const Media = ({
   type,
   isError,
   onRemove,
+  onClick,
 }: MediaProps) => {
   const onRemoveFile = (e: any) => {
     onRemove && onRemove();
@@ -31,21 +34,25 @@ const Media = ({
   const callbackReturn = useCallback(() => {
     return (
       <div
+        onClick={() => onClick && onClick()}
         className={cn(
-          " col-span-2 overflow-hidden p-1 border border-gray-600 relative group",
+          " overflow-hidden relative group  ",
           containerClassName,
           isError && "border-rose-600 border-[3px]"
         )}
       >
         {type === "image" ? (
-          <div
+          <Image
+            quality={100}
+            priority
+            sizes="(max-width: 768px) 100vw, 33vw"
+            src={url}
+            alt="image"
+            fill
             className={cn(
-              `pt-[50%] relative bg-cover bg-no-repeat bg-center`,
+              "bg-cover bg-no-repeat bg-center object-cover",
               mediaClassName
             )}
-            style={{
-              backgroundImage: `url(${url})`,
-            }}
           />
         ) : (
           <video
@@ -64,14 +71,25 @@ const Media = ({
             variant={"destructive"}
             type="button"
             className=" absolute top-1 right-1 inline-flex lg:hidden group-hover:inline-flex"
-            onClick={(e) => onRemoveFile(e)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveFile(e);
+            }}
           >
             <Trash />
           </Button>
         )}
       </div>
     );
-  }, [containerClassName, mediaClassName, url, disabled]);
+  }, [
+    disabled,
+    containerClassName,
+    mediaClassName,
+    url,
+    type,
+    isError,
+    onRemove,
+  ]);
 
   return callbackReturn();
 };

@@ -1,6 +1,4 @@
-import NewPostForm from "@/components/protected/forms/new-post-form";
-import PostList from "@/components/protected/post-list";
-import { getInfiniteaccessiblePosts } from "@/actions/get-inifinite-accessible-posts";
+import { getHomePosts } from "@/actions/get-home-posts";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import {
   dehydrate,
@@ -8,30 +6,34 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import PostFormCard from "@/components/protected/cards/post-form-card";
+import PostContainer from "@/components/protected/post-container";
 
 const Home = async () => {
   const queryClient = new QueryClient();
   await queryClient.prefetchInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_INFINITE_ACCESSIBLE_POSTS],
-    queryFn: ({ pageParam }) => getInfiniteaccessiblePosts(pageParam),
-    initialPageParam: 0,
+    queryKey: [QUERY_KEYS.GET_HOME_POSTS],
+    queryFn: ({ pageParam }) => getHomePosts(pageParam),
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       if (!lastPage) return null;
 
       if (lastPage.error) return null;
 
-      if (lastPage.success && lastPage.success.length === 0) {
+      if (
+        lastPage.currentPage &&
+        lastPage.totalPages &&
+        lastPage.currentPage === lastPage.totalPages
+      )
         return null;
-      }
-      const nextPageParam = lastPage.pageParam + 1;
-      return nextPageParam;
+
+      return lastPage.nextPage;
     },
-    pages: 2, // prefetch the first 3 pages
+    pages: 1, // prefetch the first 3 pages
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PostFormCard/>
-      <PostList />
+      <PostFormCard />
+      <PostContainer />
     </HydrationBoundary>
   );
 };

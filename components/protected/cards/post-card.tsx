@@ -1,9 +1,8 @@
 "use client";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
@@ -14,85 +13,135 @@ import { Globe, Lock, MessageCircle, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../like-button";
 import { privacyTypeValue } from "@/constansts";
-import Media from "../media";
+import MediaDisplayer from "../media-displayer";
+import { useReplyModal } from "@/hooks/use-modal-store";
+import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
 interface PostCardProps {
   post: PostWithData;
   className?: string;
+  isModalContent?: boolean;
 }
 
-const PostCard = ({ post, className }: PostCardProps) => {
+const PostCard = ({
+  post,
+  className,
+  isModalContent = false,
+}: PostCardProps) => {
+  const { onOpen } = useReplyModal();
+  const [expandConent, setExpandContent] = useState(false);
+  const baseContainerClassName = "border border-gray-600 ";
+  const indexContainerClassName = (index: number, dataLength: number) => {
+    var className = "";
+    if (dataLength % 2 === 0) {
+      className = "grow-0 basis-[50%] max-w-[50%] ";
+    }
+    if (dataLength === 1) {
+      className = "grow-0 basis-[100%] max-w-[100%] ";
+    }
+
+    if (dataLength === 3) {
+      className = "grow-0 basis-[33%] max-w-[33%] ";
+    }
+
+    if (dataLength === 5) {
+      if (index <= 2) {
+        className = "grow-0 basis-[33%] max-w-[33%] ";
+      } else {
+        className = "grow-0 basis-[50%] max-w-[50%] ";
+      }
+    }
+    return className;
+  };
+  const baseMediaClassName = "max-h-[100%]  !static ";
+
+  const onReplyModalOpen = useCallback(() => {
+    onOpen(post);
+  }, [post]);
+
+
+
   return (
-    <Card
-      className={cn(
-        "bg-black border-0 border-b-[0.5px] border-gray-600 text-white rounded-none",
-        className
-      )}
-    >
-      <CardHeader>
-        <div className="flex items-start gap-x-2">
-          <UserAvatar user={post.user} />
-          <div className="flex flex-col ">
-            <h4 className="font-medium text-sm leading-[140%]">
-              {post.user.name}
-            </h4>
-            <h4 className=" items-center flex gap-x-1 text-[12px] font-medium text-muted-foreground">
-              {multiFormatDateString(post.createdAt.toUTCString())}
-              {post.privacyType === privacyTypeValue.PRIVATE ? (
-                <Lock size={12} />
-              ) : (
-                <Globe size={12} />
-              )}
-            </h4>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="  overflow-hidden  border-solid flex-col flex gap-2">
-        <CardDescription
-          className={`text-white over ${
-            post.isOverFlowContent && "line-clamp-3"
-          }`}
-        >
-          {post.content}
-        </CardDescription>
-
-        {post.medias.length > 0 && (
-          <div className="grid grid-cols-2 justify-center relative group  rounded-3xl">
-            {post.medias.map((media, index) => {
-              return (
-                <Media
-                  containerClassName={
-                    index === 0 && post.medias.length % 2 === 1
-                      ? "col-span-2"
-                      : "col-span-1"
-                  }
-                  mediaClassName={
-                    index === 0 && post.medias.length % 2 === 1
-                      ? "bg-contain"
-                      : "bg-cover"
-                  }
-                  url={media.url}
-                  type={media.type}
-                  key={media.id}
-                />
-              );
-            })}
-          </div>
+    <>
+      <Card
+        className={cn(
+          "bg-black border-0 border-b-[0.5px] border-gray-600 text-white rounded-none flex-shrink-0  ",
+          className
         )}
-      </CardContent>
-      <CardFooter className="grid p-0 grid-cols-3 border-t-[0.5px] border-gray-600">
-        <Button variant={"ghost"} className=" col-span-1 space-x-2">
-          <MessageCircle size={18} />
-          <span>10</span>
-        </Button>
-        <Button variant={"ghost"} className=" col-span-1 space-x-2">
-          <Repeat2 size={18} />
-          <span>10</span>
-        </Button>
+      >
+        <CardHeader>
+          <div className="flex items-start gap-x-2 ">
+            <UserAvatar user={post.user} />
+            <div className="flex flex-col ">
+              <h4 className="font-medium text-sm leading-[140%]">
+                {post.user.name}
+              </h4>
+              <h4 className=" items-center flex gap-x-1 text-[12px] font-medium text-muted-foreground">
+                {multiFormatDateString(post.createdAt.toUTCString())}
+                {post.privacyType === privacyTypeValue.PRIVATE ? (
+                  <Lock size={12} />
+                ) : (
+                  <Globe size={12} />
+                )}
+              </h4>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-hidden border-solid flex-col flex gap-2 min-w-[0]">
+          <div>
+            <p
+              className={`text-white whitespace-pre-wrap break-words ${
+                post.isOverFlowContent && !expandConent && "line-clamp-3"
+              }`}
+            >
+              {post.content}
+            </p>
+            {post.isOverFlowContent && (
+              <button
+                onClick={() => setExpandContent((prev) => !prev)}
+                className="text-blue-400 font-medium text-lg"
+              >
+                {expandConent ? "see less" : "see more"}
+              </button>
+            )}
+          </div>
 
-        <LikeButton post={post} />
-      </CardFooter>
-    </Card>
+          <MediaDisplayer
+            baseContainerClassName={baseContainerClassName}
+            indexContainerClassName={indexContainerClassName}
+            baseMediaClassName={baseMediaClassName}
+            control={false}
+            medias={post.medias}
+          />
+        </CardContent>
+        <CardFooter
+          className={cn(
+            "grid p-0 grid-cols-3 border-t-[0.5px] border-gray-600",
+            isModalContent && "grid-cols-2"
+          )}
+        >
+          <LikeButton
+            queryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+            parent={post}
+            className=" col-span-1 space-x-2"
+          />
+          {!isModalContent && (
+            <Button
+              onClick={onReplyModalOpen}
+              variant={"postCard"}
+              className=" col-span-1 space-x-2"
+            >
+              <MessageCircle size={18} />
+              <span>{post.commentsCount}</span>
+            </Button>
+          )}
+          <Button variant={"postCard"} className=" col-span-1 space-x-2">
+            <Repeat2 size={18} />
+            <span>10</span>
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 };
 

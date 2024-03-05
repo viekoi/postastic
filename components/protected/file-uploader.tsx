@@ -1,165 +1,67 @@
 "use client";
-import { isTooLarge } from "@/lib/utils";
-import { Image, Plus, X } from "lucide-react";
+import { Image, X } from "lucide-react";
 
-import { useCallback, useEffect, useState } from "react";
-import { FileWithPath, useDropzone } from "react-dropzone";
+import { useEffect } from "react";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import Media from "./media";
-import { Base64File } from "@/type";
-import { videoMaxSize } from "@/constansts";
-import { useFormContext } from "react-hook-form";
+import { MediaFile } from "@/type";
+import MediaDisplayer from "./media-displayer";
+import { cn } from "@/lib/utils";
+import { DropzoneInputProps, DropzoneRootProps } from "react-dropzone";
+import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 
 type FileUploaderProps = {
-  fieldChange: (files: Base64File[]) => void;
+  fieldChange: (files: MediaFile[]) => void;
   disabled: boolean;
+  getRootProps: <T extends DropzoneRootProps>(props?: T | undefined) => T;
+  getInputProps: <T extends DropzoneInputProps>(props?: T | undefined) => T;
+  open: () => void;
+  isCommentFormChild?: boolean;
+  className?: string;
+  baseContainerClassName?: string;
+  indexContainerClassName?: (index: number, dataLength: number) => string;
+  baseMediaClassName?: string;
+  indexMediaClassName?: (index: number, dataLength: number) => string;
 };
 
-const FileUploader = ({ fieldChange, disabled }: FileUploaderProps) => {
-  const {setError} = useFormContext();
-  const [files, setFiles] = useState<(Base64File & { error: boolean })[]>([]);
+const FileUploader = ({
+  fieldChange,
+  disabled,
+  className,
+  isCommentFormChild = false,
+  getInputProps,
+  getRootProps,
+  open,
+  baseContainerClassName,
+  indexContainerClassName,
+  baseMediaClassName,
+  indexMediaClassName,
+}: FileUploaderProps) => {
+  const { files } = useFilesUploadActions();
 
   const { onCancel } = useIsAddingFiles();
-
-  const handleSetFiles = (acceptedFiles: FileWithPath[]) => {
-    if (files.length + acceptedFiles.length > 5) {
-      return;
-    }
-
-    acceptedFiles.forEach((file) => {
-      const type = file.type.includes("image") ? "image" : "video";
-
-      const isFileTooLarge = isTooLarge(file, type);
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFiles((prev) => [
-          ...prev,
-          {
-            base64Url: reader.result,
-            type: type,
-            error: isFileTooLarge,
-            size: file.size,
-          },
-        ]);
-      };
-
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const onDrop = useCallback(
-    (acceptedFiles: FileWithPath[]) => {
-      handleSetFiles(acceptedFiles);
-    },
-    [files]
-  );
-
-  const onRemoveFileFiles = () => {
-    setFiles([]);
-  };
-
-  const onRemoveFileFile = (index: number) => {
-    setFiles((prev) => {
-      const updatedFiles = [...prev].filter((file, fIndex) => {
-        return fIndex !== index;
-      });
-
-      return updatedFiles;
-    });
-  };
 
   useEffect(() => {
     fieldChange(files);
   }, [files]);
 
-  const { getRootProps, getInputProps, open } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [".png", ".jpeg", ".jpg"],
-      "video/*": [".mp4", ".MP4"],
-    },
-    onDropRejected: () => {
-      setError("medias", {
-        message:
-          "Can only have 5 medias per post, images must be smaller than 8mb, videos must be smaller than 20mb",
-      });
-    },
-    maxFiles: 5,
-    maxSize: videoMaxSize,
-  });
-
   return (
     <div {...getRootProps()}>
       <input {...getInputProps()} />
-      {files.length > 0 ? (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="grid grid-cols-2 justify-center relative group border-[3px] border-gray-600 border-dashed p-5 rounded-3xl"
-        >
-          {files.map((file, index) => {
-            return (
-              <Media
-                disabled={disabled}
-                type={file.type}
-                url={file.base64Url as string}
-                key={index}
-                isError={file.error}
-                onRemove={() => onRemoveFileFile(index)}
-                containerClassName={
-                  index === 0 && files.length % 2 === 1
-                    ? "col-span-2"
-                    : "col-span-1"
-                }
-                mediaClassName={
-                  index === 0 && files.length % 2 === 1
-                    ? "bg-contain"
-                    : "bg-cover"
-                }
-              />
-            );
-          })}
-
-          <div className="absolute inline-flex lg:hidden group-hover:inline-flex -top-5 -left-5 gap-x-1">
-            <Button
-              disabled={disabled}
-              type="button"
-              variant={"secondary"}
-              size={"icon"}
-              onClick={open}
-            >
-              <Plus />
-            </Button>
-            <Button
-              disabled={disabled}
-              className=""
-              type="button"
-              size={"link"}
-              variant={"secondary"}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveFileFiles();
-              }}
-            >
-              clear all
-            </Button>
-          </div>
-
-          <Button
-            disabled={disabled}
-            className="absolute inline-flex lg:hidden group-hover:inline-flex -top-5 -right-5 rounded-full"
-            type="button"
-            variant={"secondary"}
-            size={"icon"}
-            onClick={(e) => {
-              e.stopPropagation();
-              onCancel();
-            }}
-          >
-            <X />
-          </Button>
-        </div>
+      {files.length > 0 || isCommentFormChild ? (
+        <MediaDisplayer
+          open={open}
+          className={cn("", className)}
+          control={true}
+          medias={files}
+          variant={"outline"}
+          size={"outline"}
+          disabled={disabled}
+          baseContainerClassName={baseContainerClassName}
+          indexContainerClassName={indexContainerClassName}
+          indexMediaClassName={indexMediaClassName}
+          baseMediaClassName={baseMediaClassName}
+        />
       ) : (
         <div className="relative border h-[300px] rounded-xl border-dashed items-center justify-center flex flex-col py-4 gap-1">
           <Button

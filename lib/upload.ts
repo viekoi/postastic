@@ -10,7 +10,7 @@ cloudinary.config({
 export const cloudinaryUpload = async (files: Base64File[]) => {
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
-      const result = cloudinary.uploader.upload(file.base64Url as string, {
+      const result = cloudinary.uploader.upload(file.url as string, {
         resource_type: file.type,
         folder: "postatic",
       });

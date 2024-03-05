@@ -3,17 +3,10 @@
   "dialect": "pg",
   "entries": [
     {
-      "idx": 1,
+      "idx": 0,
       "version": "5",
-      "when": 1708520040036,
-      "tag": "0001_premium_jigsaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1709120937523,
-      "tag": "0002_stiff_blink",
+      "when": 1710381977581,
+      "tag": "0000_confused_proteus",
       "breakpoints": true
     }
   ]

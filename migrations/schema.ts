@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, uuid, text, timestamp, foreignKey, boolean, primaryKey, unique, integer } from "drizzle-orm/pg-core"
+import { pgTable, pgEnum, uuid, text, timestamp, foreignKey, boolean, integer, primaryKey, unique } from "drizzle-orm/pg-core"
   import { sql } from "drizzle-orm"
 
 export const mediaType = pgEnum("mediaType", ['video', 'image'])
@@ -14,40 +14,69 @@ export const user = pgTable("user", {
 	password: text("password"),
 });
 
+export const media = pgTable("media", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	type: mediaType("type").notNull(),
+	url: text("url").notNull(),
+	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	parentId: uuid("parentId").notNull(),
+	publicId: text("publicId").notNull(),
+});
+
 export const post = pgTable("post", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
 	content: text("content").notNull(),
 	userId: uuid("userId").notNull().references(() => user.id, { onDelete: "cascade" } ),
 	createAt: timestamp("createAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 	updatedAt: timestamp("updatedAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-	isReply: boolean("isReply").default(false).notNull(),
-	replyId: uuid("replyId"),
 	isOverFlowContent: boolean("isOverFlowContent").notNull(),
 	privacyType: privacyType(" privacyType").default('public').notNull(),
-},
-(table) => {
-	return {
-		postReplyIdPostIdFk: foreignKey({
-			columns: [table.replyId],
-			foreignColumns: [table.id],
-			name: "post_replyId_post_id_fk"
-		}),
-	}
-});
-
-export const media = pgTable("media", {
-	id: uuid("id").defaultRandom().primaryKey().notNull(),
-	type: mediaType("type").notNull(),
-	url: text("url").notNull(),
-	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
+	likesCount: integer("likesCount").default(0).notNull(),
+	commentsCount: integer("commentsCount").default(0).notNull(),
 });
 
 export const like = pgTable("like", {
 	id: uuid("id").defaultRandom().primaryKey().notNull(),
 	userId: uuid("userId").notNull().references(() => user.id),
-	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
+	parentId: uuid("parentId").notNull(),
 	createdAt: timestamp("createdAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+});
+
+export const comment = pgTable("comment", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	content: text("content").notNull(),
+	userId: uuid("userId").notNull().references(() => user.id, { onDelete: "cascade" } ),
+	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
+	commentId: uuid("commentId"),
+	createAt: timestamp("createAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	updatedAt: timestamp("updatedAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	likesCount: integer("likesCount").default(0).notNull(),
+	repliesCount: integer("repliesCount").default(0).notNull(),
+	isOverFlowContent: boolean("isOverFlowContent").notNull(),
+	privacyType: privacyType(" privacyType").default('public').notNull(),
+},
+(table) => {
+	return {
+		commentCommentIdCommentIdFk: foreignKey({
+			columns: [table.commentId],
+			foreignColumns: [table.id],
+			name: "comment_commentId_comment_id_fk"
+		}),
+	}
+});
+
+export const reply = pgTable("reply", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	content: text("content").notNull(),
+	userId: uuid("userId").notNull().references(() => user.id, { onDelete: "cascade" } ),
+	postId: uuid("postId").notNull().references(() => post.id, { onDelete: "cascade" } ),
+	commentId: uuid("commentId").references(() => comment.id),
+	createAt: timestamp("createAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	updatedAt: timestamp("updatedAt", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+	likesCount: integer("likesCount").default(0).notNull(),
+	repliesCount: integer("repliesCount").default(0).notNull(),
+	isOverFlowContent: boolean("isOverFlowContent").notNull(),
+	privacyType: privacyType(" privacyType").default('public').notNull(),
 });
 
 export const passwordResetToken = pgTable("passwordResetToken", {

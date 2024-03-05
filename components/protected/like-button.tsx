@@ -1,43 +1,43 @@
 "use client";
-import React from "react";
+import React, { startTransition, useMemo, useOptimistic } from "react";
 import { Button } from "../ui/button";
 import { Heart } from "lucide-react";
-import { useLikePost } from "@/queries/react-query/queris";
+import { useLike } from "@/queries/react-query/queris";
 
-import { PostWithData } from "@/type";
+import { CommentWithData, PostWithData } from "@/type";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Loader } from "../Loader";
+import { cn } from "@/lib/utils";
+import { QueryKey } from "@tanstack/react-query";
 
 interface LikeButtonProps {
-  post: PostWithData;
+  parent: PostWithData | CommentWithData;
+  className?: string;
+  queryKey:QueryKey
 }
 
-const LikeButton = ({ post }: LikeButtonProps) => {
+const LikeButton = ({ parent, className,queryKey }: LikeButtonProps) => {
   const { user } = useCurrentUser();
-  const { mutate: likePost, isPending } = useLikePost();
+  const { mutate: likePost } = useLike(queryKey);
   if (!user)
     return (
       <Button
         disabled
-        variant={"ghost"}
-        className="col-span-1 space-x-2 transition"
+        variant={"postCard"}
+        className={cn("transition ", className)}
       >
         <Loader size={18} />
       </Button>
     );
-  const { id: postId, likes } = post;
-
-  const isLikeByMe = likes.some((like) => like.userId === user.id);
 
   return (
     <Button
-      disabled={isPending}
-      variant={"ghost"}
-      className="col-span-1 space-x-2 transition"
-      onClick={() => likePost({ postId })}
+      variant={"postCard"}
+      className={cn("transition ", className)}
+      onClick={() => likePost(parent.id)}
     >
-      <Heart fill={isLikeByMe ? "red" : ""} size={18} />
-      <span>{likes.length}</span>
+      <Heart fill={parent.isLikedByMe ? "red" : ""} size={18} />
+      <span>{parent.likesCount}</span>
     </Button>
   );
 };
