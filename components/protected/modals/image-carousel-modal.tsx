@@ -10,10 +10,10 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import Media from "../media";
+import Media from "../attachment";
 
 const ImageCarouselModal = () => {
-  const { isOpen, onClose, medias, startIndex } = useImageCarouselModal();
+  const { isOpen, onClose, attachments, startIndex } = useImageCarouselModal();
   return (
     <Modal
       isOpen={isOpen}
@@ -28,12 +28,12 @@ const ImageCarouselModal = () => {
         className=" group flex items-center justify-center w-full lg:max-w-[90vw] h-full"
       >
         <CarouselContent className=" flex items-center h-full ">
-          {medias.map((media, index) => (
-            <CarouselItem key={index} className="h-full" >
+          {attachments.map((attachment, index) => (
+            <CarouselItem key={index} className="h-full">
               <Media
-                url={media.url as string}
-                type={media.type}
-                mediaClassName="bg-contain max-h-[100%] object-contain"
+                url={attachment.url as string}
+                type={attachment.type}
+                attachmentClassName="bg-contain max-h-[100%] object-contain"
                 containerClassName="border-[0px] h-full"
               />
             </CarouselItem>

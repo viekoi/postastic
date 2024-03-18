@@ -13,7 +13,7 @@ import { Globe, Lock, MessageCircle, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../like-button";
 import { privacyTypeValue } from "@/constansts";
-import MediaDisplayer from "../media-displayer";
+import AttachmentDisplayer from "../attachment-displayer";
 import { useReplyModal } from "@/hooks/use-modal-store";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
@@ -58,8 +58,6 @@ const PostCard = ({
   const onReplyModalOpen = useCallback(() => {
     onOpen(post);
   }, [post]);
-
-
 
   return (
     <>
@@ -106,12 +104,12 @@ const PostCard = ({
             )}
           </div>
 
-          <MediaDisplayer
+          <AttachmentDisplayer
             baseContainerClassName={baseContainerClassName}
             indexContainerClassName={indexContainerClassName}
-            baseMediaClassName={baseMediaClassName}
+            baseAttachmentClassName={baseMediaClassName}
             control={false}
-            medias={post.medias}
+            medias={post.attachments}
           />
         </CardContent>
         <CardFooter

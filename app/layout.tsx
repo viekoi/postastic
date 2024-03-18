@@ -26,19 +26,21 @@ export default async function RootLayout({
       <html lang="en">
         <body className={inter.className}>
           <QueryProvider>
-            <Toaster
-              theme="dark"
-              toastOptions={{
-                actionButtonStyle: {
-                  backgroundColor: "white",
-                  color: "black",
-                  fontWeight: 500,
-                },
-              }}
-              closeButton
-              duration={3000}
-              className="text-white z-50"
-            />
+            <div className="lg:block hidden">
+              <Toaster
+                theme="dark"
+                toastOptions={{
+                  actionButtonStyle: {
+                    backgroundColor: "white",
+                    color: "black",
+                    fontWeight: 500,
+                  },
+                }}
+                closeButton
+                duration={3000}
+                className="text-white z-50"
+              />
+            </div>
             <ModalProvider />
             {children}
           </QueryProvider>

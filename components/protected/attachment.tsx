@@ -5,9 +5,9 @@ import { useCallback } from "react";
 import { Trash } from "lucide-react";
 import Image from "next/image";
 
-interface MediaProps {
+interface AttachmentProps {
   containerClassName?: string;
-  mediaClassName?: string;
+  attachmentClassName?: string;
   url: string;
   type: "image" | "video";
   onClick?: () => void;
@@ -16,16 +16,16 @@ interface MediaProps {
   isError?: boolean;
 }
 
-const Media = ({
+const Attachment = ({
   disabled,
   containerClassName,
-  mediaClassName,
+  attachmentClassName,
   url,
   type,
   isError,
   onRemove,
   onClick,
-}: MediaProps) => {
+}: AttachmentProps) => {
   const onRemoveFile = (e: any) => {
     onRemove && onRemove();
   };
@@ -51,7 +51,7 @@ const Media = ({
             fill
             className={cn(
               "bg-cover bg-no-repeat bg-center object-cover",
-              mediaClassName
+              attachmentClassName
             )}
           />
         ) : (
@@ -84,7 +84,7 @@ const Media = ({
   }, [
     disabled,
     containerClassName,
-    mediaClassName,
+    attachmentClassName,
     url,
     type,
     isError,
@@ -94,4 +94,4 @@ const Media = ({
   return callbackReturn();
 };
 
-export default Media;
+export default Attachment;

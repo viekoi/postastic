@@ -47,7 +47,6 @@ export const useFilesUploadActions = () => {
 
   return {
     onDrop,
-    open,
     files,
     onRemoveFile,
     onRemoveFiles,

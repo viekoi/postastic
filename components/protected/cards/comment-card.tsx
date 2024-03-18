@@ -1,8 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Card,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { CommentWithData } from "@/type";
 import UserAvatar from "../user-avatar";
 import { cn } from "@/lib/utils";
@@ -10,7 +8,7 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../like-button";
 
-import MediaDisplayer from "../media-displayer";
+import AttachmentDisplayer from "../attachment-displayer";
 
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
@@ -93,13 +91,13 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
                 )}
               </div>
 
-              <MediaDisplayer
+              <AttachmentDisplayer
                 className="max-w-[300px]"
                 baseContainerClassName={baseContainerClassName}
-                baseMediaClassName={baseMediaClassName}
+                baseAttachmentClassName={baseMediaClassName}
                 indexContainerClassName={indexContainerClassName}
                 control={false}
-                medias={comment.medias}
+                medias={comment.attachments}
               />
             </div>
             <div className="flex gap-x-4">

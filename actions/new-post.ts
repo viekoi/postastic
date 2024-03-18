@@ -1,7 +1,11 @@
 "use server";
 
 import db from "@/lib/db";
-import { posts, medias as dbMedias, Post } from "@/lib/db/schema";
+import {
+  Media,
+  medias as mediaTable,
+  attachments as attachmentTable,
+} from "@/lib/db/schema";
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
 import { NewPostShcema } from "@/schemas";
@@ -14,38 +18,43 @@ export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
     if (!validatedFields.success) {
       return { error: "Invalid fields!!!!" };
     }
-    const { content, medias, privacyType } = validatedFields.data;
+    const { content, attachments, privacyType } = validatedFields.data;
 
     const user = await currentUser();
 
     if (!user) return { error: "Email does not exist!" };
 
-    if (medias.length === 0 && !content.trim().length)
+    if (attachments.length === 0 && !content.trim().length)
       return { error: "Your post is empty" };
 
     const isOverFlowContent = content.length > 300;
 
-    if (medias.length === 0 && content.length) {
+    if (attachments.length === 0 && content.length) {
       const newPost = await db
-        .insert(posts)
+        .insert(mediaTable)
         .values({
           content,
           userId: user.id,
           isOverFlowContent,
           privacyType,
+          type: "post",
         })
         .returning();
-      return { success: "Post created!", data: { ...newPost[0], medias: [] } };
+      return {
+        success: "Post created!",
+        data: { ...newPost[0], attachments: [] },
+      };
     } else {
-      const uploadedFiles = await cloudinaryUpload(medias);
+      const uploadedFiles = await cloudinaryUpload(attachments);
 
-      const newPost: Post[] = await db
-        .insert(posts)
+      const newPost = await db
+        .insert(mediaTable)
         .values({
           content,
           userId: user.id,
           isOverFlowContent,
           privacyType,
+          type: "post",
         })
         .returning();
 
@@ -62,19 +71,18 @@ export const newPost = async (values: z.infer<typeof NewPostShcema>) => {
       }[] = uploadedFiles.map((file) => {
         return {
           url: file.secure_url,
-          publicId: file.public_id,
           type: file.resource_type as "image" | "video",
           parentId: newPost[0].id,
+          publicId: file.public_id,
         };
       });
-
-      const newMedias = await db
-        .insert(dbMedias)
+      const newAttachments = await db
+        .insert(attachmentTable)
         .values(formatedUploadedFiles)
         .returning();
       return {
         success: "Post created!",
-        data: { ...newPost[0], medias: newMedias },
+        data: { ...newPost[0], attachments: newAttachments },
       };
     }
   } catch (error) {

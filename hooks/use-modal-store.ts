@@ -1,4 +1,4 @@
-import { MediaFile, PostWithData } from "@/type";
+import { AttachmentFile, PostWithData } from "@/type";
 import { create } from "zustand";
 
 interface baseModalStore {
@@ -15,19 +15,19 @@ export const useNewPostModal = create<baseModalStore>((set) => ({
 
 interface ImageCarouselModalStore {
   isOpen: boolean;
-  onOpen: (index: number, medias: MediaFile[]) => void;
+  onOpen: (index: number, attachments: AttachmentFile[]) => void;
   onClose: () => void;
-  medias: MediaFile[];
+  attachments: AttachmentFile[];
   startIndex: null | number;
 }
 
 export const useImageCarouselModal = create<ImageCarouselModalStore>((set) => ({
   isOpen: false,
   startIndex: null,
-  onOpen: (index, medias) =>
-    set({ isOpen: true, startIndex: index, medias: medias }),
-  onClose: () => set({ isOpen: false, medias: [], startIndex: null }),
-  medias: [],
+  onOpen: (index, attachments) =>
+    set({ isOpen: true, startIndex: index, attachments: attachments }),
+  onClose: () => set({ isOpen: false, attachments: [], startIndex: null }),
+  attachments: [],
 }));
 
 interface ReplyModalStore {

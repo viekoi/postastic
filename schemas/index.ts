@@ -50,19 +50,19 @@ export const NewPostShcema = z
     content: z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),
-    medias: z
+    attachments: z
       .array(z.custom<Base64File>())
       .max(5, { message: "Maximum of 5 media allowed" })
       .refine((data) => refineFiles(data), {
         message:
           "Images must be smaller than 8mb, videos must be smaller than 20mb",
       }),
-    privacyType: z.enum(["private", "public", "more"]),
+    privacyType: z.enum(["private", "public"]),
     isEmpty: z.any().nullish(),
   })
   .refine(
     (data) => {
-      if (!data.content.trim().length && !data.medias.length) return false;
+      if (!data.content.trim().length && !data.attachments.length) return false;
       return true;
     },
     {
@@ -77,20 +77,20 @@ export const NewCommentShcema = z
     content: z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),
-    medias: z
+    attachments: z
       .array(z.custom<Base64File>())
       .max(5, { message: "Maximum of 5 media allowed" })
       .refine((data) => refineFiles(data), {
         message:
           "Images must be smaller than 8mb, videos must be smaller than 20mb",
       }),
-    privacyType: z.enum(["private", "public", "more"]),
+    privacyType: z.enum(["private", "public"]),
     postId: z.string().min(1, { message: "postId is require" }),
     isEmpty: z.any().nullish(),
   })
   .refine(
     (data) => {
-      if (!data.content.trim().length && !data.medias.length) return false;
+      if (!data.content.trim().length && !data.attachments.length) return false;
       return true;
     },
     {

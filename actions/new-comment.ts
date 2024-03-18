@@ -1,10 +1,13 @@
 "use server";
 
 import db from "@/lib/db";
-import { medias as dbMedias, comments, Comment } from "@/lib/db/schema";
+import {
+  medias as mediaTable,
+  attachments as attachmentTable,
+} from "@/lib/db/schema";
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
-import { NewCommentShcema} from "@/schemas";
+import { NewCommentShcema } from "@/schemas";
 import * as z from "zod";
 
 export const newComment = async (values: z.infer<typeof NewCommentShcema>) => {
@@ -14,40 +17,47 @@ export const newComment = async (values: z.infer<typeof NewCommentShcema>) => {
     if (!validatedFields.success) {
       return { error: "Invalid fields!!!!" };
     }
-    const { content, medias, privacyType,postId } = validatedFields.data;
+    const { content, attachments, privacyType, postId } = validatedFields.data;
 
     const user = await currentUser();
 
     if (!user) return { error: "Email does not exist!" };
 
-    if (medias.length === 0 && !content.trim().length)
+    if (attachments.length === 0 && !content.trim().length)
       return { error: "Your comment is empty" };
 
     const isOverFlowContent = content.length > 300;
 
-    if (medias.length === 0 && content.length) {
+    if (attachments.length === 0 && content.length) {
       const newComment = await db
-        .insert(comments)
+        .insert(mediaTable)
         .values({
           content,
           userId: user.id,
           isOverFlowContent,
           privacyType,
-          postId
+          type: "comment",
+          postId,
+          parentId: postId,
         })
         .returning();
-      return { success: "comment created!", data: { ...newComment[0], medias: [] } };
+      return {
+        success: "comment created!",
+        data: { ...newComment[0], attachments: [] },
+      };
     } else {
-      const uploadedFiles = await cloudinaryUpload(medias);
+      const uploadedFiles = await cloudinaryUpload(attachments);
 
-      const newComment: Comment[] = await db
-        .insert(comments)
+      const newComment = await db
+        .insert(mediaTable)
         .values({
           content,
           userId: user.id,
           isOverFlowContent,
           privacyType,
-          postId
+          postId,
+          parentId: postId,
+          type: "comment",
         })
         .returning();
 
@@ -64,19 +74,19 @@ export const newComment = async (values: z.infer<typeof NewCommentShcema>) => {
       }[] = uploadedFiles.map((file) => {
         return {
           url: file.secure_url,
-          publicId: file.public_id,
           type: file.resource_type as "image" | "video",
           parentId: newComment[0].id,
+          publicId: file.public_id,
         };
       });
 
-      const newMedias = await db
-        .insert(dbMedias)
+      const newAttachments = await db
+        .insert(attachmentTable)
         .values(formatedUploadedFiles)
         .returning();
       return {
         success: "Comment created!",
-        data: { ...newComment[0], medias: newMedias },
+        data: { ...newComment[0], attachments: newAttachments },
       };
     }
   } catch (error) {

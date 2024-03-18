@@ -19,16 +19,21 @@ const Home = async () => {
 
       if (lastPage.error) return null;
 
+      if (lastPage.totalPages === 0) {
+        return null;
+      }
+
       if (
         lastPage.currentPage &&
         lastPage.totalPages &&
         lastPage.currentPage === lastPage.totalPages
-      )
+      ) {
         return null;
+      }
 
       return lastPage.nextPage;
     },
-    pages: 1, // prefetch the first 3 pages
+    pages: 1, // prefetch the first 1 pages
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

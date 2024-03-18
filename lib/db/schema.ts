@@ -11,7 +11,14 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { InferModel, relations } from "drizzle-orm";
+import { string } from "zod";
 
+//Emums
+export const privacyType = pgEnum("privacyType", ["public", "private"]);
+export const mediaType = pgEnum("mediaType", ["post", "comment", "reply"]);
+export const attachmentType = pgEnum("attachmentType", ["image", "video"]);
+
+// Tables
 export const users = pgTable("user", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
@@ -25,13 +32,6 @@ export const users = pgTable("user", {
 });
 
 export type User = InferModel<typeof users>;
-
-export const usersRelations = relations(users, ({ many }) => ({
-  posts: many(posts),
-  likes: many(likes),
-  comments: many(comments),
-  replies: many(replies),
-}));
 
 export const accounts = pgTable(
   "account",
@@ -97,9 +97,7 @@ export const passwordResetTokens = pgTable(
   })
 );
 
-export const privacyType = pgEnum("privacyType", ["public", "private", "more"]);
-
-export const posts = pgTable("post", {
+export const medias = pgTable("media", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
   content: text("content").notNull(),
   userId: uuid("userId")
@@ -116,56 +114,40 @@ export const posts = pgTable("post", {
     .notNull(),
   isOverFlowContent: boolean("isOverFlowContent").notNull(),
   privacyType: privacyType(" privacyType").notNull().default("public"),
+  type: mediaType("type").notNull(),
+  parentId: uuid("parentId").references((): AnyPgColumn => medias.id, {
+    onDelete: "cascade",
+  }),
+  postId: uuid("postd").references((): AnyPgColumn => medias.id, {
+    onDelete: "cascade",
+  }),
 });
 
-export type Post = InferModel<typeof posts>;
+export type Media = InferModel<typeof medias>;
 
-export const postsRelations = relations(posts, ({ one, many }) => ({
-  user: one(users, {
-    fields: [posts.userId],
-    references: [users.id],
-  }),
-  medias: many(medias),
-  likes: many(likes),
-  comments: many(comments),
-}));
-
-export const mediaType = pgEnum("mediaType", ["image", "video"]);
-
-export const medias = pgTable("media", {
+export const attachments = pgTable("attachment", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
-  type: mediaType("type").notNull(),
+  type: attachmentType("type").notNull(),
   url: text("url").notNull(),
   createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),
   publicId: text("publicId").notNull(),
-  parentId: uuid("parentId").notNull(),
+  parentId: uuid("parentId").references(() => medias.id, {
+    onDelete: "set null",
+  }),
 });
 
-export const mediasRelations = relations(medias, ({ one }) => ({
-  post: one(posts, {
-    fields: [medias.parentId],
-    references: [posts.id],
-  }),
-  reply: one(replies, {
-    fields: [medias.parentId],
-    references: [replies.id],
-  }),
-  comment: one(comments, {
-    fields: [medias.parentId],
-    references: [comments.id],
-  }),
-}));
-
-export type Media = InferModel<typeof medias>;
+export type Attachment = InferModel<typeof attachments>;
 
 export const likes = pgTable("like", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("userId")
     .notNull()
-    .references(() => users.id),
-  parentId: uuid("parentId").notNull(),
+    .references(() => users.id, { onDelete: "cascade" }),
+  parentId: uuid("parentId")
+    .notNull()
+    .references(() => medias.id, { onDelete: "cascade" }),
   created_at: timestamp("createdAt", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
@@ -173,105 +155,49 @@ export const likes = pgTable("like", {
 
 export type Like = InferModel<typeof likes>;
 
+//Relations
+
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(medias, { relationName: "posts" }),
+  comments: many(medias, { relationName: "comments" }),
+  replies: many(medias, { relationName: "replies" }),
+  likes: many(likes),
+}));
+
+export const mediasRelations = relations(medias, ({ one, many }) => ({
+  postBy: one(users, {
+    fields: [medias.userId],
+    references: [users.id],
+    relationName: "posts",
+  }),
+  commentBy: one(users, {
+    fields: [medias.userId],
+    references: [users.id],
+    relationName: "comments",
+  }),
+  replyBy: one(users, {
+    fields: [medias.userId],
+    references: [users.id],
+    relationName: "replies",
+  }),
+  likes: many(likes),
+  attachments: many(attachments),
+}));
+
 export const likesRelations = relations(likes, ({ one }) => ({
   user: one(users, {
     fields: [likes.userId],
     references: [users.id],
   }),
-  post: one(posts, {
+  parnet: one(medias, {
     fields: [likes.parentId],
-    references: [posts.id],
-  }),
-  reply: one(replies, {
-    fields: [likes.parentId],
-    references: [replies.id],
-  }),
-  comment: one(comments, {
-    fields: [likes.parentId],
-    references: [comments.id],
+    references: [medias.id],
   }),
 }));
 
-export const comments = pgTable("comment", {
-  id: uuid("id").primaryKey().defaultRandom().notNull(),
-  content: text("content").notNull(),
-  userId: uuid("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  postId: uuid("postId")
-    .notNull()
-    .references(() => posts.id, { onDelete: "cascade" }),
-  createdAt: timestamp("createAt", {
-    withTimezone: true,
-    mode: "date",
-  })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true, mode: "date" })
-    .defaultNow()
-    .notNull(),
-  isOverFlowContent: boolean("isOverFlowContent").notNull(),
-  privacyType: privacyType(" privacyType").notNull().default("public"),
-});
-
-
-export const replies = pgTable("reply", {
-  id: uuid("id").primaryKey().defaultRandom().notNull(),
-  content: text("content").notNull(),
-  userId: uuid("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  postId: uuid("postId")
-    .notNull()
-    .references(() => posts.id, { onDelete: "cascade" }),
-  commentId: uuid("commentId").notNull().references((): AnyPgColumn => comments.id),
-  createdAt: timestamp("createAt", {
-    withTimezone: true,
-    mode: "date",
-  })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true, mode: "date" })
-    .defaultNow()
-    .notNull(),
-  isOverFlowContent: boolean("isOverFlowContent").notNull(),
-  privacyType: privacyType(" privacyType").notNull().default("public"),
-});
-
-
-
-export const commentsRelations = relations(comments, ({ one, many }) => ({
-  user: one(users, {
-    fields: [comments.userId],
-    references: [users.id],
-  }),
-
-  medias: many(medias),
-  likes: many(likes),
-  post: one(posts, {
-    fields: [comments.postId],
-    references: [posts.id],
-  }),
-  replies: many(replies),
-}));
-
-export type Comment = InferModel<typeof comments>;
-export type Reply = InferModel<typeof replies>;
-
-export const repliesRelations = relations(replies, ({ one, many }) => ({
-  comment: one(comments, {
-    fields: [replies.id],
-    references: [comments.id],
-  }),
-  user: one(users, {
-    fields: [replies.userId],
-    references: [users.id],
-  }),
-
-  medias: many(medias),
-  likes: many(likes),
-  post: one(posts, {
-    fields: [replies.postId],
-    references: [posts.id],
+export const attachmentsRelations = relations(attachments, ({ many, one }) => ({
+  parent: one(medias, {
+    fields: [attachments.parentId],
+    references: [medias.id],
   }),
 }));

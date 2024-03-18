@@ -3,7 +3,7 @@ import { and, count, desc, eq, or } from "drizzle-orm";
 import db from "@/lib/db";
 import { currentUser } from "@/lib/user";
 import { privacyTypeValue } from "@/constansts";
-import { comments as commentTable } from "../lib/db/schema";
+import { medias as mediaTable } from "../lib/db/schema";
 
 export const getPostComments = async (pageParam: number, postId: string) => {
   const user = await currentUser();
@@ -13,31 +13,47 @@ export const getPostComments = async (pageParam: number, postId: string) => {
     const limit = 20;
     const totalComments = await db
       .select({ value: count() })
-      .from(commentTable)
+      .from(mediaTable)
       .where(
         and(
-          eq(commentTable.postId, postId),
           or(
-            eq(commentTable.privacyType, privacyTypeValue.PUBLIC),
+            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
             and(
-              eq(commentTable.privacyType, privacyTypeValue.PRIVATE),
-              eq(commentTable.userId, user.id)
+              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
+              eq(mediaTable.userId, user.id)
             )
-          )
+          ),
+          eq(mediaTable.type, "comment")
         )
       );
 
-    const comments = await db.query.comments.findMany({
+    const totalReplies = await db
+      .select({ value: count() })
+      .from(mediaTable)
+      .where(
+        and(
+          or(
+            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
+            and(
+              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
+              eq(mediaTable.userId, user.id)
+            )
+          ),
+          eq(mediaTable.type, "reply")
+        )
+      );
+
+    const comments = await db.query.medias.findMany({
       where: (c) =>
         and(
-          eq(c.postId, postId),
           or(
             eq(c.privacyType, privacyTypeValue.PUBLIC),
             and(
               eq(c.privacyType, privacyTypeValue.PRIVATE),
               eq(c.userId, user.id)
             )
-          )
+          ),
+          eq(c.type, "comment")
         ),
       with: {
         likes: {
@@ -45,18 +61,8 @@ export const getPostComments = async (pageParam: number, postId: string) => {
             userId: true,
           },
         },
-        user: true,
-        medias: true,
-        replies: {
-          where: (replies, { eq, or, and }) =>
-            or(
-              eq(replies.privacyType, privacyTypeValue.PUBLIC),
-              and(
-                eq(replies.privacyType, privacyTypeValue.PRIVATE),
-                eq(replies.userId, user.id)
-              )
-            ),
-        },
+        commentBy: true,
+        attachments: true,
       },
 
       orderBy: (p) => [desc(p.createdAt)],
@@ -68,9 +74,11 @@ export const getPostComments = async (pageParam: number, postId: string) => {
       success: comments.map((comment) => {
         return {
           ...comment,
+          type: comment.type as "comment",
           isLikedByMe: !!comment.likes.find((like) => like.userId === user.id),
           likesCount: comment.likes.length,
-          repliesCount: comment.replies.length,
+          repliesCount: totalReplies[0].value,
+          user: comment.commentBy,
         };
       }),
       currentPage: pageParam,

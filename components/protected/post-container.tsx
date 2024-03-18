@@ -7,6 +7,7 @@ import { Loader } from "../Loader";
 
 import PostList from "./post-list";
 import { Button } from "../ui/button";
+import { MessageSquareText } from "lucide-react";
 
 const PostContainer = () => {
   const { data, fetchNextPage, hasNextPage, error, refetch, isPending } =
@@ -32,15 +33,21 @@ const PostContainer = () => {
         <Button onClick={() => refetch()}>Refetch</Button>
       </div>
     );
+
+  if (data.pages[0].success?.length === 0) {
+    return (
+      <div className="flex h-full flex-col  justify-center items-center">
+        <MessageSquareText className="size-[20%]" />
+        <strong>Feed is empty</strong>
+       
+      </div>
+    );
+  }
   return (
     <>
       {data.pages.flat().map((page, index) => {
         return (
-          <PostList
-            key={index}
-            posts={page.success ? page.success : []}
-          
-          />
+          <PostList key={index} posts={page.success ? page.success : []} />
         );
       })}
 

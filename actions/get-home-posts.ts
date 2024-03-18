@@ -3,7 +3,7 @@ import { and, count, desc, eq, or } from "drizzle-orm";
 import db from "../lib/db";
 import { currentUser } from "@/lib/user";
 import { privacyTypeValue } from "@/constansts";
-import { posts as postTable } from "@/lib/db/schema";
+import { medias as mediaTable } from "@/lib/db/schema";
 
 export const getHomePosts = async (pageParam: number) => {
   const user = await currentUser();
@@ -13,25 +13,47 @@ export const getHomePosts = async (pageParam: number) => {
     const limit = 10;
     const totalPages = await db
       .select({ value: count() })
-      .from(postTable)
+      .from(mediaTable)
       .where(
-        or(
-          eq(postTable.privacyType, privacyTypeValue.PUBLIC),
-          and(
-            eq(postTable.privacyType, privacyTypeValue.PRIVATE),
-            eq(postTable.userId, user.id)
-          )
+        and(
+          or(
+            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
+            and(
+              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
+              eq(mediaTable.userId, user.id)
+            )
+          ),
+          eq(mediaTable.type, "post")
         )
       );
 
-    const posts = await db.query.posts.findMany({
+    const totalComments = await db
+      .select({ value: count() })
+      .from(mediaTable)
+      .where(
+        and(
+          or(
+            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
+            and(
+              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
+              eq(mediaTable.userId, user.id)
+            )
+          ),
+          eq(mediaTable.type, "comment")
+        )
+      );
+
+    const posts = await db.query.medias.findMany({
       where: (p) =>
-        or(
-          eq(p.privacyType, privacyTypeValue.PUBLIC),
-          and(
-            eq(p.privacyType, privacyTypeValue.PRIVATE),
-            eq(p.userId, user.id)
-          )
+        and(
+          or(
+            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
+            and(
+              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
+              eq(mediaTable.userId, user.id)
+            )
+          ),
+          eq(mediaTable.type, "post")
         ),
 
       with: {
@@ -40,19 +62,8 @@ export const getHomePosts = async (pageParam: number) => {
             userId: true,
           },
         },
-
-        comments: {
-          where: (comments, { eq, or, and }) =>
-            or(
-              eq(comments.privacyType, privacyTypeValue.PUBLIC),
-              and(
-                eq(comments.privacyType, privacyTypeValue.PRIVATE),
-                eq(comments.userId, user.id)
-              )
-            ),
-        },
-        user: true,
-        medias: true,
+        postBy: true,
+        attachments: true,
       },
       orderBy: (p) => [desc(p.createdAt)],
       offset: (pageParam - 1) * limit,
@@ -63,9 +74,11 @@ export const getHomePosts = async (pageParam: number) => {
       success: posts.map((post) => {
         return {
           ...post,
+          type: post.type as "post",
           isLikedByMe: !!post.likes.find((like) => like.userId === user.id),
           likesCount: post.likes.length,
-          commentsCount: post.comments.length,
+          commentsCount: totalComments[0].value,
+          user:post.postBy
         };
       }),
       currentPage: pageParam,

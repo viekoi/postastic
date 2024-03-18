@@ -1,5 +1,5 @@
 {
-  "id": "0bb992fe-033f-4693-b247-60d1eb0dea20",
+  "id": "c5047ef7-886c-4c12-88f9-4e53087f8dd7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -102,8 +102,8 @@
       },
       "uniqueConstraints": {}
     },
-    "comment": {
-      "name": "comment",
+    "attachment": {
+      "name": "attachment",
       "schema": "",
       "columns": {
         "id": {
@@ -113,78 +113,51 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "content": {
-          "name": "content",
+        "type": {
+          "name": "type",
+          "type": "attachmentType",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "postId": {
-          "name": "postId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createAt": {
-          "name": "createAt",
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "isOverFlowContent": {
-          "name": "isOverFlowContent",
-          "type": "boolean",
+        "publicId": {
+          "name": "publicId",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        " privacyType": {
-          "name": " privacyType",
-          "type": "privacyType",
+        "parentId": {
+          "name": "parentId",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'public'"
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "comment_userId_user_id_fk": {
-          "name": "comment_userId_user_id_fk",
-          "tableFrom": "comment",
-          "tableTo": "user",
+        "attachment_parentId_media_id_fk": {
+          "name": "attachment_parentId_media_id_fk",
+          "tableFrom": "attachment",
+          "tableTo": "media",
           "columnsFrom": [
-            "userId"
+            "parentId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "comment_postId_post_id_fk": {
-          "name": "comment_postId_post_id_fk",
-          "tableFrom": "comment",
-          "tableTo": "post",
-          "columnsFrom": [
-            "postId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -234,7 +207,20 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "like_parentId_media_id_fk": {
+          "name": "like_parentId_media_id_fk",
+          "tableFrom": "like",
+          "tableTo": "media",
+          "columnsFrom": [
+            "parentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -252,28 +238,48 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "type": {
-          "name": "type",
-          "type": "mediaType",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
+        "content": {
+          "name": "content",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "createdAt": {
-          "name": "createdAt",
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createAt": {
+          "name": "createAt",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "publicId": {
-          "name": "publicId",
-          "type": "text",
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "isOverFlowContent": {
+          "name": "isOverFlowContent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        " privacyType": {
+          "name": " privacyType",
+          "type": "privacyType",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'public'"
+        },
+        "type": {
+          "name": "type",
+          "type": "mediaType",
           "primaryKey": false,
           "notNull": true
         },
@@ -281,11 +287,57 @@
           "name": "parentId",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "postd": {
+          "name": "postd",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "media_userId_user_id_fk": {
+          "name": "media_userId_user_id_fk",
+          "tableFrom": "media",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "media_parentId_media_id_fk": {
+          "name": "media_parentId_media_id_fk",
+          "tableFrom": "media",
+          "tableTo": "media",
+          "columnsFrom": [
+            "parentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "media_postd_media_id_fk": {
+          "name": "media_postd_media_id_fk",
+          "tableFrom": "media",
+          "tableTo": "media",
+          "columnsFrom": [
+            "postd"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -359,184 +411,6 @@
           ]
         }
       }
-    },
-    "post": {
-      "name": "post",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createAt": {
-          "name": "createAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "isOverFlowContent": {
-          "name": "isOverFlowContent",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        " privacyType": {
-          "name": " privacyType",
-          "type": "privacyType",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'public'"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "post_userId_user_id_fk": {
-          "name": "post_userId_user_id_fk",
-          "tableFrom": "post",
-          "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "reply": {
-      "name": "reply",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "postId": {
-          "name": "postId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "commentId": {
-          "name": "commentId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createAt": {
-          "name": "createAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "isOverFlowContent": {
-          "name": "isOverFlowContent",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        " privacyType": {
-          "name": " privacyType",
-          "type": "privacyType",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'public'"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "reply_userId_user_id_fk": {
-          "name": "reply_userId_user_id_fk",
-          "tableFrom": "reply",
-          "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "reply_postId_post_id_fk": {
-          "name": "reply_postId_post_id_fk",
-          "tableFrom": "reply",
-          "tableTo": "post",
-          "columnsFrom": [
-            "postId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "reply_commentId_comment_id_fk": {
-          "name": "reply_commentId_comment_id_fk",
-          "tableFrom": "reply",
-          "tableTo": "comment",
-          "columnsFrom": [
-            "commentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
     },
     "user": {
       "name": "user",
@@ -658,19 +532,26 @@
     }
   },
   "enums": {
-    "mediaType": {
-      "name": "mediaType",
+    "attachmentType": {
+      "name": "attachmentType",
       "values": {
         "image": "image",
         "video": "video"
+      }
+    },
+    "mediaType": {
+      "name": "mediaType",
+      "values": {
+        "post": "post",
+        "comment": "comment",
+        "reply": "reply"
       }
     },
     "privacyType": {
       "name": "privacyType",
       "values": {
         "public": "public",
-        "private": "private",
-        "more": "more"
+        "private": "private"
       }
     }
   },

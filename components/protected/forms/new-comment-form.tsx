@@ -66,7 +66,7 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
       "video/*": [".mp4", ".MP4"],
     },
     onDropRejected: () => {
-      form.setError("medias", { message: "Maximum 5 files" });
+      form.setError("attachments", { message: "Maximum 5 files" });
     },
     maxSize: videoMaxSize,
     maxFiles: 5,
@@ -109,14 +109,14 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
     resolver: zodResolver(NewCommentShcema),
     defaultValues: {
       content: "",
-      medias: [],
+      attachments: [],
       postId: postId,
       privacyType: privacyOption.value,
     },
   });
 
   const contentValue = form.watch("content");
-  const mediasValue = form.watch("medias");
+  const attachmentsValue = form.watch("attachments");
   const { user } = useCurrentUser();
 
   useLayoutEffect(() => {
@@ -124,10 +124,10 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
   }, [contentValue]);
 
   useEffect(() => {
-    if (mediasValue.length > 0 || contentValue.trim().length) {
+    if (attachmentsValue.length > 0 || contentValue.trim().length) {
       form.formState.errors.isEmpty && form.clearErrors("isEmpty");
     }
-  }, [contentValue, mediasValue]);
+  }, [contentValue, attachmentsValue]);
 
   if (!user) return null;
 
@@ -143,6 +143,7 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
             likesCount: 0,
             repliesCount: 0,
             user: user,
+            type: "comment",
           };
           optimisticInsert({
             queryClient,
@@ -195,7 +196,7 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
 
             <FormField
               control={form.control}
-              name="medias"
+              name="attachments"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -206,7 +207,7 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
                       getRootProps={getRootProps}
                       open={open}
                       baseContainerClassName={baseContainerClassName}
-                      baseMediaClassName={baseMediaClassName}
+                      baseAttachmentClassName={baseMediaClassName}
                       indexContainerClassName={indexContainerClassName}
                       disabled={isPending}
                       fieldChange={field.onChange}

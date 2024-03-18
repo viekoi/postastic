@@ -21,10 +21,14 @@ export const useGetInfinitePosts = () => {
 
       if (lastPage.error) return null;
 
+      if (lastPage.totalPages === 0) {
+        return null;
+      }
+
       if (
         lastPage.currentPage &&
         lastPage.totalPages &&
-        lastPage.currentPage === lastPage.totalPages
+        lastPage.currentPage >= lastPage.totalPages
       )
         return null;
 
@@ -43,12 +47,17 @@ export const useGetInfinitePostComments = (postId: string) => {
 
       if (lastPage.error) return null;
 
+      if (lastPage.totalPages === 0) {
+        return null;
+      }
+
       if (
         lastPage.currentPage &&
         lastPage.totalPages &&
-        lastPage.currentPage === lastPage.totalPages
-      )
+        lastPage.currentPage >= lastPage.totalPages
+      ) {
         return null;
+      }
 
       return lastPage.nextPage;
     },

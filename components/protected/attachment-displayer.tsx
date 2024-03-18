@@ -1,16 +1,16 @@
 "use client";
 import React from "react";
-import Media from "./media";
+import Media from "./attachment";
 import { VariantProps, cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { MediaFile } from "@/type";
+import { AttachmentFile } from "@/type";
 import { Button } from "../ui/button";
 import { Plus, X } from "lucide-react";
 import { useImageCarouselModal } from "@/hooks/use-modal-store";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 
-const MediaDisplayerVariants = cva(
+const AttachmentDisplayerVariants = cva(
   "flex flex-wrap justify-center relative group rounded-3xl",
   {
     variants: {
@@ -29,20 +29,20 @@ const MediaDisplayerVariants = cva(
     },
   }
 );
-interface MediaDisplayerProps
-  extends VariantProps<typeof MediaDisplayerVariants> {
-  medias: MediaFile[];
+interface AttachmentDisplayerProps
+  extends VariantProps<typeof AttachmentDisplayerVariants> {
+  medias: AttachmentFile[];
   className?: string;
   control: boolean;
   disabled?: boolean;
   baseContainerClassName?: string;
   indexContainerClassName?: (index: number, dataLength: number) => string;
-  baseMediaClassName?: string;
-  indexMediaClassName?: (index: number, dataLength: number) => string;
+  baseAttachmentClassName?: string;
+  indexAttachmentClassName?: (index: number, dataLength: number) => string;
   open?: () => void;
 }
 
-const MediaDisplayer = (props: MediaDisplayerProps) => {
+const AttachmentDisplayer = (props: AttachmentDisplayerProps) => {
   const {
     medias,
     variant,
@@ -52,8 +52,8 @@ const MediaDisplayer = (props: MediaDisplayerProps) => {
     disabled,
     baseContainerClassName,
     indexContainerClassName,
-    baseMediaClassName,
-    indexMediaClassName,
+    baseAttachmentClassName: baseAttachmentClassName,
+    indexAttachmentClassName: indexMediaClassName,
     open,
   } = props;
   const { onCancel } = useIsAddingFiles();
@@ -63,7 +63,7 @@ const MediaDisplayer = (props: MediaDisplayerProps) => {
     onImgCarouselOpen(index, medias);
   };
 
-  if (control && !open) {
+  if (control && open === undefined) {
     throw new Error("open prop is needed when control is true");
   }
 
@@ -72,7 +72,9 @@ const MediaDisplayer = (props: MediaDisplayerProps) => {
       {medias.length > 0 && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className={cn(MediaDisplayerVariants({ variant, size, className }))}
+          className={cn(
+            AttachmentDisplayerVariants({ variant, size, className })
+          )}
         >
           {medias.map((media, index) => {
             const indexCCN =
@@ -90,7 +92,10 @@ const MediaDisplayer = (props: MediaDisplayerProps) => {
                   `${baseContainerClassName}`,
                   `${indexCCN}`
                 )}
-                mediaClassName={cn(`${baseMediaClassName}`, `${indexMCN}`)}
+                attachmentClassName={cn(
+                  `${baseAttachmentClassName}`,
+                  `${indexMCN}`
+                )}
                 url={media.url as string}
                 type={media.type}
                 key={index}
@@ -145,4 +150,4 @@ const MediaDisplayer = (props: MediaDisplayerProps) => {
   );
 };
 
-export default MediaDisplayer;
+export default AttachmentDisplayer;

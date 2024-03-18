@@ -1,10 +1,10 @@
-import { MediaFile } from "@/type";
+import { AttachmentFile } from "@/type";
 import { create } from "zustand";
 
 interface UploadFilesStore {
-  files: (MediaFile & { error: boolean })[];
-  addFile: (newFile: MediaFile & { error: boolean }) => void;
-  setFiles: (newFile: (MediaFile & { error: boolean })[]) => void;
+  files: (AttachmentFile & { error: boolean })[];
+  addFile: (newFile: AttachmentFile & { error: boolean }) => void;
+  setFiles: (newFile: (AttachmentFile & { error: boolean })[]) => void;
 }
 
 export const useUploadFilesStore = create<UploadFilesStore>((set) => ({

@@ -4,14 +4,14 @@ import { Image, X } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { MediaFile } from "@/type";
-import MediaDisplayer from "./media-displayer";
+import { AttachmentFile } from "@/type";
+import AttachmentDisplayer from "./attachment-displayer";
 import { cn } from "@/lib/utils";
 import { DropzoneInputProps, DropzoneRootProps } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 
 type FileUploaderProps = {
-  fieldChange: (files: MediaFile[]) => void;
+  fieldChange: (files: AttachmentFile[]) => void;
   disabled: boolean;
   getRootProps: <T extends DropzoneRootProps>(props?: T | undefined) => T;
   getInputProps: <T extends DropzoneInputProps>(props?: T | undefined) => T;
@@ -20,8 +20,8 @@ type FileUploaderProps = {
   className?: string;
   baseContainerClassName?: string;
   indexContainerClassName?: (index: number, dataLength: number) => string;
-  baseMediaClassName?: string;
-  indexMediaClassName?: (index: number, dataLength: number) => string;
+  baseAttachmentClassName?: string;
+  indexAttachmentClassName?: (index: number, dataLength: number) => string;
 };
 
 const FileUploader = ({
@@ -34,8 +34,8 @@ const FileUploader = ({
   open,
   baseContainerClassName,
   indexContainerClassName,
-  baseMediaClassName,
-  indexMediaClassName,
+  baseAttachmentClassName: baseAttachmentClassName,
+  indexAttachmentClassName,
 }: FileUploaderProps) => {
   const { files } = useFilesUploadActions();
 
@@ -49,7 +49,7 @@ const FileUploader = ({
     <div {...getRootProps()}>
       <input {...getInputProps()} />
       {files.length > 0 || isCommentFormChild ? (
-        <MediaDisplayer
+        <AttachmentDisplayer
           open={open}
           className={cn("", className)}
           control={true}
@@ -59,8 +59,8 @@ const FileUploader = ({
           disabled={disabled}
           baseContainerClassName={baseContainerClassName}
           indexContainerClassName={indexContainerClassName}
-          indexMediaClassName={indexMediaClassName}
-          baseMediaClassName={baseMediaClassName}
+          indexAttachmentClassName={indexAttachmentClassName}
+          baseAttachmentClassName={baseAttachmentClassName}
         />
       ) : (
         <div className="relative border h-[300px] rounded-xl border-dashed items-center justify-center flex flex-col py-4 gap-1">
