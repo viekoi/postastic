@@ -1,5 +1,6 @@
 import { UploadApiResponse, v2 as cloudinary } from "cloudinary";
-import { Base64File } from "@/type";
+import { AttachmentFile } from "@/type";
+import { Attachment } from "./db/schema";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -7,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const cloudinaryUpload = async (files: Base64File[]) => {
+export const cloudinaryUpload = async (files: AttachmentFile[]) => {
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
       const result = cloudinary.uploader.upload(file.url as string, {
@@ -22,13 +23,29 @@ export const cloudinaryUpload = async (files: Base64File[]) => {
 };
 
 export const cloudinaryDelete = async (files: UploadApiResponse[]) => {
-  const filesToDelete = files.map(async (file) => {
-    return cloudinary.uploader.destroy(file.public_id, {
-      resource_type: file.resource_type,
-    });
-  });
+  const filesToDelete = await Promise.all(
+    files.map(async (file) => {
+      const result = cloudinary.uploader.destroy(file.public_id, {
+        resource_type: file.resource_type,
+      });
 
-  const deletedFiles = await Promise.all(filesToDelete);
+      return result;
+    })
+  );
 
-  return deletedFiles;
+  return filesToDelete;
+};
+
+export const cloudinaryEditDelete = async (files: Attachment[]) => {
+  const filesToDelete = await Promise.all(
+    files.map(async (file) => {
+      const result = cloudinary.uploader.destroy(file.publicId, {
+        resource_type: file.type,
+      });
+
+      return result;
+    })
+  );
+
+  return filesToDelete;
 };

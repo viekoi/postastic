@@ -29,20 +29,20 @@ import {
   useTransition,
 } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import UserAvatar from "../user-avatar";
+import UserAvatar from "../../user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { newPost } from "@/actions/new-post";
 import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions, videoMaxSize } from "@/constansts";
-import FileUploader from "../file-uploader";
+import FileUploader from "../../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { useNewPostModal } from "@/hooks/use-modal-store";
-import { EmojiPicker } from "../emoji-picker";
+import { EmojiPicker } from "../../emoji-picker";
 import useIsMobile from "@/hooks/use-is-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { PostWithData } from "@/type";
+import { AttachmentFile, PostWithData } from "@/type";
 import { optimisticInsert } from "@/queries/react-query/optimistic-functions";
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
@@ -53,11 +53,20 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const NewPostForm = () => {
+const NewForm = () => {
   const queryClient = useQueryClient();
   const { onClose } = useNewPostModal();
   const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
-  const { onRemoveFiles, onDrop } = useFilesUploadActions();
+
+  const [files, setFiles] = useState<AttachmentFile[]>([]);
+  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
+  const [isPending, startTransition] = useTransition();
+  const isMobile = useIsMobile(1024);
+
+  const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
+    files,
+    setFiles
+  );
   const { getInputProps, getRootProps, open } = useDropzone({
     onDrop,
     accept: {
@@ -70,9 +79,6 @@ const NewPostForm = () => {
     maxSize: videoMaxSize,
     maxFiles: 5,
   });
-  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
-  const [isPending, startTransition] = useTransition();
-  const isMobile = useIsMobile(1024);
 
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
@@ -108,13 +114,12 @@ const NewPostForm = () => {
     resolver: zodResolver(NewPostShcema),
     defaultValues: {
       content: "",
-      attachments: [],
+      attachments: files,
       privacyType: privacyOption.value,
     },
   });
 
   const contentValue = form.watch("content");
-  const attachmentsValue = form.watch("attachments");
   const { user } = useCurrentUser();
 
   useLayoutEffect(() => {
@@ -122,10 +127,10 @@ const NewPostForm = () => {
   }, [contentValue]);
 
   useEffect(() => {
-    if (attachmentsValue.length > 0 || contentValue.trim().length) {
+    if (files.length > 0 || contentValue.trim().length) {
       form.formState.errors.isEmpty && form.clearErrors("isEmpty");
     }
-  }, [contentValue, attachmentsValue]);
+  }, [contentValue, files]);
 
   if (!user) return null;
 
@@ -139,7 +144,7 @@ const NewPostForm = () => {
             ...data.data,
             isLikedByMe: false,
             likesCount: 0,
-            commentsCount: 0,
+            interactsCount: 0,
             user: user,
             type: "post",
           };
@@ -179,6 +184,7 @@ const NewPostForm = () => {
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}
                         ref={inputRef}
+                        defaultValue={field.value}
                         placeholder="What's happening?"
                       />
                     </div>
@@ -195,6 +201,9 @@ const NewPostForm = () => {
                   <FormItem>
                     <FormControl>
                       <FileUploader
+                        onRemoveFile={onRemoveFile}
+                        onRemoveFiles={onRemoveFiles}
+                        files={files}
                         getInputProps={getInputProps}
                         getRootProps={getRootProps}
                         open={open}
@@ -306,7 +315,7 @@ const NewPostForm = () => {
               variant={"blue"}
               className="rounded-3xl  px-6 text-sm"
             >
-              Post
+              post
             </Button>
           </div>
         </form>
@@ -315,4 +324,4 @@ const NewPostForm = () => {
   );
 };
 
-export default NewPostForm;
+export default NewForm;

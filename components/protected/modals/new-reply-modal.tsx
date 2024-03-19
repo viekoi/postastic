@@ -1,16 +1,19 @@
 "use client";
 import React from "react";
 import Modal from "./modal";
-import { useNewPostModal } from "@/hooks/use-modal-store";
+import { useNewReplyModal } from "@/hooks/use-modal-store";
+
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
+import NewReplyForm from "../forms/reply/new-reply-form";
 import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
-import Form from "../forms/post/form";
 
-const NewPostModal = () => {
-  const { isOpen, onClose } = useNewPostModal();
+const NewReplyModal = () => {
+  const { isOpen, onClose, postId, parentId } = useNewReplyModal();
   const { onCancel } = useIsAddingFiles();
   const isMobile = useIsMobile(1024);
+
+  if (!postId || !parentId) return null;
 
   if (isMobile) {
     return (
@@ -22,7 +25,7 @@ const NewPostModal = () => {
           onCancel();
         }}
       >
-        <Form />
+        <NewReplyForm postId={postId} parentId={parentId} />
       </DrawerModal>
     );
   }
@@ -35,9 +38,9 @@ const NewPostModal = () => {
         onCancel();
       }}
     >
-      <Form />
+      <NewReplyForm postId={postId} parentId={parentId} />
     </Modal>
   );
 };
 
-export default NewPostModal;
+export default NewReplyModal;

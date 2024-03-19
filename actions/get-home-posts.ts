@@ -27,40 +27,39 @@ export const getHomePosts = async (pageParam: number) => {
         )
       );
 
-    const totalComments = await db
-      .select({ value: count() })
-      .from(mediaTable)
-      .where(
-        and(
-          or(
-            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
-            and(
-              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
-              eq(mediaTable.userId, user.id)
-            )
-          ),
-          eq(mediaTable.type, "comment")
-        )
-      );
-
     const posts = await db.query.medias.findMany({
       where: (p) =>
         and(
           or(
-            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
+            eq(p.privacyType, privacyTypeValue.PUBLIC),
             and(
-              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
-              eq(mediaTable.userId, user.id)
+              eq(p.privacyType, privacyTypeValue.PRIVATE),
+              eq(p.userId, user.id)
             )
           ),
-          eq(mediaTable.type, "post")
+          eq(p.type, "post")
         ),
-
       with: {
         likes: {
           columns: {
             userId: true,
           },
+        },
+        postComments: {
+          columns: {
+            id: true,
+          },
+          where: (c) =>
+            and(
+              or(
+                eq(c.privacyType, privacyTypeValue.PUBLIC),
+                and(
+                  eq(c.privacyType, privacyTypeValue.PRIVATE),
+                  eq(c.userId, user.id)
+                )
+              ),
+              eq(c.type, "comment")
+            ),
         },
         postBy: true,
         attachments: true,
@@ -77,8 +76,8 @@ export const getHomePosts = async (pageParam: number) => {
           type: post.type as "post",
           isLikedByMe: !!post.likes.find((like) => like.userId === user.id),
           likesCount: post.likes.length,
-          commentsCount: totalComments[0].value,
-          user:post.postBy
+          interactsCount: post.postComments.length,
+          user: post.postBy,
         };
       }),
       currentPage: pageParam,

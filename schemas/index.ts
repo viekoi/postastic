@@ -1,5 +1,5 @@
 import { isTooLarge } from "@/lib/utils";
-import { Base64File } from "@/type";
+import { AttachmentFile } from "@/type";
 import * as z from "zod";
 
 export const LoginSchema = z.object({
@@ -41,8 +41,8 @@ export const NewPasswordSchema = z.object({
   }),
 });
 
-function refineFiles(files: Base64File[]): boolean {
-  return files.every((file: Base64File) => !isTooLarge(file, file.type));
+function refineFiles(files: AttachmentFile[]): boolean {
+  return files.every((file: AttachmentFile) => !isTooLarge(file, file.type));
 }
 
 export const NewPostShcema = z
@@ -51,7 +51,7 @@ export const NewPostShcema = z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),
     attachments: z
-      .array(z.custom<Base64File>())
+      .array(z.custom<AttachmentFile>())
       .max(5, { message: "Maximum of 5 media allowed" })
       .refine((data) => refineFiles(data), {
         message:
@@ -78,7 +78,7 @@ export const NewCommentShcema = z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),
     attachments: z
-      .array(z.custom<Base64File>())
+      .array(z.custom<AttachmentFile>())
       .max(5, { message: "Maximum of 5 media allowed" })
       .refine((data) => refineFiles(data), {
         message:
@@ -97,5 +97,34 @@ export const NewCommentShcema = z
       path: ["isEmpty"],
       params: { empy: "empty" },
       message: "Comment is empty!!!",
+    }
+  );
+
+export const NewReplyShcema = z
+  .object({
+    content: z
+      .string()
+      .max(2200, { message: "Exceeded the maximum character" }),
+    attachments: z
+      .array(z.custom<AttachmentFile>())
+      .max(5, { message: "Maximum of 5 media allowed" })
+      .refine((data) => refineFiles(data), {
+        message:
+          "Images must be smaller than 8mb, videos must be smaller than 20mb",
+      }),
+    privacyType: z.enum(["private", "public"]),
+    isEmpty: z.any().nullish(),
+    postId: z.string().min(1, { message: "postId is require" }),
+    parentId: z.string().min(1, { message: "parentId is require" }),
+  })
+  .refine(
+    (data) => {
+      if (!data.content.trim().length && !data.attachments.length) return false;
+      return true;
+    },
+    {
+      path: ["isEmpty"],
+      params: { empy: "empty" },
+      message: "Post is empty!!!",
     }
   );

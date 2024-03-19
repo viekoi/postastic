@@ -1,5 +1,5 @@
 import { imageMaxSize, videoMaxSize } from "@/constansts";
-import { Base64File } from "@/type";
+import { AttachmentFile } from "@/type";
 import { type ClassValue, clsx } from "clsx";
 import { FileWithPath } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
@@ -7,8 +7,6 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-
 
 export function formatDateString(dateString: string) {
   const options: Intl.DateTimeFormatOptions = {
@@ -55,8 +53,35 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
   }
 };
 
+export const mobileMultiFormatDateString = (timestamp: string = ""): string => {
+  const timestampNum = Math.round(new Date(timestamp).getTime() / 1000);
+  const date: Date = new Date(timestampNum * 1000);
+  const now: Date = new Date();
+
+  const diff: number = now.getTime() - date.getTime();
+  const diffInSeconds: number = diff / 1000;
+  const diffInMinutes: number = diffInSeconds / 60;
+  const diffInHours: number = diffInMinutes / 60;
+  const diffInDays: number = diffInHours / 24;
+
+  switch (true) {
+    case Math.floor(diffInDays) >= 30:
+      return formatDateString(timestamp);
+    case Math.floor(diffInDays) === 1:
+      return `${Math.floor(diffInDays)} day`;
+    case Math.floor(diffInDays) > 1 && diffInDays < 30:
+      return `${Math.floor(diffInDays)} days`;
+    case Math.floor(diffInHours) >= 1:
+      return `${Math.floor(diffInHours)} hours`;
+    case Math.floor(diffInMinutes) >= 1:
+      return `${Math.floor(diffInMinutes)} min`;
+    default:
+      return "Just now";
+  }
+};
+
 export const isTooLarge = (
-  file: Base64File | FileWithPath,
+  file: AttachmentFile | FileWithPath,
   type: "video" | "image"
 ) => {
   if (!file.size) return false;

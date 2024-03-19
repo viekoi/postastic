@@ -1,25 +1,35 @@
 import { Attachment, User, Media } from "./lib/db/schema";
 
-export type PostWithData = Media & { type: "post" } & {
+export type PostWithData = Media & {
   likesCount: number;
-  commentsCount: number;
+  interactsCount: number;
 } & { isLikedByMe: boolean } & { user: User } & {
   attachments: Attachment[];
 };
 
-export type CommentWithData = Media & { type: "comment" } & {
+export type CommentWithData = Media & {
+  postId: string;
+  parentId: string;
+} & {
   likesCount: number;
-  repliesCount: number;
+  interactsCount: number;
 } & { isLikedByMe: boolean } & { user: User } & {
   attachments: Attachment[];
 };
 
-export type Base64File = {
+export type ReplyWithData = Media & {
+  postId: string;
+  parentId: string;
+} & {
+  likesCount: number;
+} & { isLikedByMe: boolean } & { user: User } & {
+  attachments: Attachment[];
+};
+
+export type AttachmentFile = {
   url: string | ArrayBuffer | null;
   type: "image" | "video";
+  publicId?:string,
   size?: number;
-};
-
-export type AttachmentFile = Base64File & {
   error?: boolean;
 };

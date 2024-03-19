@@ -8,14 +8,16 @@ import { AttachmentFile } from "@/type";
 import AttachmentDisplayer from "./attachment-displayer";
 import { cn } from "@/lib/utils";
 import { DropzoneInputProps, DropzoneRootProps } from "react-dropzone";
-import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 
 type FileUploaderProps = {
+  files: AttachmentFile[];
   fieldChange: (files: AttachmentFile[]) => void;
   disabled: boolean;
   getRootProps: <T extends DropzoneRootProps>(props?: T | undefined) => T;
   getInputProps: <T extends DropzoneInputProps>(props?: T | undefined) => T;
   open: () => void;
+  onRemoveFiles: () => void;
+  onRemoveFile: (index: number) => void;
   isCommentFormChild?: boolean;
   className?: string;
   baseContainerClassName?: string;
@@ -25,6 +27,7 @@ type FileUploaderProps = {
 };
 
 const FileUploader = ({
+  files,
   fieldChange,
   disabled,
   className,
@@ -36,11 +39,11 @@ const FileUploader = ({
   indexContainerClassName,
   baseAttachmentClassName: baseAttachmentClassName,
   indexAttachmentClassName,
+  onRemoveFile,
+  onRemoveFiles,
 }: FileUploaderProps) => {
-  const { files } = useFilesUploadActions();
-
   const { onCancel } = useIsAddingFiles();
-
+  console.log("files:", files);
   useEffect(() => {
     fieldChange(files);
   }, [files]);
@@ -50,6 +53,8 @@ const FileUploader = ({
       <input {...getInputProps()} />
       {files.length > 0 || isCommentFormChild ? (
         <AttachmentDisplayer
+          onRemoveFile={onRemoveFile}
+          onRemoveFiles={onRemoveFiles}
           open={open}
           className={cn("", className)}
           control={true}

@@ -1,5 +1,5 @@
 {
-  "id": "c5047ef7-886c-4c12-88f9-4e53087f8dd7",
+  "id": "23b17b54-3884-44b4-b6a2-15ffd51cc1d3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -289,8 +289,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "postd": {
-          "name": "postd",
+        "postId": {
+          "name": "postId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -324,12 +324,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "media_postd_media_id_fk": {
-          "name": "media_postd_media_id_fk",
+        "media_postId_media_id_fk": {
+          "name": "media_postId_media_id_fk",
           "tableFrom": "media",
           "tableTo": "media",
           "columnsFrom": [
-            "postd"
+            "postId"
           ],
           "columnsTo": [
             "id"

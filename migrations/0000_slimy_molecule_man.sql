@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS "media" (
 	" privacyType" "privacyType" DEFAULT 'public' NOT NULL,
 	"type" "mediaType" NOT NULL,
 	"parentId" uuid,
-	"postd" uuid
+	"postId" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "passwordResetToken" (
@@ -126,7 +126,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "media" ADD CONSTRAINT "media_postd_media_id_fk" FOREIGN KEY ("postd") REFERENCES "media"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "media" ADD CONSTRAINT "media_postId_media_id_fk" FOREIGN KEY ("postId") REFERENCES "media"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

@@ -1,16 +1,35 @@
 import { AttachmentFile, PostWithData } from "@/type";
 import { create } from "zustand";
 
-interface baseModalStore {
+interface NewPostModalStore {
   isOpen: boolean;
-  onOpen: () => void;
+  onOpen: (postId?: string) => void;
+  onClose: () => void;
+  postId: string | null;
+}
+
+export const useNewPostModal = create<NewPostModalStore>((set) => ({
+  postId: null,
+  isOpen: false,
+  onOpen: (postId?: string) => set({ isOpen: true, postId: postId }),
+  onClose: () => set({ isOpen: false, postId: null }),
+}));
+
+interface NewReplyModalStore {
+  isOpen: boolean;
+  postId: null | string;
+  parentId: null | string;
+  onOpen: (postId: string, parentId: string) => void;
   onClose: () => void;
 }
 
-export const useNewPostModal = create<baseModalStore>((set) => ({
+export const useNewReplyModal = create<NewReplyModalStore>((set) => ({
   isOpen: false,
-  onOpen: () => set({ isOpen: true }),
-  onClose: () => set({ isOpen: false }),
+  postId: null,
+  parentId: null,
+  onOpen: (postId: string, parentId: string) =>
+    set({ isOpen: true, postId: postId, parentId: parentId }),
+  onClose: () => set({ isOpen: false, postId: null, parentId: null }),
 }));
 
 interface ImageCarouselModalStore {
@@ -30,14 +49,14 @@ export const useImageCarouselModal = create<ImageCarouselModalStore>((set) => ({
   attachments: [],
 }));
 
-interface ReplyModalStore {
+interface CommentModalStore {
   isOpen: boolean;
   post: PostWithData | null;
   onOpen: (post: PostWithData) => void;
   onClose: () => void;
 }
 
-export const useReplyModal = create<ReplyModalStore>((set) => ({
+export const useCommentModal = create<CommentModalStore>((set) => ({
   isOpen: false,
   post: null,
   onOpen: (post: PostWithData) => set({ isOpen: true, post: post }),

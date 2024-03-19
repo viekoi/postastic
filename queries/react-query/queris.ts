@@ -4,12 +4,15 @@ import {
   QueryKey,
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
 import { like } from "@/actions/like";
 import { getPostComments } from "@/actions/get-post-comments";
 import { updateLikesCount } from "./optimistic-functions";
+import { getCommentReplies } from "@/actions/get-comment-replies";
+import { getPostById } from "@/actions/get-post-by-id";
 
 export const useGetInfinitePosts = () => {
   return useInfiniteQuery({
@@ -63,6 +66,45 @@ export const useGetInfinitePostComments = (postId: string) => {
     },
   });
 };
+
+export const useGetInfiniteCommentReplies = (
+  postId: string,
+  parentId: string
+) => {
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.GET_COMMENT_REPLIES, postId, parentId, "replies"],
+    queryFn: ({ pageParam }) => getCommentReplies(pageParam, postId, parentId),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage) return null;
+
+      if (lastPage.error) return null;
+
+      if (lastPage.totalPages === 0) {
+        return null;
+      }
+
+      if (
+        lastPage.currentPage &&
+        lastPage.totalPages &&
+        lastPage.currentPage >= lastPage.totalPages
+      ) {
+        return null;
+      }
+
+      return lastPage.nextPage;
+    },
+  });
+};
+
+export const useGetPostById = (postId:string | null)=>{
+  return useQuery(
+    {
+      queryKey:[QUERY_KEYS.GET_POST_BY_ID,postId],
+      queryFn:()=>getPostById(postId)
+    }
+  )
+}
 
 export const useLike = (querykey: QueryKey) => {
   const queryClient = useQueryClient();

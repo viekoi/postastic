@@ -1,7 +1,14 @@
-import { CommentWithData, PostWithData } from "@/type";
+import { CommentWithData, PostWithData, ReplyWithData } from "@/type";
 import { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
 
-export type QueryListType = PostWithData | CommentWithData;
+export type ShareType<T> = T & {
+  interactsCount?: number;
+};
+
+export type QueryListType =
+  | ShareType<PostWithData>
+  | ShareType<CommentWithData>
+  | ShareType<ReplyWithData>;
 
 export const updateLikesCount = async ({
   queryClient,
@@ -54,7 +61,7 @@ export const updateLikesCount = async ({
   return previousData;
 };
 
-export const updateCommentsCount = async ({
+export const updateInteractCount = async ({
   queryClient,
   queryKey,
   id,
@@ -72,7 +79,7 @@ export const updateCommentsCount = async ({
     queryKey,
     (
       old: InfiniteData<{
-        success: PostWithData[];
+        success: QueryListType[];
         currentPage: number;
         nextPage: number;
         total: number;
@@ -89,7 +96,9 @@ export const updateCommentsCount = async ({
               if (post.id === id) {
                 return {
                   ...post,
-                  commentsCount: newCount ? newCount : post.commentsCount + 1,
+                  interactsCount: newCount
+                    ? newCount
+                    : post.interactsCount! + 1,
                 };
               } else return post;
             }),
@@ -126,11 +135,10 @@ export const optimisticInsert = async ({
         limit: number;
       }>
     ) => {
+      if (!old) return;
       if (old.pages[0].error || !old.pages[0].success) return;
-      console.log(old);
 
       const newTotalPages = Math.ceil((old.pages[0].total + 1) / 10);
-      console.log(newTotalPages);
       const newTotal = old.pages[0].total + 1;
       if (old.pages[0].success.length === 10) {
         return {
@@ -171,6 +179,50 @@ export const optimisticInsert = async ({
           ],
         };
       }
+    }
+  );
+};
+
+export const optimisticUpdate = async ({
+  queryClient,
+  queryKey,
+  data,
+}: {
+  queryClient: QueryClient;
+  queryKey: QueryKey;
+  data: QueryListType;
+}) => {
+  await queryClient.cancelQueries({
+    queryKey: queryKey,
+  });
+
+  queryClient.setQueryData(
+    queryKey,
+    (
+      old: InfiniteData<{
+        success: QueryListType[];
+        currentPage: number;
+        nextPage: number;
+        total: number;
+        totalPages: number;
+        limit: number;
+      }>
+    ) => {
+      return {
+        ...old,
+        pages: old.pages.map((page) => {
+          return {
+            ...page,
+            success: page.success.map((post) => {
+              if (post.id === data.id) {
+                return {
+                  ...data,
+                };
+              } else return post;
+            }),
+          };
+        }),
+      };
     }
   );
 };

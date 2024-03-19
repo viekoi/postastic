@@ -8,7 +8,6 @@ import { Button } from "../ui/button";
 import { Plus, X } from "lucide-react";
 import { useImageCarouselModal } from "@/hooks/use-modal-store";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 
 const AttachmentDisplayerVariants = cva(
   "flex flex-wrap justify-center relative group rounded-3xl",
@@ -40,6 +39,8 @@ interface AttachmentDisplayerProps
   baseAttachmentClassName?: string;
   indexAttachmentClassName?: (index: number, dataLength: number) => string;
   open?: () => void;
+  onRemoveFiles?: () => void;
+  onRemoveFile?: (index: number) => void;
 }
 
 const AttachmentDisplayer = (props: AttachmentDisplayerProps) => {
@@ -55,16 +56,24 @@ const AttachmentDisplayer = (props: AttachmentDisplayerProps) => {
     baseAttachmentClassName: baseAttachmentClassName,
     indexAttachmentClassName: indexMediaClassName,
     open,
+    onRemoveFile,
+    onRemoveFiles,
   } = props;
   const { onCancel } = useIsAddingFiles();
-  const { onRemoveFile, onRemoveFiles } = useFilesUploadActions();
   const { onOpen: onImgCarouselOpen } = useImageCarouselModal();
   const onImageClick = (index: number) => {
     onImgCarouselOpen(index, medias);
   };
 
-  if (control && open === undefined) {
-    throw new Error("open prop is needed when control is true");
+  if (
+    control &&
+    open === undefined &&
+    onRemoveFile === undefined &&
+    onRemoveFiles === undefined
+  ) {
+    throw new Error(
+      "open, onRemoveFile, onRemoveFiles props are needed when control is true"
+    );
   }
 
   return (
@@ -86,7 +95,11 @@ const AttachmentDisplayer = (props: AttachmentDisplayerProps) => {
             return (
               <Media
                 onClick={() => onImageClick(index)}
-                onRemove={control ? () => onRemoveFile(index) : undefined}
+                onRemove={
+                  control
+                    ? () => onRemoveFile && onRemoveFile(index)
+                    : undefined
+                }
                 isError={media.error}
                 containerClassName={cn(
                   `${baseContainerClassName}`,
@@ -122,7 +135,7 @@ const AttachmentDisplayer = (props: AttachmentDisplayerProps) => {
                   variant={"secondary"}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRemoveFiles();
+                    onRemoveFiles && onRemoveFiles();
                   }}
                 >
                   clear all
@@ -137,7 +150,7 @@ const AttachmentDisplayer = (props: AttachmentDisplayerProps) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   onCancel();
-                  onRemoveFiles();
+                  onRemoveFiles && onRemoveFiles();
                 }}
               >
                 <X />

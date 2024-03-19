@@ -32,7 +32,7 @@ const UserButton = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="outline-none">
             <div className="rounded-[50%] hover:bg-black  p-1">
-              <MoreHorizontal className="hover text-white" />
+              <MoreHorizontal className="text-white"/>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent

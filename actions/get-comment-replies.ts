@@ -5,13 +5,17 @@ import { currentUser } from "@/lib/user";
 import { privacyTypeValue } from "@/constansts";
 import { medias as mediaTable } from "../lib/db/schema";
 
-export const getPostComments = async (pageParam: number, postId: string) => {
+export const getCommentReplies = async (
+  pageParam: number,
+  postId: string,
+  parentId: string
+) => {
   const user = await currentUser();
 
   if (!user) return { error: "Unauthenticated!!!", pageParam };
   try {
-    const limit = 20;
-    const totalComments = await db
+    const limit = 5;
+    const totalReplies = await db
       .select({ value: count() })
       .from(mediaTable)
       .where(
@@ -23,12 +27,12 @@ export const getPostComments = async (pageParam: number, postId: string) => {
               eq(mediaTable.userId, user.id)
             )
           ),
-          eq(mediaTable.type, "comment"),
-          eq(mediaTable.postId, postId)
+          eq(mediaTable.type, "reply"),
+          and(eq(mediaTable.parentId, parentId), eq(mediaTable.postId, postId))
         )
       );
 
-    const comments = await db.query.medias.findMany({
+    const replies = await db.query.medias.findMany({
       where: (c) =>
         and(
           or(
@@ -38,8 +42,8 @@ export const getPostComments = async (pageParam: number, postId: string) => {
               eq(c.userId, user.id)
             )
           ),
-          eq(c.type, "comment"),
-          eq(mediaTable.postId, postId)
+          eq(c.type, "reply"),
+          and(eq(mediaTable.parentId, parentId), eq(mediaTable.postId, postId))
         ),
       with: {
         likes: {
@@ -47,23 +51,7 @@ export const getPostComments = async (pageParam: number, postId: string) => {
             userId: true,
           },
         },
-        commentReplies: {
-          columns: {
-            id: true,
-          },
-          where: (r) =>
-            and(
-              or(
-                eq(r.privacyType, privacyTypeValue.PUBLIC),
-                and(
-                  eq(r.privacyType, privacyTypeValue.PRIVATE),
-                  eq(r.userId, user.id)
-                )
-              ),
-              eq(r.type, "reply")
-            ),
-        },
-        commentBy: true,
+        replyBy: true,
         attachments: true,
       },
 
@@ -73,26 +61,25 @@ export const getPostComments = async (pageParam: number, postId: string) => {
     });
 
     return {
-      success: comments.map((comment) => {
+      success: replies.map((reply) => {
         return {
-          ...comment,
-          type: comment.type as "comment",
-          postId: comment.postId as string,
-          parentId:comment.parentId as string,
-          isLikedByMe: !!comment.likes.find((like) => like.userId === user.id),
-          likesCount: comment.likes.length,
-          interactsCount: comment.commentReplies.length,
-          user: comment.commentBy,
+          ...reply,
+          type: reply.type as "reply",
+          parentId: reply.parentId as string,
+          postId: reply.postId as string,
+          isLikedByMe: !!reply.likes.find((like) => like.userId === user.id),
+          likesCount: reply.likes.length,
+          user: reply.replyBy,
         };
       }),
       currentPage: pageParam,
       nextPage: pageParam + 1,
-      total: totalComments[0].value,
-      totalPages: Math.ceil(totalComments[0].value / limit),
+      total: totalReplies[0].value,
+      totalPages: Math.ceil(totalReplies[0].value / limit),
       limit: limit,
     };
   } catch (error) {
     console.log(error);
-    return { error: "Could not fetch comments", pageParam };
+    return { error: "Could not fetch replies", pageParam };
   }
 };

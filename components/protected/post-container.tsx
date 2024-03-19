@@ -8,6 +8,7 @@ import { Loader } from "../Loader";
 import PostList from "./post-list";
 import { Button } from "../ui/button";
 import { MessageSquareText } from "lucide-react";
+import { SkeletonCard } from "./cards/skeleton-card";
 
 const PostContainer = () => {
   const { data, fetchNextPage, hasNextPage, error, refetch, isPending } =
@@ -21,14 +22,16 @@ const PostContainer = () => {
 
   if (isPending)
     return (
-      <div className="flex justify-center items-center w-full h-full">
-        <Loader />
+      <div className="flex justify-center items-center w-full h-full flex-col gap-y-10">
+        {Array.from({ length: 10 }).map((element, index) => (
+          <SkeletonCard key={index} />
+        ))}
       </div>
     );
 
   if (error)
     return (
-      <div className="flex justify-center items-center w-full h-full">
+      <div className="flex flex-col justify-center items-center w-full h-full gap-y-1">
         Opps!!! something went wrong
         <Button onClick={() => refetch()}>Refetch</Button>
       </div>
@@ -39,7 +42,6 @@ const PostContainer = () => {
       <div className="flex h-full flex-col  justify-center items-center">
         <MessageSquareText className="size-[20%]" />
         <strong>Feed is empty</strong>
-       
       </div>
     );
   }

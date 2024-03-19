@@ -1,14 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { CommentWithData } from "@/type";
+import { ReplyWithData } from "@/type";
 import UserAvatar from "../user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
   multiFormatDateString,
 } from "@/lib/utils";
-import { Globe, Lock, MessageCircle } from "lucide-react";
+import { Globe, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../like-button";
 
@@ -16,23 +16,23 @@ import AttachmentDisplayer from "../attachment-displayer";
 
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
-import ReplyContainer from "../reply-container";
 import { useNewReplyModal } from "@/hooks/use-modal-store";
 import useIsMobile from "@/hooks/use-is-mobile";
 
-interface CommentCardProps {
-  comment: CommentWithData;
+interface ReplyCardProps {
+  reply: ReplyWithData;
   className?: string;
   isModalContent?: boolean;
 }
 
-const CommentCard = ({ comment, className }: CommentCardProps) => {
+const ReplyCard = ({ reply, className }: ReplyCardProps) => {
   const { onOpen } = useNewReplyModal();
   const [expandContent, setExpandContent] = useState(false);
-  const [open, setOpen] = useState(false);
   const isMobile = useIsMobile(1024);
+  const [open, setOpen] = useState(false);
+
   const onNewReplyModalOpen = () => {
-    onOpen(comment.postId, comment.id);
+    onOpen(reply.postId, reply.parentId);
   };
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
@@ -69,26 +69,26 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
       >
         <div className="flex gap-x-2 ">
           <div className="flex items-start gap-x-2 mt-1">
-            <UserAvatar user={comment.user} />
+            <UserAvatar user={reply.user} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">
               <div className=" p-4 pt-2 overflow-hidden border-solid flex-col gap-y-2 flex  bg-white rounded-3xl">
                 <h4 className="font-bold text-md leading-[140%]">
-                  {comment.user.name}
+                  {reply.user.name}
                 </h4>
 
                 <div className="">
                   <p
                     className={`whitespace-pre-wrap leading-[140%] break-words ${
-                      comment.isOverFlowContent &&
+                      reply.isOverFlowContent &&
                       !expandContent &&
                       "line-clamp-3"
                     }`}
                   >
-                    {comment.content}
+                    {reply.content}
                   </p>
-                  {comment.isOverFlowContent && (
+                  {reply.isOverFlowContent && (
                     <button
                       onClick={() => setExpandContent((prev) => !prev)}
                       className="text-blue-400 font-medium text-lg"
@@ -104,29 +104,21 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
                   baseAttachmentClassName={baseMediaClassName}
                   indexContainerClassName={indexContainerClassName}
                   control={false}
-                  medias={comment.attachments}
+                  medias={reply.attachments}
                 />
               </div>
               <div className="flex gap-x-4">
                 <LikeButton
                   queryKey={[
-                    QUERY_KEYS.GET_POST_COMMENTS,
-                    comment.postId,
-                    "comments",
+                    QUERY_KEYS.GET_COMMENT_REPLIES,
+                    reply.postId,
+                    reply.parentId,
+                    "replies",
                   ]}
-                  parent={comment}
+                  parent={reply}
                   className="flex space-x-1 px-0 leading-[140%]"
                 />
 
-                <Button
-                  disabled={!!(comment.interactsCount === 0)}
-                  onClick={() => setOpen((prev) => !prev)}
-                  variant={"postCard"}
-                  className="flex space-x-1 px-0 leading-[140%]"
-                >
-                  <MessageCircle size={18} />
-                  <span>{comment.interactsCount}</span>
-                </Button>
                 <Button
                   onClick={onNewReplyModalOpen}
                   className="px-0 leading-[140%]"
@@ -136,11 +128,9 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
                 </Button>
                 <div className=" leading-[140%] items-center flex gap-x-1 text-[12px] font-medium text-muted-foreground">
                   {isMobile
-                    ? mobileMultiFormatDateString(
-                        comment.createdAt.toUTCString()
-                      )
-                    : multiFormatDateString(comment.createdAt.toUTCString())}
-                  {comment.privacyType === privacyTypeValue.PRIVATE ? (
+                    ? mobileMultiFormatDateString(reply.createdAt.toUTCString())
+                    : multiFormatDateString(reply.createdAt.toUTCString())}
+                  {reply.privacyType === privacyTypeValue.PRIVATE ? (
                     <Lock size={12} />
                   ) : (
                     <Globe size={12} />
@@ -148,13 +138,6 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
                 </div>
               </div>
             </div>
-            {open && (
-              <ReplyContainer
-                initialInteractCount={comment.interactsCount}
-                postId={comment.postId}
-                parentId={comment.id}
-              />
-            )}
           </div>
         </div>
       </Card>
@@ -162,4 +145,4 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
   );
 };
 
-export default CommentCard;
+export default ReplyCard;

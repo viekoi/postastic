@@ -1,12 +1,13 @@
 import { isTooLarge } from "@/lib/utils";
 
-import { useCallback } from "react";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { FileWithPath } from "react-dropzone";
-import { useUploadFilesStore } from "./use-upload-files-store";
+import { AttachmentFile } from "@/type";
 
-export const useFilesUploadActions = () => {
-  const { files, setFiles, addFile } = useUploadFilesStore();
-
+export const useFilesUploadActions = (
+  files: AttachmentFile[],
+  setFiles: Dispatch<SetStateAction<AttachmentFile[]>>
+) => {
   const handleSetFiles = (acceptedFiles: FileWithPath[]) => {
     if (files.length + acceptedFiles.length > 5) return;
     acceptedFiles.forEach((file) => {
@@ -16,17 +17,23 @@ export const useFilesUploadActions = () => {
 
       const reader = new FileReader();
       reader.onload = () => {
-        addFile({
-          url: reader.result,
-          type: type as "image" | "video",
-          error: isFileTooLarge,
-          size: file.size,
+        setFiles((prev) => {
+          return [
+            ...prev,
+            {
+              url: reader.result,
+              type: type as "image" | "video",
+              error: isFileTooLarge,
+              size: file.size,
+            },
+          ];
         });
       };
 
       reader.readAsDataURL(file);
     });
   };
+
   const onDrop = useCallback(
     (acceptedFiles: FileWithPath[]) => {
       handleSetFiles(acceptedFiles);
@@ -39,10 +46,12 @@ export const useFilesUploadActions = () => {
   };
 
   const onRemoveFile = (index: number) => {
-    const newFiles = [...files].filter((file, fIndex) => {
-      return fIndex !== index;
+    setFiles((prev) => {
+      const newFiles = [...prev].filter((file, fIndex) => {
+        return fIndex !== index;
+      });
+      return newFiles;
     });
-    setFiles(newFiles);
   };
 
   return {

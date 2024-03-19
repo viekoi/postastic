@@ -72,7 +72,7 @@ const Modal: React.FC<ModalProps> = ({
               "
           >
             {title}
-            <DialogClose className=" absoluteborder-none bg-red-400 opacity-70 hover:opacity-100 rounded-full absolute top-2 right-2 ">
+            <DialogClose className=" border-none bg-red-400 opacity-70 hover:opacity-100 rounded-full absolute top-2 right-2 ">
               <X size={40} />
             </DialogClose>
           </DialogTitle>

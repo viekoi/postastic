@@ -118,7 +118,7 @@ export const medias = pgTable("media", {
   parentId: uuid("parentId").references((): AnyPgColumn => medias.id, {
     onDelete: "cascade",
   }),
-  postId: uuid("postd").references((): AnyPgColumn => medias.id, {
+  postId: uuid("postId").references((): AnyPgColumn => medias.id, {
     onDelete: "cascade",
   }),
 });
@@ -179,6 +179,18 @@ export const mediasRelations = relations(medias, ({ one, many }) => ({
     fields: [medias.userId],
     references: [users.id],
     relationName: "replies",
+  }),
+  postComments: many(medias, { relationName: "postComments" }),
+  commentReplies: many(medias, { relationName: "commentReplies" }),
+  commentOf: one(medias, {
+    fields: [medias.parentId],
+    references: [medias.id],
+    relationName: "postComments",
+  }),
+  replyOf: one(medias, {
+    fields: [medias.parentId],
+    references: [medias.id],
+    relationName: "commentReplies",
   }),
   likes: many(likes),
   attachments: many(attachments),
