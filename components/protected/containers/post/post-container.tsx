@@ -3,16 +3,23 @@
 import { useGetInfinitePosts } from "@/queries/react-query/queris";
 import { useInView } from "react-intersection-observer";
 import React, { useEffect } from "react";
-import { Loader } from "../Loader";
+import { Loader } from "../../../Loader";
 
-import PostList from "./post-list";
-import { Button } from "../ui/button";
+import PostList from "../../lists/post/post-list";
+import { Button } from "../../../ui/button";
 import { MessageSquareText } from "lucide-react";
-import { SkeletonCard } from "./cards/skeleton-card";
+import { SkeletonCard } from "../../cards/skeleton-card";
 
 const PostContainer = () => {
-  const { data, fetchNextPage, hasNextPage, error, refetch, isPending } =
-    useGetInfinitePosts();
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    error,
+    refetch,
+    isPending,
+    isRefetching,
+  } = useGetInfinitePosts();
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
@@ -20,7 +27,7 @@ const PostContainer = () => {
     }
   }, [inView]);
 
-  if (isPending)
+  if (isPending || isRefetching)
     return (
       <div className="flex justify-center items-center w-full h-full flex-col gap-y-10">
         {Array.from({ length: 10 }).map((element, index) => (
@@ -29,7 +36,7 @@ const PostContainer = () => {
       </div>
     );
 
-  if (error)
+  if (error || !data?.pages)
     return (
       <div className="flex flex-col justify-center items-center w-full h-full gap-y-1">
         Opps!!! something went wrong
@@ -54,8 +61,8 @@ const PostContainer = () => {
       })}
 
       {hasNextPage && (
-        <div ref={ref} className="w-full flex items-center justify-center py-1">
-          <Loader />
+        <div ref={ref} className="w-full">
+          <SkeletonCard />
         </div>
       )}
     </>

@@ -4,19 +4,19 @@ import { Button } from "../ui/button";
 import { Heart } from "lucide-react";
 import { useLike } from "@/queries/react-query/queris";
 
-import { CommentWithData, PostWithData, ReplyWithData } from "@/type";
+import { MediaWithData } from "@/type";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Loader } from "../Loader";
 import { cn } from "@/lib/utils";
 import { QueryKey } from "@tanstack/react-query";
 
 interface LikeButtonProps {
-  parent: PostWithData | CommentWithData | ReplyWithData;
+  parent: MediaWithData | MediaWithData | MediaWithData;
   className?: string;
-  queryKey:QueryKey
+  queryKey: QueryKey;
 }
 
-const LikeButton = ({ parent, className,queryKey }: LikeButtonProps) => {
+const LikeButton = ({ parent, className, queryKey }: LikeButtonProps) => {
   const { user } = useCurrentUser();
   const { mutate: likePost } = useLike(queryKey);
   if (!user)

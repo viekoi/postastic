@@ -43,7 +43,6 @@ const FileUploader = ({
   onRemoveFiles,
 }: FileUploaderProps) => {
   const { onCancel } = useIsAddingFiles();
-  console.log("files:", files);
   useEffect(() => {
     fieldChange(files);
   }, [files]);

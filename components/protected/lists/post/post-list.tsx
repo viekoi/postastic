@@ -1,11 +1,11 @@
 "use client";
-import { PostWithData } from "@/type";
+import { MediaWithData } from "@/type";
 import React, { useOptimistic } from "react";
 
-import PostCard from "./cards/post-card";
+import PostCard from "../../cards/post/post-card";
 
 interface PostListProps {
-  posts: PostWithData[];
+  posts: MediaWithData[];
 }
 
 const PostList = ({ posts }: PostListProps) => {

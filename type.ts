@@ -1,26 +1,23 @@
 import { Attachment, User, Media } from "./lib/db/schema";
 
-export type PostWithData = Media & {
+export type MediaWithData = Media & {
   likesCount: number;
   interactsCount: number;
 } & { isLikedByMe: boolean } & { user: User } & {
   attachments: Attachment[];
 };
 
-export type CommentWithData = Media & {
-  postId: string;
-  parentId: string;
-} & {
+export type InteractMediaWithData = Media & {
   likesCount: number;
   interactsCount: number;
-} & { isLikedByMe: boolean } & { user: User } & {
+  parentId: string;
+  postId: string;
+  isLikedByMe: boolean;
+} & { user: User } & {
   attachments: Attachment[];
 };
 
-export type ReplyWithData = Media & {
-  postId: string;
-  parentId: string;
-} & {
+export type OptimisticUpdateData = Media & {
   likesCount: number;
 } & { isLikedByMe: boolean } & { user: User } & {
   attachments: Attachment[];
@@ -29,7 +26,7 @@ export type ReplyWithData = Media & {
 export type AttachmentFile = {
   url: string | ArrayBuffer | null;
   type: "image" | "video";
-  publicId?:string,
+  publicId?: string;
   size?: number;
   error?: boolean;
 };

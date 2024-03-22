@@ -7,9 +7,10 @@ import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import NewReplyForm from "../forms/reply/new-reply-form";
 import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
+import { CornerDownRight } from "lucide-react";
 
 const NewReplyModal = () => {
-  const { isOpen, onClose, postId, parentId } = useNewReplyModal();
+  const { isOpen, onClose, postId, parentId,parentUserName } = useNewReplyModal();
   const { onCancel } = useIsAddingFiles();
   const isMobile = useIsMobile(1024);
 
@@ -38,6 +39,10 @@ const NewReplyModal = () => {
         onCancel();
       }}
     >
+      <div className="flex gap-x-1 items-center p-4">
+        <CornerDownRight />
+        <div className="pt-2">Replying to {parentUserName}</div>
+      </div>
       <NewReplyForm postId={postId} parentId={parentId} />
     </Modal>
   );

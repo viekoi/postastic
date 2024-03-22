@@ -1,3 +1,4 @@
+
 import {
   Home,
   Search,
@@ -7,15 +8,15 @@ import {
   Settings2,
   Globe,
   Lock,
-  LucideIcon,
+  Bookmark,
+  FileCog,
+  Delete,
 } from "lucide-react";
 
 export enum privacyTypeValue {
   PUBLIC = "public",
   PRIVATE = "private",
 }
-
-
 
 export const sidebarLinks = [
   {
@@ -100,6 +101,7 @@ export const postPrivacyOtptions = [
 ];
 
 
-export const imageMaxSize = 8388608
-export const videoMaxSize = 20971520
 
+
+export const imageMaxSize = 8388608;
+export const videoMaxSize = 20971520;

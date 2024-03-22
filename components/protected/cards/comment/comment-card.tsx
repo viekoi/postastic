@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { CommentWithData } from "@/type";
-import UserAvatar from "../user-avatar";
+import { InteractMediaWithData } from "@/type";
+import UserAvatar from "../../user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
@@ -10,29 +10,33 @@ import {
 } from "@/lib/utils";
 import { Globe, Lock, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LikeButton from "../like-button";
+import LikeButton from "../../like-button";
 
-import AttachmentDisplayer from "../attachment-displayer";
+import AttachmentDisplayer from "../../attachment-displayer";
 
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
-import ReplyContainer from "../reply-container";
+import ReplyContainer from "../../containers/reply/reply-container";
 import { useNewReplyModal } from "@/hooks/use-modal-store";
 import useIsMobile from "@/hooks/use-is-mobile";
+import SettingButton from "./setting-button";
 
 interface CommentCardProps {
-  comment: CommentWithData;
+  comment: InteractMediaWithData;
   className?: string;
-  isModalContent?: boolean;
+  isModalContent?: boolean
 }
 
-const CommentCard = ({ comment, className }: CommentCardProps) => {
+const CommentCard = ({
+  comment,
+  className,
+}: CommentCardProps) => {
   const { onOpen } = useNewReplyModal();
   const [expandContent, setExpandContent] = useState(false);
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile(1024);
   const onNewReplyModalOpen = () => {
-    onOpen(comment.postId, comment.id);
+    onOpen(comment.postId, comment.id,comment.user.name);
   };
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
@@ -68,8 +72,11 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
         )}
       >
         <div className="flex gap-x-2 ">
-          <div className="flex items-start gap-x-2 mt-1">
+          <div className="flex items-center gap-y-2 mt-1 flex-col">
             <UserAvatar user={comment.user} />
+            <SettingButton
+              comment={comment}
+            />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">
@@ -77,7 +84,6 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
                 <h4 className="font-bold text-md leading-[140%]">
                   {comment.user.name}
                 </h4>
-
                 <div className="">
                   <p
                     className={`whitespace-pre-wrap leading-[140%] break-words ${

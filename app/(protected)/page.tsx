@@ -6,7 +6,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import PostFormCard from "@/components/protected/cards/post-form-card";
-import PostContainer from "@/components/protected/post-container";
+import PostContainer from "@/components/protected/containers/post/post-container";
 
 const Home = async () => {
   const queryClient = new QueryClient();

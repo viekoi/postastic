@@ -39,7 +39,7 @@ import { EmojiPicker } from "../../emoji-picker";
 import useIsMobile from "@/hooks/use-is-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { AttachmentFile, CommentWithData } from "@/type";
+import { AttachmentFile, MediaWithData } from "@/type";
 import { newComment } from "@/actions/new-comment";
 import {
   optimisticInsert,
@@ -141,7 +141,7 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
         if (data.success && data.data) {
           toast.success(data.success, { closeButton: false });
           form.reset();
-          const newCacheComment: CommentWithData = {
+          const newCacheComment: MediaWithData = {
             ...data.data,
             isLikedByMe: false,
             likesCount: 0,
@@ -153,11 +153,13 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
             queryClient,
             queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId, "comments"],
             data: newCacheComment,
+            orderBy:"asc"
           });
           updateInteractCount({
             queryClient,
             queryKey: [QUERY_KEYS.GET_HOME_POSTS],
             id: postId,
+            action:"insert"
           });
           onClose();
           onRemoveFiles();

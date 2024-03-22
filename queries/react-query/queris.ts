@@ -13,6 +13,11 @@ import { getPostComments } from "@/actions/get-post-comments";
 import { updateLikesCount } from "./optimistic-functions";
 import { getCommentReplies } from "@/actions/get-comment-replies";
 import { getPostById } from "@/actions/get-post-by-id";
+import { updateMedia } from "@/actions/update-media";
+import { EditShcema} from "@/schemas";
+import * as z from "zod";
+import { getPostCreator } from "@/actions/get-post-creator";
+import { deleteMedia } from "@/actions/delete-media";
 
 export const useGetInfinitePosts = () => {
   return useInfiniteQuery({
@@ -97,14 +102,19 @@ export const useGetInfiniteCommentReplies = (
   });
 };
 
-export const useGetPostById = (postId:string | null)=>{
-  return useQuery(
-    {
-      queryKey:[QUERY_KEYS.GET_POST_BY_ID,postId],
-      queryFn:()=>getPostById(postId)
-    }
-  )
-}
+export const useGetMediaById = (id: string | null) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, id],
+    queryFn: () => getPostById(id),
+  });
+};
+
+export const useGetPostCreator = (postId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POST_CREATOR, postId],
+    queryFn: () => getPostCreator(postId),
+  });
+};
 
 export const useLike = (querykey: QueryKey) => {
   const queryClient = useQueryClient();
@@ -125,6 +135,40 @@ export const useLike = (querykey: QueryKey) => {
         [QUERY_KEYS.GET_HOME_POSTS],
         context?.previousData
       );
+    },
+  });
+};
+
+export const useUpdateMedia = (querykey: QueryKey) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      values,
+      id,
+    }: {
+      values: z.infer<typeof EditShcema>;
+      id: string;
+    }) => updateMedia(values, id),
+    onSettled: (data, error, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: querykey });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, variables.id],
+      });
+    },
+  });
+};
+
+export const useDeleteMedia = (querykey: QueryKey) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteMedia(id),
+    onSettled: (data, error, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: querykey });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, variables],
+      });
     },
   });
 };

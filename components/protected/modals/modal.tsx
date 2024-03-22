@@ -50,7 +50,7 @@ const Modal: React.FC<ModalProps> = ({
         w-full  
         rounded-md 
         bg-black
-        p-[25px] 
+        p-0
         focus:outline-none
         z-50
         `,

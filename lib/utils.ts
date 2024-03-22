@@ -1,8 +1,14 @@
-import { imageMaxSize, videoMaxSize } from "@/constansts";
+import {
+  imageMaxSize,
+  postPrivacyOtptions,
+  privacyTypeValue,
+  videoMaxSize,
+} from "@/constansts";
 import { AttachmentFile } from "@/type";
 import { type ClassValue, clsx } from "clsx";
 import { FileWithPath } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
+import { string } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -95,3 +101,9 @@ export const isTooLarge = (
 
   return false;
 };
+
+export const getPostPrivacyOption = (privacyType: "public" | "private")=> {
+  const res = postPrivacyOtptions.find((option) => option.value === privacyType);
+
+  return res ? res : postPrivacyOtptions[0]
+}

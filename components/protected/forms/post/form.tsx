@@ -1,18 +1,19 @@
-"use client";
-import { useNewPostModal } from "@/hooks/use-modal-store";
-import React from "react";
+// "use client";
+// import { useNewPostModal } from "@/hooks/use-modal-store";
+// import React from "react";
 
-import Edit from "./edit";
-import NewForm from "./new-form";
+// import NewForm from "./new-form";
+// import Edit from "../edit/edit";
+// import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
-const Form = () => {
-  const { postId } = useNewPostModal();
+// const Form = () => {
+//   const { postId } = useNewPostModal();
 
-  if (!postId) {
-    return <NewForm />;
-  }
+//   if (!postId) {
+//     return <NewForm />;
+//   }
 
-  return <Edit postId={postId} />;
-};
+//   return <Edit id={postId} queryKey={[QUERY_KEYS.GET_HOME_POSTS]} />;
+// };
 
-export default Form;
+// export default Form;

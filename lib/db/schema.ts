@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { InferModel, relations } from "drizzle-orm";
-import { string } from "zod";
+
 
 //Emums
 export const privacyType = pgEnum("privacyType", ["public", "private"]);

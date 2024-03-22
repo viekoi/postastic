@@ -2,8 +2,8 @@
 import { and, count, desc, eq, or } from "drizzle-orm";
 import db from "../lib/db";
 import { currentUser } from "@/lib/user";
-import { privacyTypeValue } from "@/constansts";
 import { medias as mediaTable } from "@/lib/db/schema";
+import { getMediasWhereClause } from "@/constansts/get-media-condition-clause";
 
 export const getHomePosts = async (pageParam: number) => {
   const user = await currentUser();
@@ -14,31 +14,10 @@ export const getHomePosts = async (pageParam: number) => {
     const totalPages = await db
       .select({ value: count() })
       .from(mediaTable)
-      .where(
-        and(
-          or(
-            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
-            and(
-              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
-              eq(mediaTable.userId, user.id)
-            )
-          ),
-          eq(mediaTable.type, "post")
-        )
-      );
+      .where(getMediasWhereClause(user.id, "post"));
 
     const posts = await db.query.medias.findMany({
-      where: (p) =>
-        and(
-          or(
-            eq(p.privacyType, privacyTypeValue.PUBLIC),
-            and(
-              eq(p.privacyType, privacyTypeValue.PRIVATE),
-              eq(p.userId, user.id)
-            )
-          ),
-          eq(p.type, "post")
-        ),
+      where: () => getMediasWhereClause(user.id, "post"),
       with: {
         likes: {
           columns: {
@@ -49,17 +28,7 @@ export const getHomePosts = async (pageParam: number) => {
           columns: {
             id: true,
           },
-          where: (c) =>
-            and(
-              or(
-                eq(c.privacyType, privacyTypeValue.PUBLIC),
-                and(
-                  eq(c.privacyType, privacyTypeValue.PRIVATE),
-                  eq(c.userId, user.id)
-                )
-              ),
-              eq(c.type, "comment")
-            ),
+          where: () => getMediasWhereClause(user.id, "comment"),
         },
         postBy: true,
         attachments: true,

@@ -1,14 +1,5 @@
-import { CommentWithData, PostWithData, ReplyWithData } from "@/type";
+import { MediaWithData, OptimisticUpdateData } from "@/type";
 import { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
-
-export type ShareType<T> = T & {
-  interactsCount?: number;
-};
-
-export type QueryListType =
-  | ShareType<PostWithData>
-  | ShareType<CommentWithData>
-  | ShareType<ReplyWithData>;
 
 export const updateLikesCount = async ({
   queryClient,
@@ -29,7 +20,7 @@ export const updateLikesCount = async ({
     queryKey,
     (
       old: InfiniteData<{
-        success: QueryListType[];
+        success: MediaWithData[];
         currentPage: number;
         nextPage: number;
         total: number;
@@ -42,15 +33,15 @@ export const updateLikesCount = async ({
         pages: old.pages.map((page) => {
           return {
             ...page,
-            success: page.success.map((post) => {
-              if (post.id === id) {
-                const countModifier = post.isLikedByMe ? -1 : +1;
+            success: page.success.map((media) => {
+              if (media.id === id) {
+                const countModifier = media.isLikedByMe ? -1 : +1;
                 return {
-                  ...post,
-                  likesCount: post.likesCount + countModifier,
-                  isLikedByMe: !post.isLikedByMe,
+                  ...media,
+                  likesCount: media.likesCount + countModifier,
+                  isLikedByMe: !media.isLikedByMe,
                 };
-              } else return post;
+              } else return media;
             }),
           };
         }),
@@ -66,12 +57,16 @@ export const updateInteractCount = async ({
   queryKey,
   id,
   newCount,
+  action,
 }: {
   queryClient: QueryClient;
   queryKey: QueryKey;
   id: string;
   newCount?: number;
+  action?: "insert" | "delete";
 }) => {
+  if (!newCount && !action)
+    throw new Error("neither give a action or a newCount");
   await queryClient.cancelQueries({
     queryKey: queryKey,
   });
@@ -79,7 +74,7 @@ export const updateInteractCount = async ({
     queryKey,
     (
       old: InfiniteData<{
-        success: QueryListType[];
+        success: MediaWithData[];
         currentPage: number;
         nextPage: number;
         total: number;
@@ -87,20 +82,22 @@ export const updateInteractCount = async ({
         limit: number;
       }>
     ) => {
+      if (!old) return;
       return {
         ...old,
         pages: old.pages.map((page) => {
           return {
             ...page,
-            success: page.success.map((post) => {
-              if (post.id === id) {
+            success: page.success.map((media) => {
+              if (media.id === id) {
+                const countModifier = action === "insert" ? +1 : -1;
                 return {
-                  ...post,
+                  ...media,
                   interactsCount: newCount
                     ? newCount
-                    : post.interactsCount! + 1,
+                    : media.interactsCount + countModifier,
                 };
-              } else return post;
+              } else return media;
             }),
           };
         }),
@@ -113,10 +110,12 @@ export const optimisticInsert = async ({
   queryClient,
   queryKey,
   data,
+  orderBy,
 }: {
   queryClient: QueryClient;
   queryKey: QueryKey;
-  data: QueryListType;
+  data: MediaWithData;
+  orderBy: "asc" | "dsc";
 }) => {
   await queryClient.cancelQueries({
     queryKey: queryKey,
@@ -127,7 +126,7 @@ export const optimisticInsert = async ({
     (
       old: InfiniteData<{
         error?: string;
-        success?: QueryListType[];
+        success?: MediaWithData[];
         currentPage: number;
         nextPage: number;
         total: number;
@@ -136,48 +135,50 @@ export const optimisticInsert = async ({
       }>
     ) => {
       if (!old) return;
-      if (old.pages[0].error || !old.pages[0].success) return;
+      const firstPage = old.pages[0];
+      const currentLastPageIndex = old.pages.length - 1;
+      const currentLastPage = old.pages[currentLastPageIndex];
 
-      const newTotalPages = Math.ceil((old.pages[0].total + 1) / 10);
-      const newTotal = old.pages[0].total + 1;
-      if (old.pages[0].success.length === 10) {
-        return {
-          pageParams: [...old.pageParams, (old.pageParams[-1] as number) + 1],
-          pages: [
-            {
-              ...old.pages[0],
-              success: [data],
-              totalPages: newTotalPages,
-              total: newTotal,
-            },
-            ...old.pages.map((page) => {
-              return {
-                ...page,
-                totalPages: newTotalPages,
-                total: newTotal,
-              };
-            }),
-          ],
-        };
-      } else {
-        return {
-          ...old,
-          pages: [
-            {
-              ...old.pages[0],
-              success: [data, ...old.pages[0].success],
-              totalPages: newTotalPages,
-              total: newTotal,
-            },
-            ...old.pages.slice(1).map((page) => {
-              return {
-                ...page,
-                totalPages: newTotalPages,
-                total: newTotal,
-              };
-            }),
-          ],
-        };
+      if (old && firstPage.success && currentLastPage.success) {
+        if (orderBy === "dsc") {
+          return {
+            ...old,
+            pages: [
+              {
+                ...firstPage,
+                success: [data, ...firstPage.success],
+              },
+              ...old.pages.slice(1).map((page) => {
+                return page;
+              }),
+            ],
+          };
+        } else {
+          if (currentLastPageIndex === 0) {
+            return {
+              ...old,
+              pages: [
+                {
+                  ...currentLastPage,
+                  success: [...currentLastPage.success, data],
+                },
+              ],
+            };
+          }
+
+          return {
+            ...old,
+            pages: [
+              ...old.pages.slice(0, old.pages.length).map((page) => {
+                return page;
+              }),
+              {
+                ...currentLastPage,
+                success: [...currentLastPage.success, data],
+              },
+            ],
+          };
+        }
       }
     }
   );
@@ -190,7 +191,7 @@ export const optimisticUpdate = async ({
 }: {
   queryClient: QueryClient;
   queryKey: QueryKey;
-  data: QueryListType;
+  data: OptimisticUpdateData;
 }) => {
   await queryClient.cancelQueries({
     queryKey: queryKey,
@@ -200,7 +201,7 @@ export const optimisticUpdate = async ({
     queryKey,
     (
       old: InfiniteData<{
-        success: QueryListType[];
+        success: MediaWithData[];
         currentPage: number;
         nextPage: number;
         total: number;
@@ -213,12 +214,13 @@ export const optimisticUpdate = async ({
         pages: old.pages.map((page) => {
           return {
             ...page,
-            success: page.success.map((post) => {
-              if (post.id === data.id) {
+            success: page.success.map((media) => {
+              if (media.id === data.id) {
                 return {
                   ...data,
+                  interactsCount: media.interactsCount,
                 };
-              } else return post;
+              } else return media;
             }),
           };
         }),

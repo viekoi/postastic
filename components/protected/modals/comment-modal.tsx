@@ -1,7 +1,7 @@
 "use client";
 import { useCommentModal } from "@/hooks/use-modal-store";
 import Modal from "./modal";
-import CommentContainer from "../comment-container";
+import CommentContainer from "../containers/comment/comment-container";
 import NewCommentForm from "../forms/comment/new-comment-form";
 import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
@@ -14,7 +14,7 @@ const CommentModal = () => {
     return (
       <Modal
         title={`${post.user.name} Post`}
-        className=" lg:max-h-[90vh] lg:max-w-[800px] p-0 overflow-hidden flex flex-col"
+        className=" lg:max-h-[90vh] lg:max-w-[800px]  overflow-hidden flex flex-col"
         isOpen={isOpen}
         onClose={() => {
           onClose();
@@ -23,7 +23,7 @@ const CommentModal = () => {
         <div className="overflow-y-scroll custom-scrollbar flex-1">
           <CommentContainer
             postId={post.id}
-            initialCommentsCount={post.interactsCount}
+            initiaParentInteractCount={post.interactsCount}
           />
         </div>
         <NewCommentForm postId={post.id} />
@@ -35,7 +35,7 @@ const CommentModal = () => {
     return (
       <DrawerModal
         title={`${post.user.name} Post`}
-        className=" lg:max-h-[90vh] lg:max-w-[800px] p-0 overflow-hidden flex flex-col"
+        className=" lg:max-h-[90vh] lg:max-w-[800px]  overflow-hidden flex flex-col p-0"
         isOpen={isOpen}
         onClose={() => {
           onClose();
@@ -44,7 +44,7 @@ const CommentModal = () => {
         <div className="overflow-y-scroll custom-scrollbar flex-1">
           <CommentContainer
             postId={post.id}
-            initialCommentsCount={post.interactsCount}
+            initiaParentInteractCount={post.interactsCount}
           />
         </div>
         <NewCommentForm postId={post.id} />

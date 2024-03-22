@@ -1,9 +1,10 @@
 "use server";
-import { and, count, desc, eq, or } from "drizzle-orm";
+import { and, asc, count, eq, or } from "drizzle-orm";
 import db from "@/lib/db";
 import { currentUser } from "@/lib/user";
 import { privacyTypeValue } from "@/constansts";
 import { medias as mediaTable } from "../lib/db/schema";
+import { getMediasWhereClause } from "@/constansts/get-media-condition-clause";
 
 export const getCommentReplies = async (
   pageParam: number,
@@ -18,33 +19,10 @@ export const getCommentReplies = async (
     const totalReplies = await db
       .select({ value: count() })
       .from(mediaTable)
-      .where(
-        and(
-          or(
-            eq(mediaTable.privacyType, privacyTypeValue.PUBLIC),
-            and(
-              eq(mediaTable.privacyType, privacyTypeValue.PRIVATE),
-              eq(mediaTable.userId, user.id)
-            )
-          ),
-          eq(mediaTable.type, "reply"),
-          and(eq(mediaTable.parentId, parentId), eq(mediaTable.postId, postId))
-        )
-      );
+      .where(getMediasWhereClause(user.id, "reply", parentId));
 
     const replies = await db.query.medias.findMany({
-      where: (c) =>
-        and(
-          or(
-            eq(c.privacyType, privacyTypeValue.PUBLIC),
-            and(
-              eq(c.privacyType, privacyTypeValue.PRIVATE),
-              eq(c.userId, user.id)
-            )
-          ),
-          eq(c.type, "reply"),
-          and(eq(mediaTable.parentId, parentId), eq(mediaTable.postId, postId))
-        ),
+      where: (c) => getMediasWhereClause(user.id, "reply",parentId),
       with: {
         likes: {
           columns: {
@@ -55,7 +33,7 @@ export const getCommentReplies = async (
         attachments: true,
       },
 
-      orderBy: (p) => [desc(p.createdAt)],
+      orderBy: (p) => [asc(p.createdAt)],
       offset: (pageParam - 1) * limit,
       limit: limit,
     });
@@ -69,6 +47,7 @@ export const getCommentReplies = async (
           postId: reply.postId as string,
           isLikedByMe: !!reply.likes.find((like) => like.userId === user.id),
           likesCount: reply.likes.length,
+          interactsCount: 0,
           user: reply.replyBy,
         };
       }),

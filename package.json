@@ -39,7 +39,6 @@
     "class-variance-authority": "^0.7.0",
     "cloudinary": "^2.0.1",
     "clsx": "^2.1.0",
-    "cron": "^3.1.6",
     "dotenv": "^16.4.4",
     "drizzle-orm": "^0.29.3",
     "embla-carousel-react": "^8.0.0",
@@ -66,7 +65,6 @@
     "zustand": "^4.5.1"
   },
   "devDependencies": {
-    "@types/multer": "^1.4.11",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

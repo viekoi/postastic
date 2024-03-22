@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ReplyWithData } from "@/type";
-import UserAvatar from "../user-avatar";
+import { InteractMediaWithData, MediaWithData } from "@/type";
+import UserAvatar from "../../user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
@@ -10,17 +10,18 @@ import {
 } from "@/lib/utils";
 import { Globe, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LikeButton from "../like-button";
+import LikeButton from "../../like-button";
 
-import AttachmentDisplayer from "../attachment-displayer";
+import AttachmentDisplayer from "../../attachment-displayer";
 
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
 import { useNewReplyModal } from "@/hooks/use-modal-store";
 import useIsMobile from "@/hooks/use-is-mobile";
+import SettingButton from "./setting-button";
 
 interface ReplyCardProps {
-  reply: ReplyWithData;
+  reply: InteractMediaWithData;
   className?: string;
   isModalContent?: boolean;
 }
@@ -32,7 +33,7 @@ const ReplyCard = ({ reply, className }: ReplyCardProps) => {
   const [open, setOpen] = useState(false);
 
   const onNewReplyModalOpen = () => {
-    onOpen(reply.postId, reply.parentId);
+    onOpen(reply.postId, reply.parentId,reply.user.name);
   };
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
@@ -68,8 +69,9 @@ const ReplyCard = ({ reply, className }: ReplyCardProps) => {
         )}
       >
         <div className="flex gap-x-2 ">
-          <div className="flex items-start gap-x-2 mt-1">
+          <div className="flex flex-col items-center gap-x-2 mt-1">
             <UserAvatar user={reply.user} />
+            <SettingButton reply={reply} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">

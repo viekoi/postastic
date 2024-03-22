@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NewPostShcema } from "@/schemas";
+import { EditShcema, NewPostShcema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -26,26 +26,31 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useTransition,
 } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import UserAvatar from "../../user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { newPost } from "@/actions/new-post";
 import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions, videoMaxSize } from "@/constansts";
 import FileUploader from "../../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { useNewPostModal } from "@/hooks/use-modal-store";
+import { useEditMediaModal } from "@/hooks/use-modal-store";
 import { EmojiPicker } from "../../emoji-picker";
 import useIsMobile from "@/hooks/use-is-mobile";
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { AttachmentFile, PostWithData } from "@/type";
-import { optimisticInsert } from "@/queries/react-query/optimistic-functions";
+import { AttachmentFile } from "@/type";
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
+import { useUpdateMedia } from "@/queries/react-query/queris";
+import { getPostPrivacyOption } from "@/lib/utils";
+
+interface EditFormProps {
+  defaultValues: z.infer<typeof EditShcema>;
+  id: string;
+  queryKey:QueryKey
+}
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -53,16 +58,17 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const NewForm = () => {
+const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
+  const [privacyOption, setPrivacyOption] = useState(
+    getPostPrivacyOption(defaultValues.privacyType)
+  );
   const queryClient = useQueryClient();
-  const { onClose } = useNewPostModal();
+  const { mutateAsync: updatePost, isPending } = useUpdateMedia(queryKey);
+  const [files, setFiles] = useState<AttachmentFile[]>(
+    defaultValues.attachments
+  );
+  const { onClose } = useEditMediaModal();
   const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
-
-  const [files, setFiles] = useState<AttachmentFile[]>([]);
-  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
-  const [isPending, startTransition] = useTransition();
-  const isMobile = useIsMobile(1024);
-
   const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
@@ -79,6 +85,8 @@ const NewForm = () => {
     maxSize: videoMaxSize,
     maxFiles: 5,
   });
+
+  const isMobile = useIsMobile(1024);
 
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
@@ -110,16 +118,16 @@ const NewForm = () => {
   };
   const baseMediaClassName = "max-h-[100%]  !static ";
 
-  const form = useForm<z.infer<typeof NewPostShcema>>({
-    resolver: zodResolver(NewPostShcema),
+  const form = useForm<z.infer<typeof EditShcema>>({
+    resolver: zodResolver(EditShcema),
     defaultValues: {
-      content: "",
-      attachments: files,
-      privacyType: privacyOption.value,
+      ...defaultValues,
+      attachments: [],
     },
   });
 
   const contentValue = form.watch("content");
+  const attachmentsValue = form.watch("attachments");
   const { user } = useCurrentUser();
 
   useLayoutEffect(() => {
@@ -127,40 +135,34 @@ const NewForm = () => {
   }, [contentValue]);
 
   useEffect(() => {
-    if (files.length > 0 || contentValue.trim().length) {
+    if (attachmentsValue.length > 0 || contentValue.trim().length) {
       form.formState.errors.isEmpty && form.clearErrors("isEmpty");
     }
-  }, [contentValue, files]);
+  }, [contentValue, attachmentsValue]);
+
+  useEffect(() => {
+    if (files.length > 0) {
+      onAdd();
+    }
+  }, []);
 
   if (!user) return null;
 
-  const onSubmit = (values: z.infer<typeof NewPostShcema>) => {
-    startTransition(() => {
-      newPost(values).then(async (data) => {
-        if (data.success && data.data) {
-          toast.success(data.success, { closeButton: false });
-          form.reset();
-          const newCachePost: PostWithData = {
-            ...data.data,
-            isLikedByMe: false,
-            likesCount: 0,
-            interactsCount: 0,
-            user: user,
-            type: "post",
-          };
-          optimisticInsert({
-            queryClient,
-            queryKey: [QUERY_KEYS.GET_HOME_POSTS],
-            data: newCachePost,
-          });
-          onCancel();
-          onRemoveFiles();
-          onClose();
-        } else if (data.error) {
-          toast.error(data.error, { closeButton: false });
-        }
-      });
-    });
+  const onSubmit = async (values: z.infer<typeof NewPostShcema>) => {
+    try {
+      const res = await updatePost({ values, id: id });
+      if (res.success) {
+        toast.success(res.success, { closeButton: false });
+        form.reset();
+        onCancel();
+        onRemoveFiles();
+        onClose();
+      } else {
+        toast.error(res.error, { closeButton: false });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -183,8 +185,8 @@ const NewForm = () => {
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}
+                        value={field.value}
                         ref={inputRef}
-                        defaultValue={field.value}
                         placeholder="What's happening?"
                       />
                     </div>
@@ -201,9 +203,9 @@ const NewForm = () => {
                   <FormItem>
                     <FormControl>
                       <FileUploader
+                        files={files}
                         onRemoveFile={onRemoveFile}
                         onRemoveFiles={onRemoveFiles}
-                        files={files}
                         getInputProps={getInputProps}
                         getRootProps={getRootProps}
                         open={open}
@@ -315,7 +317,7 @@ const NewForm = () => {
               variant={"blue"}
               className="rounded-3xl  px-6 text-sm"
             >
-              post
+              edit
             </Button>
           </div>
         </form>
@@ -324,4 +326,4 @@ const NewForm = () => {
   );
 };
 
-export default NewForm;
+export default EditForm;

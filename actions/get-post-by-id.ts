@@ -19,22 +19,6 @@ export const getPostById = async (postId: string | null) => {
             userId: true,
           },
         },
-        postComments: {
-          columns: {
-            id: true,
-          },
-          where: (c) =>
-            and(
-              or(
-                eq(c.privacyType, privacyTypeValue.PUBLIC),
-                and(
-                  eq(c.privacyType, privacyTypeValue.PRIVATE),
-                  eq(c.userId, user.id)
-                )
-              ),
-              eq(c.type, "comment")
-            ),
-        },
         postBy: true,
         attachments: true,
       },
@@ -47,7 +31,6 @@ export const getPostById = async (postId: string | null) => {
           type: post.type as "post",
           isLikedByMe: !!post.likes.find((like) => like.userId === user.id),
           likesCount: post.likes.length,
-          interactsCount: post.postComments.length,
           user: post.postBy,
         },
       };

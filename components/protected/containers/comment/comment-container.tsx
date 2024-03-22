@@ -1,23 +1,23 @@
 "use client";
 import { useGetInfinitePostComments } from "@/queries/react-query/queris";
-import { Button } from "../ui/button";
+import { Button } from "../../../ui/button";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
-import { Loader } from "../Loader";
+import { Loader } from "../../../Loader";
 import { MessageSquareText } from "lucide-react";
-import CommentList from "./comment-list";
+import CommentList from "../../lists/comment/comment-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
-import { SkeletonCard } from "./cards/skeleton-card";
+import { SkeletonCard } from "../../cards/skeleton-card";
 
 const CommentContainer = ({
   postId,
-  initialCommentsCount,
+  initiaParentInteractCount,
 }: {
   postId: string;
-  initialCommentsCount: number;
+  initiaParentInteractCount: number;
 }) => {
   const queryClient = useQueryClient();
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
@@ -30,7 +30,10 @@ const CommentContainer = ({
   }, [inView]);
 
   useEffect(() => {
-    if (data?.pages[0].total && data!.pages[0].total !== initialCommentsCount) {
+    if (
+      data?.pages[0].total &&
+      data!.pages[0].total !== initiaParentInteractCount
+    ) {
       updateInteractCount({
         queryClient,
         queryKey: [QUERY_KEYS.GET_HOME_POSTS],
@@ -43,9 +46,11 @@ const CommentContainer = ({
   if (isPending) {
     return (
       <div className="flex h-full flex-col w-[300px]  justify-start items-center">
-        {Array.from({ length: initialCommentsCount + 1 }).map((element, index) => (
-          <SkeletonCard key={index} />
-        ))}
+        {Array.from({ length: initiaParentInteractCount + 1 }).map(
+          (element, index) => (
+            <SkeletonCard key={index} />
+          )
+        )}
       </div>
     );
   }
@@ -82,9 +87,9 @@ const CommentContainer = ({
       {hasNextPage && (
         <div
           ref={ref}
-          className="w-full h-full flex items-center justify-center py-1"
+          className="flex h-full flex-col w-[300px]  justify-start items-center"
         >
-          <Loader />
+          <SkeletonCard />
         </div>
       )}
     </>

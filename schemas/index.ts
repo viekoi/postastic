@@ -45,6 +45,8 @@ function refineFiles(files: AttachmentFile[]): boolean {
   return files.every((file: AttachmentFile) => !isTooLarge(file, file.type));
 }
 
+
+
 export const NewPostShcema = z
   .object({
     content: z
@@ -116,6 +118,34 @@ export const NewReplyShcema = z
     isEmpty: z.any().nullish(),
     postId: z.string().min(1, { message: "postId is require" }),
     parentId: z.string().min(1, { message: "parentId is require" }),
+  })
+  .refine(
+    (data) => {
+      if (!data.content.trim().length && !data.attachments.length) return false;
+      return true;
+    },
+    {
+      path: ["isEmpty"],
+      params: { empy: "empty" },
+      message: "Post is empty!!!",
+    }
+  );
+
+
+  export const EditShcema = z
+  .object({
+    content: z
+      .string()
+      .max(2200, { message: "Exceeded the maximum character" }),
+    attachments: z
+      .array(z.custom<AttachmentFile>())
+      .max(5, { message: "Maximum of 5 media allowed" })
+      .refine((data) => refineFiles(data), {
+        message:
+          "Images must be smaller than 8mb, videos must be smaller than 20mb",
+      }),
+    privacyType: z.enum(["private", "public"]),
+    isEmpty: z.any().nullish(),
   })
   .refine(
     (data) => {

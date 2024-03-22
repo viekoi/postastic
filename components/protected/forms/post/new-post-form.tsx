@@ -42,19 +42,10 @@ import { EmojiPicker } from "../../emoji-picker";
 import useIsMobile from "@/hooks/use-is-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { AttachmentFile, PostWithData } from "@/type";
-import {
-  optimisticInsert,
-  optimisticUpdate,
-} from "@/queries/react-query/optimistic-functions";
+import { AttachmentFile, MediaWithData } from "@/type";
+import { optimisticInsert } from "@/queries/react-query/optimistic-functions";
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
-import { updatePost } from "@/actions/update-post";
-
-interface EditFormProps {
-  defaultValues: z.infer<typeof NewPostShcema>;
-  postId: string;
-}
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -62,13 +53,16 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const EditForm = ({ defaultValues, postId }: EditFormProps) => {
+const NewPostForm = () => {
   const queryClient = useQueryClient();
-  const [files, setFiles] = useState<AttachmentFile[]>(
-    defaultValues.attachments
-  );
   const { onClose } = useNewPostModal();
   const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
+
+  const [files, setFiles] = useState<AttachmentFile[]>([]);
+  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
+  const [isPending, startTransition] = useTransition();
+  const isMobile = useIsMobile(1024);
+
   const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
@@ -85,9 +79,6 @@ const EditForm = ({ defaultValues, postId }: EditFormProps) => {
     maxSize: videoMaxSize,
     maxFiles: 5,
   });
-  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
-  const [isPending, startTransition] = useTransition();
-  const isMobile = useIsMobile(1024);
 
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
@@ -122,13 +113,13 @@ const EditForm = ({ defaultValues, postId }: EditFormProps) => {
   const form = useForm<z.infer<typeof NewPostShcema>>({
     resolver: zodResolver(NewPostShcema),
     defaultValues: {
-      ...defaultValues,
-      attachments: [],
+      content: "",
+      attachments: files,
+      privacyType: privacyOption.value,
     },
   });
 
   const contentValue = form.watch("content");
-  const attachmentsValue = form.watch("attachments");
   const { user } = useCurrentUser();
 
   useLayoutEffect(() => {
@@ -136,46 +127,41 @@ const EditForm = ({ defaultValues, postId }: EditFormProps) => {
   }, [contentValue]);
 
   useEffect(() => {
-    if (attachmentsValue.length > 0 || contentValue.trim().length) {
+    if (files.length > 0 || contentValue.trim().length) {
       form.formState.errors.isEmpty && form.clearErrors("isEmpty");
     }
-  }, [contentValue, attachmentsValue]);
-
-  useEffect(() => {
-    if (files.length > 0) {
-      onAdd();
-    }
-  }, []);
+  }, [contentValue, files]);
 
   if (!user) return null;
 
   const onSubmit = (values: z.infer<typeof NewPostShcema>) => {
-    // startTransition(() => {
-    //   updatePost(values, postId).then(async (data) => {
-    //     if (data.success && data.data) {
-    //       toast.success(data.success, { closeButton: false });
-    //       form.reset();
-    //       const newCachePost: PostWithData = {
-    //         ...data.data,
-    //         isLikedByMe: false,
-    //         likesCount: 0,
-    //         interactsCount: 0,
-    //         user: user,
-    //         type: "post",
-    //       };
-    //       optimisticUpdate({
-    //         queryClient,
-    //         queryKey: [QUERY_KEYS.GET_HOME_POSTS],
-    //         data: newCachePost,
-    //       });
-    //       onCancel();
-    //       onRemoveFiles();
-    //       onClose();
-    //     } else if (data.error) {
-    //       toast.error(data.error, { closeButton: false });
-    //     }
-    //   });
-    // });
+    startTransition(() => {
+      newPost(values).then(async (data) => {
+        if (data.success && data.data) {
+          toast.success(data.success, { closeButton: false });
+          form.reset();
+          const newCachePost: MediaWithData = {
+            ...data.data,
+            isLikedByMe: false,
+            likesCount: 0,
+            interactsCount: 0,
+            user: user,
+            type: "post",
+          };
+          optimisticInsert({
+            queryClient,
+            queryKey: [QUERY_KEYS.GET_HOME_POSTS],
+            data: newCachePost,
+            orderBy:"dsc"
+          });
+          onCancel();
+          onRemoveFiles();
+          onClose();
+        } else if (data.error) {
+          toast.error(data.error, { closeButton: false });
+        }
+      });
+    });
   };
 
   return (
@@ -198,7 +184,6 @@ const EditForm = ({ defaultValues, postId }: EditFormProps) => {
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}
-                        value={field.value}
                         ref={inputRef}
                         placeholder="What's happening?"
                       />
@@ -216,9 +201,9 @@ const EditForm = ({ defaultValues, postId }: EditFormProps) => {
                   <FormItem>
                     <FormControl>
                       <FileUploader
-                        files={files}
                         onRemoveFile={onRemoveFile}
                         onRemoveFiles={onRemoveFiles}
+                        files={files}
                         getInputProps={getInputProps}
                         getRootProps={getRootProps}
                         open={open}
@@ -339,4 +324,4 @@ const EditForm = ({ defaultValues, postId }: EditFormProps) => {
   );
 };
 
-export default EditForm;
+export default NewPostForm;

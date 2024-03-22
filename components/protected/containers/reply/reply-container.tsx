@@ -1,17 +1,15 @@
 "use client";
 import { useGetInfiniteCommentReplies } from "@/queries/react-query/queris";
-import { Button } from "../ui/button";
+import { Button } from "../../../ui/button";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
-import { Loader } from "../Loader";
 import { MessageSquareText } from "lucide-react";
-import CommentList from "./comment-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
-import ReplyList from "./reply-list";
-import { SkeletonCard } from "./cards/skeleton-card";
+import ReplyList from "../../lists/reply/reply-list";
+import { SkeletonCard } from "../../cards/skeleton-card";
 
 const ReplyContainer = ({
   postId,

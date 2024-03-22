@@ -6,8 +6,8 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { PostWithData } from "@/type";
-import UserAvatar from "../user-avatar";
+import { MediaWithData } from "@/type";
+import UserAvatar from "../../user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
@@ -15,16 +15,16 @@ import {
 } from "@/lib/utils";
 import { Globe, Lock, MessageCircle, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LikeButton from "../like-button";
+import LikeButton from "../../like-button";
 import { privacyTypeValue } from "@/constansts";
-import AttachmentDisplayer from "../attachment-displayer";
+import AttachmentDisplayer from "../../attachment-displayer";
 import { useCommentModal } from "@/hooks/use-modal-store";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import SettingButton from "../setting-button";
+import SettingButton from "./setting-button";
 import useIsMobile from "@/hooks/use-is-mobile";
 
 interface PostCardProps {
-  post: PostWithData;
+  post: MediaWithData;
   className?: string;
   isModalContent?: boolean;
 }
@@ -36,7 +36,7 @@ const PostCard = ({
 }: PostCardProps) => {
   const { onOpen } = useCommentModal();
   const [expandConent, setExpandContent] = useState(false);
-  const isMobile = useIsMobile(1024)
+  const isMobile = useIsMobile(1024);
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
     var className = "";
@@ -79,9 +79,9 @@ const PostCard = ({
             <div className="flex items-start gap-x-2 ">
               <UserAvatar user={post.user} />
               <div className="flex flex-col ">
-                <h4 className="font-medium text-sm leading-[140%]">
+                <span className="font-medium text-sm leading-[140%]">
                   {post.user.name}
-                </h4>
+                </span>
                 <h4 className=" items-center flex gap-x-1 text-[12px] font-medium text-muted-foreground">
                   {isMobile
                     ? mobileMultiFormatDateString(post.createdAt.toUTCString())
@@ -94,7 +94,7 @@ const PostCard = ({
                 </h4>
               </div>
             </div>
-            <SettingButton userId={post.userId} id={post.id} />
+            <SettingButton post={post} />
           </div>
         </CardHeader>
         <CardContent className="overflow-hidden border-solid flex-col flex gap-2 min-w-[0]">
