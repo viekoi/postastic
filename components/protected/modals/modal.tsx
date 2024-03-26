@@ -42,8 +42,8 @@ const Modal: React.FC<ModalProps> = ({
           `
         flex
         flex-col
-        custom-scrollbar
-        overflow-y-scroll
+       overflow-hidden
+       
         border 
         border-gray-600 
         h-full 

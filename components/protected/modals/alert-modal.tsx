@@ -10,7 +10,7 @@ export const AlertModal = () => {
     <Modal
       title="Are you sure?"
       description="This action cant be reverted."
-      className=" max-h-fit h-fit lg:max-w-[400px] mx-auto"
+      className=" max-h-fit h-fit lg:max-w-[400px] mx-auto z-[1001]"
       isOpen={isOpen}
       onClose={onClose}
     >

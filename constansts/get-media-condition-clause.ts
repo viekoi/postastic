@@ -5,7 +5,7 @@ import { privacyTypeValue } from ".";
 export const getMediasWhereClause = (
   userId: string,
   type: "post" | "comment" | "reply",
-  parentId?: string
+  parentId?: string | null
 ) => {
   if (parentId) {
     return and(

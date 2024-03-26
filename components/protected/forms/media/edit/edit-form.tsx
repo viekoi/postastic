@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NewCommentShcema } from "@/schemas";
+import { EditShcema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -26,28 +26,32 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  useTransition,
 } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import UserAvatar from "../../user-avatar";
+import UserAvatar from "../../../user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions, videoMaxSize } from "@/constansts";
-import { useNewPostModal } from "@/hooks/use-modal-store";
-import { EmojiPicker } from "../../emoji-picker";
+import FileUploader from "../../../file-uploader";
+import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
+import { useEditMediaModal } from "@/hooks/use-modal-store";
+import { EmojiPicker } from "../../../emoji-picker";
 import useIsMobile from "@/hooks/use-is-mobile";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { AttachmentFile, MediaWithData } from "@/type";
-import { newComment } from "@/actions/new-comment";
-import {
-  optimisticInsert,
-  updateInteractCount,
-} from "@/queries/react-query/optimistic-functions";
+import { QueryKey, useQueryClient } from "@tanstack/react-query";
+import { AttachmentFile } from "@/type";
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
-import FileUploader from "../../file-uploader";
+import { useUpdateMedia } from "@/queries/react-query/queris";
+import { getPostPrivacyOption } from "@/lib/utils";
+import DrawerModal from "@/components/protected/drawers/drawer";
+import Modal from "@/components/protected/modals/modal";
+
+interface EditFormProps {
+  defaultValues: z.infer<typeof EditShcema>;
+  id: string;
+  queryKey: QueryKey;
+  }
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -55,11 +59,19 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const NewCommentForm = ({ postId }: { postId: string }) => {
+const EditForm = ({ defaultValues, id, queryKey }: EditFormProps) => {
+    const [privacyOption, setPrivacyOption] = useState(
+    getPostPrivacyOption(defaultValues.privacyType)
+  );
+
   const queryClient = useQueryClient();
-  const [files, setFiles] = useState<AttachmentFile[]>([]);
-  const { onClose } = useNewPostModal();
-  const { onDrop, onRemoveFiles, onRemoveFile } = useFilesUploadActions(
+  const { mutateAsync: updatePost, isPending } = useUpdateMedia(queryKey);
+  const [files, setFiles] = useState<AttachmentFile[]>(
+    defaultValues.attachments
+  );
+  const { onClose } = useEditMediaModal();
+  const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
+  const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
   );
@@ -75,15 +87,14 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
     maxSize: videoMaxSize,
     maxFiles: 5,
   });
-  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
-  const [isPending, startTransition] = useTransition();
+
   const isMobile = useIsMobile(1024);
+
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
     updateTextAreaSize(textArea);
     textAreaRef.current = textArea;
   }, []);
-
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
     var className = "";
@@ -109,13 +120,11 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
   };
   const baseMediaClassName = "max-h-[100%]  !static ";
 
-  const form = useForm<z.infer<typeof NewCommentShcema>>({
-    resolver: zodResolver(NewCommentShcema),
+  const form = useForm<z.infer<typeof EditShcema>>({
+    resolver: zodResolver(EditShcema),
     defaultValues: {
-      content: "",
-      attachments: files,
-      postId: postId,
-      privacyType: privacyOption.value,
+      ...defaultValues,
+      attachments: [],
     },
   });
 
@@ -133,45 +142,33 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
     }
   }, [contentValue, attachmentsValue]);
 
+  useEffect(() => {
+    if (files.length > 0) {
+      onAdd();
+    }
+  }, []);
+
   if (!user) return null;
 
-  const onSubmit = (values: z.infer<typeof NewCommentShcema>) => {
-    startTransition(() => {
-      newComment(values).then(async (data) => {
-        if (data.success && data.data) {
-          toast.success(data.success, { closeButton: false });
-          form.reset();
-          const newCacheComment: MediaWithData = {
-            ...data.data,
-            isLikedByMe: false,
-            likesCount: 0,
-            interactsCount: 0,
-            user: user,
-            type: "comment",
-          };
-          optimisticInsert({
-            queryClient,
-            queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId, "comments"],
-            data: newCacheComment,
-            orderBy:"asc"
-          });
-          updateInteractCount({
-            queryClient,
-            queryKey: [QUERY_KEYS.GET_HOME_POSTS],
-            id: postId,
-            action:"insert"
-          });
-          onClose();
-          onRemoveFiles();
-        } else if (data.error) {
-          toast.error(data.error, { closeButton: false });
-        }
-      });
-    });
+  const onSubmit = async (values: z.infer<typeof EditShcema>) => {
+    try {
+      const res = await updatePost({ values, id: id });
+      if (res.success) {
+        toast.success(res.success, { closeButton: false });
+        form.reset();
+        onCancel();
+        onRemoveFiles();
+        onClose();
+      } else {
+        toast.error(res.error, { closeButton: false });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <div className="w-full  max-h-[40%]  overflow-x-hidden overflow-y-auto custom-scrollbar  p-4 pb-0 border-t-[0.5px] border-gray-600  bg-black ">
+    <div className=" w-full  p-4 pb-0 ">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -190,8 +187,9 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}
+                        value={field.value}
                         ref={inputRef}
-                        placeholder="Leave a comment!"
+                        placeholder="What's happening?"
                       />
                     </div>
                   </FormControl>
@@ -199,34 +197,32 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="attachments"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <FileUploader
-                      files={files}
-                      onRemoveFiles={onRemoveFiles}
-                      onRemoveFile={onRemoveFile}
-                      className="max-w-[300px]"
-                      isCommentFormChild
-                      getInputProps={getInputProps}
-                      getRootProps={getRootProps}
-                      open={open}
-                      baseContainerClassName={baseContainerClassName}
-                      baseAttachmentClassName={baseMediaClassName}
-                      indexContainerClassName={indexContainerClassName}
-                      disabled={isPending}
-                      fieldChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {isAddingFiles && (
+              <FormField
+                control={form.control}
+                name="attachments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <FileUploader
+                        files={files}
+                        onRemoveFile={onRemoveFile}
+                        onRemoveFiles={onRemoveFiles}
+                        getInputProps={getInputProps}
+                        getRootProps={getRootProps}
+                        open={open}
+                        baseContainerClassName={baseContainerClassName}
+                        baseAttachmentClassName={baseMediaClassName}
+                        indexContainerClassName={indexContainerClassName}
+                        disabled={isPending}
+                        fieldChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             {form.formState.errors.isEmpty && (
               <FormField
                 control={form.control}
@@ -242,12 +238,12 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
           <div className="flex items-center justify-between py-2">
             <div className="inline-flex items-center">
               <Button
-                disabled={isPending}
+                disabled={isAddingFiles || isPending}
                 type="button"
                 variant={"ghost"}
                 size={"icon"}
                 onClick={() => {
-                  open();
+                  onAdd();
                 }}
               >
                 <Image />
@@ -323,7 +319,7 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
               variant={"blue"}
               className="rounded-3xl  px-6 text-sm"
             >
-              comment
+              edit
             </Button>
           </div>
         </form>
@@ -332,4 +328,4 @@ const NewCommentForm = ({ postId }: { postId: string }) => {
   );
 };
 
-export default NewCommentForm;
+export default EditForm;

@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EditShcema, NewPostShcema } from "@/schemas";
+import { NewMediaShcema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -28,28 +28,33 @@ import {
   useState,
 } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import UserAvatar from "../../user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions, videoMaxSize } from "@/constansts";
-import FileUploader from "../../file-uploader";
-import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { useEditMediaModal } from "@/hooks/use-modal-store";
-import { EmojiPicker } from "../../emoji-picker";
+import { useNewMediaModal } from "@/hooks/use-modal-store";
 import useIsMobile from "@/hooks/use-is-mobile";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { AttachmentFile } from "@/type";
+import { AttachmentFile, MediaWithData } from "@/type";
+import {
+  optimisticInsert,
+  updateInteractCount,
+} from "@/queries/react-query/optimistic-functions";
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
-import { useUpdateMedia } from "@/queries/react-query/queris";
-import { getPostPrivacyOption } from "@/lib/utils";
+import UserAvatar from "@/components/protected/user-avatar";
+import FileUploader from "@/components/protected/file-uploader";
+import { EmojiPicker } from "@/components/protected/emoji-picker";
+import { useCreateMedia } from "@/queries/react-query/queris";
+import { cn } from "@/lib/utils";
+import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 
-interface EditFormProps {
-  defaultValues: z.infer<typeof EditShcema>;
-  id: string;
-  queryKey:QueryKey
+interface NewMediaFormProps {
+  type: "post" | "comment" | "reply";
+  postId: string | null;
+  parentId: string | null;
+  currentListQueryKey: QueryKey;
+  parentListQueryKey?: QueryKey;
 }
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
@@ -58,21 +63,27 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
-  const [privacyOption, setPrivacyOption] = useState(
-    getPostPrivacyOption(defaultValues.privacyType)
-  );
+const NewMediaForm = ({
+  type,
+  postId,
+  parentId,
+  parentListQueryKey,
+  currentListQueryKey,
+}: NewMediaFormProps) => {
+  if (type !== "post" && !postId && !parentId) {
+    throw new Error(
+      "postId and parentId is needed when create a new reply or comment "
+    );
+  }
   const queryClient = useQueryClient();
-  const { mutateAsync: updatePost, isPending } = useUpdateMedia(queryKey);
-  const [files, setFiles] = useState<AttachmentFile[]>(
-    defaultValues.attachments
-  );
-  const { onClose } = useEditMediaModal();
-  const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
-  const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
+  const { mutateAsync: createMedia, isPending } = useCreateMedia();
+  const [files, setFiles] = useState<AttachmentFile[]>([]);
+  const { onClose } = useNewMediaModal();
+  const { onDrop, onRemoveFiles, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
   );
+  const { onAdd, onCancel } = useIsAddingFiles();
   const { getInputProps, getRootProps, open } = useDropzone({
     onDrop,
     accept: {
@@ -85,14 +96,15 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
     maxSize: videoMaxSize,
     maxFiles: 5,
   });
+  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
 
   const isMobile = useIsMobile(1024);
-
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
     updateTextAreaSize(textArea);
     textAreaRef.current = textArea;
   }, []);
+
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
     var className = "";
@@ -118,11 +130,15 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
   };
   const baseMediaClassName = "max-h-[100%]  !static ";
 
-  const form = useForm<z.infer<typeof EditShcema>>({
-    resolver: zodResolver(EditShcema),
+  const form = useForm<z.infer<typeof NewMediaShcema>>({
+    resolver: zodResolver(NewMediaShcema),
     defaultValues: {
-      ...defaultValues,
-      attachments: [],
+      content: "",
+      attachments: files,
+      postId,
+      parentId,
+      type,
+      privacyType: privacyOption.value,
     },
   });
 
@@ -140,33 +156,54 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
     }
   }, [contentValue, attachmentsValue]);
 
-  useEffect(() => {
-    if (files.length > 0) {
-      onAdd();
-    }
-  }, []);
-
   if (!user) return null;
 
-  const onSubmit = async (values: z.infer<typeof NewPostShcema>) => {
+  const onSubmit = async (values: z.infer<typeof NewMediaShcema>) => {
     try {
-      const res = await updatePost({ values, id: id });
-      if (res.success) {
-        toast.success(res.success, { closeButton: false });
-        form.reset();
-        onCancel();
-        onRemoveFiles();
-        onClose();
-      } else {
-        toast.error(res.error, { closeButton: false });
-      }
+      await createMedia(values).then((res) => {
+        if (res.success && res.data) {
+          toast.success(res.success, { closeButton: false });
+          form.reset();
+          const newCacheComment: MediaWithData = {
+            ...res.data,
+            isLikedByMe: false,
+            likesCount: 0,
+            interactsCount: 0,
+            user: user,
+          };
+          optimisticInsert({
+            queryClient,
+            queryKey: currentListQueryKey,
+            data: newCacheComment,
+            orderBy: type !== "post" ? "asc" : "dsc",
+          });
+          if (type !== "post" && parentId && parentListQueryKey) {
+            updateInteractCount({
+              queryClient,
+              queryKey: parentListQueryKey,
+              parentId: parentId,
+              action: "insert",
+            });
+          }
+          onClose();
+          onRemoveFiles();
+        } else if (res.error) {
+          toast.error(res.error, { closeButton: false });
+        }
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <div className=" w-full  p-4 pb-0 ">
+    <div
+      className={cn(
+        "w-full p-4 pb-0 overflow-x-hidden",
+        type === "comment" &&
+          "border-t-[0.5px] border-gray-600  max-h-[40%]  bg-black"
+      )}
+    >
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -185,9 +222,8 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}
-                        value={field.value}
                         ref={inputRef}
-                        placeholder="What's happening?"
+                        placeholder={`Write ${type} here`}
                       />
                     </div>
                   </FormControl>
@@ -195,32 +231,34 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
                 </FormItem>
               )}
             />
-            {isAddingFiles && (
-              <FormField
-                control={form.control}
-                name="attachments"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FileUploader
-                        files={files}
-                        onRemoveFile={onRemoveFile}
-                        onRemoveFiles={onRemoveFiles}
-                        getInputProps={getInputProps}
-                        getRootProps={getRootProps}
-                        open={open}
-                        baseContainerClassName={baseContainerClassName}
-                        baseAttachmentClassName={baseMediaClassName}
-                        indexContainerClassName={indexContainerClassName}
-                        disabled={isPending}
-                        fieldChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+
+            <FormField
+              control={form.control}
+              name="attachments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FileUploader
+                      files={files}
+                      onRemoveFiles={onRemoveFiles}
+                      onRemoveFile={onRemoveFile}
+                      className={cn("", type !== "post" && "max-w-[300px]")}
+                      isCommentFormChild={type !== "post" ? true : false}
+                      getInputProps={getInputProps}
+                      getRootProps={getRootProps}
+                      open={open}
+                      baseContainerClassName={baseContainerClassName}
+                      baseAttachmentClassName={baseMediaClassName}
+                      indexContainerClassName={indexContainerClassName}
+                      disabled={isPending}
+                      fieldChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {form.formState.errors.isEmpty && (
               <FormField
                 control={form.control}
@@ -236,12 +274,12 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
           <div className="flex items-center justify-between py-2">
             <div className="inline-flex items-center">
               <Button
-                disabled={isAddingFiles || isPending}
+                disabled={isPending}
                 type="button"
                 variant={"ghost"}
                 size={"icon"}
                 onClick={() => {
-                  onAdd();
+                  type === "post" ? onAdd() : open();
                 }}
               >
                 <Image />
@@ -317,7 +355,7 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
               variant={"blue"}
               className="rounded-3xl  px-6 text-sm"
             >
-              edit
+              {type}
             </Button>
           </div>
         </form>
@@ -326,4 +364,4 @@ const EditForm = ({ defaultValues,id,queryKey }: EditFormProps) => {
   );
 };
 
-export default EditForm;
+export default NewMediaForm;

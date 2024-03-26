@@ -8,16 +8,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
-import ReplyList from "../../lists/reply/reply-list";
 import { SkeletonCard } from "../../cards/skeleton-card";
+import MediaList from "../../lists/media/media-list";
 
 const ReplyContainer = ({
   postId,
   parentId,
   initialInteractCount,
 }: {
-  postId: string;
-  parentId: string;
+  postId: string | null;
+  parentId: string | null;
   initialInteractCount: number;
 }) => {
   const queryClient = useQueryClient();
@@ -35,7 +35,7 @@ const ReplyContainer = ({
       updateInteractCount({
         queryClient,
         queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId, "comments"],
-        id: postId,
+        parentId: postId,
         newCount: data?.pages[0].total,
       });
     }
@@ -74,7 +74,7 @@ const ReplyContainer = ({
     <div className="max-h-[40vh] overflow-y-scroll custom-scrollbar ">
       {data.pages.flat().map((page, index) => {
         return (
-          <ReplyList key={index} replies={page.success ? page.success : []} />
+          <MediaList className="flex flex-col gap-y-4 w-full" key={index} medias={page.success ? page.success : []} type="reply"/>
         );
       })}
       {hasNextPage && (

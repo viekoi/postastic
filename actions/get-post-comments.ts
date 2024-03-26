@@ -6,11 +6,12 @@ import { privacyTypeValue } from "@/constansts";
 import { medias as mediaTable } from "../lib/db/schema";
 import { getMediasWhereClause } from "@/constansts/get-media-condition-clause";
 
-export const getPostComments = async (pageParam: number, postId: string) => {
+export const getPostComments = async (pageParam: number, postId: string | null) => {
   const user = await currentUser();
 
   if (!user) return { error: "Unauthenticated!!!", pageParam };
   try {
+    if(!postId) return {error:"postId is needed"}
     const limit = 20;
     const totalComments = await db
       .select({ value: count() })

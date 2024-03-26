@@ -15,13 +15,13 @@ import {
   useGetPostCreator,
 } from "@/queries/react-query/queris";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-import { InteractMediaWithData, MediaWithData } from "@/type";
+import { MediaWithData } from "@/type";
 import { useQueryClient } from "@tanstack/react-query";
 import { Delete, EyeOff, FileCog, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 interface SettingButtonProps {
-  reply: InteractMediaWithData;
+  reply: MediaWithData;
 }
 
 const SettingButton = ({ reply }: SettingButtonProps) => {
@@ -50,7 +50,7 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
         updateInteractCount({
           queryClient,
           queryKey: [QUERY_KEYS.GET_POST_COMMENTS, reply.postId, "comments"],
-          id: reply.parentId,
+          parentId: reply.parentId,
           action: "delete",
         });
         toast.success(data.success);

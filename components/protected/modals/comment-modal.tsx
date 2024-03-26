@@ -2,9 +2,10 @@
 import { useCommentModal } from "@/hooks/use-modal-store";
 import Modal from "./modal";
 import CommentContainer from "../containers/comment/comment-container";
-import NewCommentForm from "../forms/comment/new-comment-form";
 import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
+import NewMediaForm from "../forms/media/new/new-media-form";
+import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
 const CommentModal = () => {
   const { isOpen, onClose, post } = useCommentModal();
@@ -26,7 +27,18 @@ const CommentModal = () => {
             initiaParentInteractCount={post.interactsCount}
           />
         </div>
-        <NewCommentForm postId={post.id} />
+        {/* <NewCommentForm postId={post.id} /> */}
+        <NewMediaForm
+          parentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+          currentListQueryKey={[
+            QUERY_KEYS.GET_POST_COMMENTS,
+            post.id,
+            "comments",
+          ]}
+          type="comment"
+          postId={post.id}
+          parentId={post.id}
+        />
       </Modal>
     );
   }
@@ -47,7 +59,17 @@ const CommentModal = () => {
             initiaParentInteractCount={post.interactsCount}
           />
         </div>
-        <NewCommentForm postId={post.id} />
+        <NewMediaForm
+          parentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+          currentListQueryKey={[
+            QUERY_KEYS.GET_POST_COMMENTS,
+            post.id,
+            "comments",
+          ]}
+          type="comment"
+          postId={post.id}
+          parentId={post.id}
+        />
       </DrawerModal>
     );
   }

@@ -3,14 +3,13 @@ import { useGetInfinitePostComments } from "@/queries/react-query/queris";
 import { Button } from "../../../ui/button";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
-import { Loader } from "../../../Loader";
 import { MessageSquareText } from "lucide-react";
-import CommentList from "../../lists/comment/comment-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
 import { SkeletonCard } from "../../cards/skeleton-card";
+import MediaList from "../../lists/media/media-list";
 
 const CommentContainer = ({
   postId,
@@ -37,7 +36,7 @@ const CommentContainer = ({
       updateInteractCount({
         queryClient,
         queryKey: [QUERY_KEYS.GET_HOME_POSTS],
-        id: postId,
+        parentId: postId,
         newCount: data?.pages[0].total,
       });
     }
@@ -77,18 +76,17 @@ const CommentContainer = ({
     <>
       {data.pages.flat().map((page, index) => {
         return (
-          <CommentList
+          <MediaList
+            className="flex flex-col gap-y-4 w-full"
             key={index}
-            comments={page.success ? page.success : []}
+            medias={page.success ? page.success : []}
+            type="comment"
           />
         );
       })}
 
       {hasNextPage && (
-        <div
-          ref={ref}
-          className="flex h-full flex-col w-[300px]  justify-start items-center"
-        >
+        <div ref={ref} className="flex flex-col gap-y-4">
           <SkeletonCard />
         </div>
       )}

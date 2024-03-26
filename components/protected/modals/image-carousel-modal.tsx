@@ -18,7 +18,7 @@ const ImageCarouselModal = () => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className=" h-screen items-center justify-center "
+      className=" h-screen items-center justify-center z-[1001] "
     >
       <Carousel
         opts={{

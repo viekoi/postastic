@@ -2,20 +2,6 @@ import { AttachmentFile, MediaWithData } from "@/type";
 import { QueryKey } from "@tanstack/react-query";
 import { create } from "zustand";
 
-interface NewPostModalStore {
-  isOpen: boolean;
-  onOpen: (postId?: string) => void;
-  onClose: () => void;
-  postId: string | null;
-}
-
-export const useNewPostModal = create<NewPostModalStore>((set) => ({
-  postId: null,
-  isOpen: false,
-  onOpen: (postId?: string) => set({ isOpen: true, postId: postId }),
-  onClose: () => set({ isOpen: false, postId: null }),
-}));
-
 interface EditMediaModal {
   isOpen: boolean;
   onOpen: (id: string, queryKey: QueryKey) => void;
@@ -32,28 +18,22 @@ export const useEditMediaModal = create<EditMediaModal>((set) => ({
   onClose: () => set({ isOpen: false, id: null, queryKey: null }),
 }));
 
-interface NewReplyModalStore {
+interface NewMediaModalStore {
   isOpen: boolean;
-  postId: null | string;
-  parentId: null | string;
-  parentUserName: string;
-  onOpen: (postId: string, parentId: string, parentUserName: string) => void;
+  media: MediaWithData | null;
+  onOpen: (media: MediaWithData | null) => void;
   onClose: () => void;
 }
 
-export const useNewReplyModal = create<NewReplyModalStore>((set) => ({
+export const useNewMediaModal = create<NewMediaModalStore>((set) => ({
   isOpen: false,
-  postId: null,
-  parentId: null,
-  parentUserName: "",
-  onOpen: (postId: string, parentId: string, parentUserName: string) =>
+  media: null,
+  onOpen: (media: MediaWithData | null) =>
     set({
       isOpen: true,
-      postId: postId,
-      parentId: parentId,
-      parentUserName: parentUserName,
+      media: media,
     }),
-  onClose: () => set({ isOpen: false, postId: null, parentId: null }),
+  onClose: () => set({ isOpen: false, media: null }),
 }));
 
 interface ImageCarouselModalStore {

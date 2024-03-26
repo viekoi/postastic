@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { InteractMediaWithData, MediaWithData } from "@/type";
+import { MediaWithData } from "@/type";
 import UserAvatar from "../../user-avatar";
 import {
   cn,
@@ -16,24 +16,23 @@ import AttachmentDisplayer from "../../attachment-displayer";
 
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
-import { useNewReplyModal } from "@/hooks/use-modal-store";
+import { useNewMediaModal } from "@/hooks/use-modal-store";
 import useIsMobile from "@/hooks/use-is-mobile";
 import SettingButton from "./setting-button";
 
 interface ReplyCardProps {
-  reply: InteractMediaWithData;
+  reply: MediaWithData;
   className?: string;
   isModalContent?: boolean;
 }
 
 const ReplyCard = ({ reply, className }: ReplyCardProps) => {
-  const { onOpen } = useNewReplyModal();
+  const { onOpen } = useNewMediaModal();
   const [expandContent, setExpandContent] = useState(false);
   const isMobile = useIsMobile(1024);
-  const [open, setOpen] = useState(false);
 
   const onNewReplyModalOpen = () => {
-    onOpen(reply.postId, reply.parentId,reply.user.name);
+    onOpen(reply);
   };
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {

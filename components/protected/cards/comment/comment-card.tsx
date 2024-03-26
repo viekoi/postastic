@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { InteractMediaWithData } from "@/type";
+import { MediaWithData } from "@/type";
 import UserAvatar from "../../user-avatar";
 import {
   cn,
@@ -17,26 +17,23 @@ import AttachmentDisplayer from "../../attachment-displayer";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
 import ReplyContainer from "../../containers/reply/reply-container";
-import { useNewReplyModal } from "@/hooks/use-modal-store";
+import { useNewMediaModal } from "@/hooks/use-modal-store";
 import useIsMobile from "@/hooks/use-is-mobile";
 import SettingButton from "./setting-button";
 
 interface CommentCardProps {
-  comment: InteractMediaWithData;
+  comment: MediaWithData;
   className?: string;
-  isModalContent?: boolean
+  isModalContent?: boolean;
 }
 
-const CommentCard = ({
-  comment,
-  className,
-}: CommentCardProps) => {
-  const { onOpen } = useNewReplyModal();
+const CommentCard = ({ comment, className }: CommentCardProps) => {
+  const { onOpen } = useNewMediaModal();
   const [expandContent, setExpandContent] = useState(false);
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile(1024);
   const onNewReplyModalOpen = () => {
-    onOpen(comment.postId, comment.id,comment.user.name);
+    onOpen(comment);
   };
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
@@ -74,9 +71,7 @@ const CommentCard = ({
         <div className="flex gap-x-2 ">
           <div className="flex items-center gap-y-2 mt-1 flex-col">
             <UserAvatar user={comment.user} />
-            <SettingButton
-              comment={comment}
-            />
+            <SettingButton comment={comment} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">

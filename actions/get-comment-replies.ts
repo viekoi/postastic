@@ -5,16 +5,20 @@ import { currentUser } from "@/lib/user";
 import { privacyTypeValue } from "@/constansts";
 import { medias as mediaTable } from "../lib/db/schema";
 import { getMediasWhereClause } from "@/constansts/get-media-condition-clause";
+import { post } from "@/migrations/schema";
 
 export const getCommentReplies = async (
   pageParam: number,
-  postId: string,
-  parentId: string
+  postId: string | null,
+  parentId: string | null
 ) => {
   const user = await currentUser();
 
   if (!user) return { error: "Unauthenticated!!!", pageParam };
   try {
+    if (!post && !parentId) {
+      return { error: "postId and parentId is needed" };
+    }
     const limit = 5;
     const totalReplies = await db
       .select({ value: count() })
@@ -22,7 +26,7 @@ export const getCommentReplies = async (
       .where(getMediasWhereClause(user.id, "reply", parentId));
 
     const replies = await db.query.medias.findMany({
-      where: (c) => getMediasWhereClause(user.id, "reply",parentId),
+      where: (c) => getMediasWhereClause(user.id, "reply", parentId),
       with: {
         likes: {
           columns: {

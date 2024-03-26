@@ -3,12 +3,11 @@
 import { useGetInfinitePosts } from "@/queries/react-query/queris";
 import { useInView } from "react-intersection-observer";
 import React, { useEffect } from "react";
-import { Loader } from "../../../Loader";
 
-import PostList from "../../lists/post/post-list";
 import { Button } from "../../../ui/button";
 import { MessageSquareText } from "lucide-react";
 import { SkeletonCard } from "../../cards/skeleton-card";
+import MediaList from "../../lists/media/media-list";
 
 const PostContainer = () => {
   const {
@@ -56,7 +55,11 @@ const PostContainer = () => {
     <>
       {data.pages.flat().map((page, index) => {
         return (
-          <PostList key={index} posts={page.success ? page.success : []} />
+          <MediaList
+            key={index}
+            medias={page.success ? page.success : []}
+            type="post"
+          />
         );
       })}
 

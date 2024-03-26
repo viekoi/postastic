@@ -1,7 +1,7 @@
 "use client";
 import { useGetMediaById } from "@/queries/react-query/queris";
 import React, { useEffect } from "react";
-import { SkeletonCard } from "../../cards/skeleton-card";
+import { SkeletonCard } from "../../../cards/skeleton-card";
 import { Button } from "@/components/ui/button";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { optimisticUpdate } from "@/queries/react-query/optimistic-functions";

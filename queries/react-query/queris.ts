@@ -14,10 +14,11 @@ import { updateLikesCount } from "./optimistic-functions";
 import { getCommentReplies } from "@/actions/get-comment-replies";
 import { getPostById } from "@/actions/get-post-by-id";
 import { updateMedia } from "@/actions/update-media";
-import { EditShcema} from "@/schemas";
+import { EditShcema, NewMediaShcema } from "@/schemas";
 import * as z from "zod";
 import { getPostCreator } from "@/actions/get-post-creator";
 import { deleteMedia } from "@/actions/delete-media";
+import { newMedia } from "@/actions/new-media";
 
 export const useGetInfinitePosts = () => {
   return useInfiniteQuery({
@@ -45,7 +46,7 @@ export const useGetInfinitePosts = () => {
   });
 };
 
-export const useGetInfinitePostComments = (postId: string) => {
+export const useGetInfinitePostComments = (postId: string | null) => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId, "comments"],
     queryFn: ({ pageParam }) => getPostComments(pageParam, postId),
@@ -73,8 +74,8 @@ export const useGetInfinitePostComments = (postId: string) => {
 };
 
 export const useGetInfiniteCommentReplies = (
-  postId: string,
-  parentId: string
+  postId: string | null,
+  parentId: string | null
 ) => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_COMMENT_REPLIES, postId, parentId, "replies"],
@@ -102,14 +103,14 @@ export const useGetInfiniteCommentReplies = (
   });
 };
 
-export const useGetMediaById = (id: string | null) => {
+export const useGetMediaById = (id: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, id],
     queryFn: () => getPostById(id),
   });
 };
 
-export const useGetPostCreator = (postId: string) => {
+export const useGetPostCreator = (postId: string | null) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_POST_CREATOR, postId],
     queryFn: () => getPostCreator(postId),
@@ -136,6 +137,12 @@ export const useLike = (querykey: QueryKey) => {
         context?.previousData
       );
     },
+  });
+};
+
+export const useCreateMedia = () => {
+  return useMutation({
+    mutationFn: (values: z.infer<typeof NewMediaShcema>) => newMedia(values),
   });
 };
 

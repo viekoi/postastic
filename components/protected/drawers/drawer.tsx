@@ -41,8 +41,7 @@ const DrawerModal: React.FC<DrawerProps> = ({
           `
       flex
       flex-col
-      custom-scrollbar
-      overflow-y-scroll
+      overflow-hidden
       border 
       border-gray-600 
       h-full 

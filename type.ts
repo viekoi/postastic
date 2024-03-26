@@ -7,16 +7,6 @@ export type MediaWithData = Media & {
   attachments: Attachment[];
 };
 
-export type InteractMediaWithData = Media & {
-  likesCount: number;
-  interactsCount: number;
-  parentId: string;
-  postId: string;
-  isLikedByMe: boolean;
-} & { user: User } & {
-  attachments: Attachment[];
-};
-
 export type OptimisticUpdateData = Media & {
   likesCount: number;
 } & { isLikedByMe: boolean } & { user: User } & {

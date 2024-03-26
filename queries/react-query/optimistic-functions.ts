@@ -55,16 +55,17 @@ export const updateLikesCount = async ({
 export const updateInteractCount = async ({
   queryClient,
   queryKey,
-  id,
+  parentId,
   newCount,
   action,
 }: {
   queryClient: QueryClient;
   queryKey: QueryKey;
-  id: string;
+  parentId: string | null;
   newCount?: number;
   action?: "insert" | "delete";
 }) => {
+  if (!parentId) return;
   if (!newCount && !action)
     throw new Error("neither give a action or a newCount");
   await queryClient.cancelQueries({
@@ -89,7 +90,7 @@ export const updateInteractCount = async ({
           return {
             ...page,
             success: page.success.map((media) => {
-              if (media.id === id) {
+              if (media.id === parentId) {
                 const countModifier = action === "insert" ? +1 : -1;
                 return {
                   ...media,
