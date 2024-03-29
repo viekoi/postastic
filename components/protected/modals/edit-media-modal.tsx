@@ -10,6 +10,7 @@ import Edit from "../forms/media/edit/edit";
 const EditMediaModal = () => {
   const { isOpen, onClose, id, queryKey } = useEditMediaModal();
   const { onCancel } = useIsAddingFiles();
+  
   const isMobile = useIsMobile(1024);
 
   if (id === null) return;

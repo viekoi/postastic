@@ -7,12 +7,12 @@ import {
 } from "@/lib/db/schema";
 import { cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
-import { EditShcema } from "@/schemas";
+import { EditMediaShcema } from "@/schemas";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
 
 export const updateMedia = async (
-  values: z.infer<typeof EditShcema>,
+  values: z.infer<typeof EditMediaShcema>,
   id: string
 ) => {
   const user = await currentUser();
@@ -20,7 +20,7 @@ export const updateMedia = async (
   if (!user) return { error: "Unauthenticated!!!" };
 
   try {
-    const validatedFields = EditShcema.safeParse(values);
+    const validatedFields = EditMediaShcema.safeParse(values);
 
     if (!validatedFields.success) {
       return { error: "Invalid fields!!!!" };

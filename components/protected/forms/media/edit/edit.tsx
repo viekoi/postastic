@@ -1,12 +1,13 @@
 "use client";
 import { useGetMediaById } from "@/queries/react-query/queris";
-import React, { useEffect } from "react";
+import React from "react";
 import { SkeletonCard } from "../../../cards/skeleton-card";
 import { Button } from "@/components/ui/button";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { optimisticUpdate } from "@/queries/react-query/optimistic-functions";
 import EditForm from "./edit-form";
 import { CornerDownRight } from "lucide-react";
+import { useEditMediaDrafts } from "@/hooks/use-edit-media-drafts-store";
 
 interface EditProps {
   id: string;
@@ -16,6 +17,8 @@ interface EditProps {
 const Edit = ({ id, queryKey }: EditProps) => {
   const queryClient = useQueryClient();
   const { data, isPending, error, refetch, isFetched } = useGetMediaById(id);
+  const { getDraftByMediaId, removeDraft } = useEditMediaDrafts();
+  const draft = getDraftByMediaId(id);
 
   if (isFetched && data?.success) {
     optimisticUpdate({
@@ -41,7 +44,14 @@ const Edit = ({ id, queryKey }: EditProps) => {
         <CornerDownRight />
         <div className="pt-2">Editing {data.success.type}</div>
       </div>
-      <EditForm id={id} defaultValues={data.success} queryKey={queryKey} />
+      <EditForm
+        defaultValues={
+          draft
+            ? { draft: draft,default:data.success}
+            : { default:data.success}
+        }
+        queryKey={queryKey}
+      />
     </div>
   );
 };

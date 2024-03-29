@@ -77,6 +77,7 @@ const FileUploader = ({
               size={"icon"}
               onClick={(e) => {
                 e.stopPropagation();
+                onRemoveFiles();
                 onCancel();
               }}
             >

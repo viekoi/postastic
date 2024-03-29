@@ -14,7 +14,7 @@ import { updateLikesCount } from "./optimistic-functions";
 import { getCommentReplies } from "@/actions/get-comment-replies";
 import { getPostById } from "@/actions/get-post-by-id";
 import { updateMedia } from "@/actions/update-media";
-import { EditShcema, NewMediaShcema } from "@/schemas";
+import { EditMediaShcema, NewMediaSchema } from "@/schemas";
 import * as z from "zod";
 import { getPostCreator } from "@/actions/get-post-creator";
 import { deleteMedia } from "@/actions/delete-media";
@@ -142,7 +142,7 @@ export const useLike = (querykey: QueryKey) => {
 
 export const useCreateMedia = () => {
   return useMutation({
-    mutationFn: (values: z.infer<typeof NewMediaShcema>) => newMedia(values),
+    mutationFn: (values: z.infer<typeof NewMediaSchema>) => newMedia(values),
   });
 };
 
@@ -154,7 +154,7 @@ export const useUpdateMedia = (querykey: QueryKey) => {
       values,
       id,
     }: {
-      values: z.infer<typeof EditShcema>;
+      values: z.infer<typeof EditMediaShcema>;
       id: string;
     }) => updateMedia(values, id),
     onSettled: (data, error, variables, context) => {

@@ -6,12 +6,20 @@ import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
 import NewMediaForm from "../forms/media/new/new-media-form";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { useNewMediaDrafts } from "@/hooks/use-new-media-drafts-store";
 
 const CommentModal = () => {
   const { isOpen, onClose, post } = useCommentModal();
+  const { getDraftByParentId } = useNewMediaDrafts();
   const isMobile = useIsMobile(1024);
+  if (!post) {
+    return null
+  }
 
-  if (post && !isMobile) {
+  const draft = getDraftByParentId(post.id);
+
+
+  if (!isMobile) {
     return (
       <Modal
         title={`${post.user.name} Post`}
@@ -27,7 +35,6 @@ const CommentModal = () => {
             initiaParentInteractCount={post.interactsCount}
           />
         </div>
-        {/* <NewCommentForm postId={post.id} /> */}
         <NewMediaForm
           parentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
           currentListQueryKey={[
@@ -38,12 +45,13 @@ const CommentModal = () => {
           type="comment"
           postId={post.id}
           parentId={post.id}
+          defaultValues={draft}
         />
       </Modal>
     );
   }
 
-  if (post && isMobile) {
+  if (isMobile) {
     return (
       <DrawerModal
         title={`${post.user.name} Post`}
@@ -69,6 +77,7 @@ const CommentModal = () => {
           type="comment"
           postId={post.id}
           parentId={post.id}
+          defaultValues={draft}
         />
       </DrawerModal>
     );

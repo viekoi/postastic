@@ -8,12 +8,12 @@ import {
 } from "@/lib/db/schema";
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
-import { NewMediaShcema } from "@/schemas";
+import { NewMediaSchema } from "@/schemas";
 import * as z from "zod";
 
-export const newMedia = async (values: z.infer<typeof NewMediaShcema>) => {
+export const newMedia = async (values: z.infer<typeof NewMediaSchema>) => {
   try {
-    const validatedFields = NewMediaShcema.safeParse(values);
+    const validatedFields = NewMediaSchema.safeParse(values);
 
     if (!validatedFields.success) {
       return { error: "Invalid fields!!!!" };

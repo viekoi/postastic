@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NewMediaShcema } from "@/schemas";
+import { NewMediaSchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -46,8 +46,11 @@ import UserAvatar from "@/components/protected/user-avatar";
 import FileUploader from "@/components/protected/file-uploader";
 import { EmojiPicker } from "@/components/protected/emoji-picker";
 import { useCreateMedia } from "@/queries/react-query/queris";
-import { cn } from "@/lib/utils";
+import { cn, getPostPrivacyOption } from "@/lib/utils";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
+import { useNewMediaDrafts } from "@/hooks/use-new-media-drafts-store";
+import useDebounce from "@/hooks/use-debounce";
+import { isEqual } from "lodash";
 
 interface NewMediaFormProps {
   type: "post" | "comment" | "reply";
@@ -55,6 +58,7 @@ interface NewMediaFormProps {
   parentId: string | null;
   currentListQueryKey: QueryKey;
   parentListQueryKey?: QueryKey;
+  defaultValues?: z.infer<typeof NewMediaSchema>;
 }
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
@@ -69,16 +73,24 @@ const NewMediaForm = ({
   parentId,
   parentListQueryKey,
   currentListQueryKey,
+  defaultValues,
 }: NewMediaFormProps) => {
   if (type !== "post" && !postId && !parentId) {
     throw new Error(
       "postId and parentId is needed when create a new reply or comment "
     );
   }
+
+  const [files, setFiles] = useState<AttachmentFile[]>(
+    defaultValues ? defaultValues.attachments : []
+  );
+  const [privacyOption, setPrivacyOption] = useState(
+    getPostPrivacyOption(defaultValues ? defaultValues.privacyType : "public")
+  );
   const queryClient = useQueryClient();
-  const { mutateAsync: createMedia, isPending } = useCreateMedia();
-  const [files, setFiles] = useState<AttachmentFile[]>([]);
-  const { onClose } = useNewMediaModal();
+  const { setDrafts, removeDraft } = useNewMediaDrafts();
+  const { mutateAsync: createMedia, isPending, isSuccess } = useCreateMedia();
+  const { onClose, isOpen } = useNewMediaModal();
   const { onDrop, onRemoveFiles, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
@@ -96,7 +108,6 @@ const NewMediaForm = ({
     maxSize: videoMaxSize,
     maxFiles: 5,
   });
-  const [privacyOption, setPrivacyOption] = useState(postPrivacyOtptions[0]);
 
   const isMobile = useIsMobile(1024);
   const textAreaRef = useRef<HTMLTextAreaElement>();
@@ -130,20 +141,24 @@ const NewMediaForm = ({
   };
   const baseMediaClassName = "max-h-[100%]  !static ";
 
-  const form = useForm<z.infer<typeof NewMediaShcema>>({
-    resolver: zodResolver(NewMediaShcema),
-    defaultValues: {
-      content: "",
-      attachments: files,
-      postId,
-      parentId,
-      type,
-      privacyType: privacyOption.value,
-    },
+  const form = useForm<z.infer<typeof NewMediaSchema>>({
+    resolver: zodResolver(NewMediaSchema),
+    defaultValues: defaultValues
+      ? defaultValues
+      : {
+          content: "",
+          attachments: files,
+          postId,
+          parentId,
+          type,
+          privacyType: privacyOption.value,
+        },
   });
 
-  const contentValue = form.watch("content");
-  const attachmentsValue = form.watch("attachments");
+  const contentValue = useDebounce(form.watch("content"), 300);
+  const attachmentsValue = useDebounce(form.watch("attachments"), 300);
+  const privacyTypeValue = useDebounce(form.watch("privacyType"), 300);
+
   const { user } = useCurrentUser();
 
   useLayoutEffect(() => {
@@ -156,9 +171,18 @@ const NewMediaForm = ({
     }
   }, [contentValue, attachmentsValue]);
 
+  useEffect(() => {
+    const handleSetDraft = () => {
+      if (!isSuccess && !isEqual(form.getValues,defaultValues)) {
+        setDrafts(form.getValues());
+      }
+    };
+    handleSetDraft();
+  }, [contentValue, attachmentsValue, privacyTypeValue]);
+
   if (!user) return null;
 
-  const onSubmit = async (values: z.infer<typeof NewMediaShcema>) => {
+  const onSubmit = async (values: z.infer<typeof NewMediaSchema>) => {
     try {
       await createMedia(values).then((res) => {
         if (res.success && res.data) {
@@ -185,6 +209,7 @@ const NewMediaForm = ({
               action: "insert",
             });
           }
+          removeDraft(res.data.parentId);
           onClose();
           onRemoveFiles();
         } else if (res.error) {
@@ -199,7 +224,7 @@ const NewMediaForm = ({
   return (
     <div
       className={cn(
-        "w-full p-4 pb-0 overflow-x-hidden",
+        "w-full p-4 pb-0 overflow-x-hidden overflow-y-scroll custom-scrollbar",
         type === "comment" &&
           "border-t-[0.5px] border-gray-600  max-h-[40%]  bg-black"
       )}
@@ -222,6 +247,7 @@ const NewMediaForm = ({
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}
+                        value={field.value}
                         ref={inputRef}
                         placeholder={`Write ${type} here`}
                       />

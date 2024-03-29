@@ -8,13 +8,18 @@ import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
 import NewMediaForm from "../forms/media/new/new-media-form";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { useNewMediaDrafts } from "@/hooks/use-new-media-drafts-store";
+
 
 const NewMediaModal = () => {
   const { isOpen, onClose, media } = useNewMediaModal();
   const { onCancel } = useIsAddingFiles();
+  const {getDraftByParentId,mediaDrafts} = useNewMediaDrafts()
   const isMobile = useIsMobile(1024);
 
   if (media) {
+    const parentId = media.type === "comment" ? media.id : media.parentId;
+    const draft = getDraftByParentId(parentId)
     const currentListQueryKey =
       media.type === "comment"
         ? [QUERY_KEYS.GET_COMMENT_REPLIES, media.postId, media.id, "replies"]
@@ -30,8 +35,6 @@ const NewMediaModal = () => {
       media.postId,
       "comments",
     ];
-
-    const parentId = media.type === "comment" ? media.id : media.parentId;
 
     if (isMobile) {
       return (
@@ -50,6 +53,7 @@ const NewMediaModal = () => {
               currentListQueryKey={currentListQueryKey}
               postId={media.postId}
               parentId={parentId}
+              defaultValues={draft}
             />
           </div>
         </DrawerModal>
@@ -71,11 +75,13 @@ const NewMediaModal = () => {
             currentListQueryKey={currentListQueryKey}
             postId={media.postId}
             parentId={parentId}
+            defaultValues={draft}
           />
         </div>
       </Modal>
     );
   } else {
+    const draft = getDraftByParentId(null)
     if (isMobile) {
       return (
         <DrawerModal
@@ -92,6 +98,7 @@ const NewMediaModal = () => {
               currentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
               postId={null}
               parentId={null}
+              defaultValues={draft}
             />
           </div>
         </DrawerModal>
@@ -112,6 +119,7 @@ const NewMediaModal = () => {
             currentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
             postId={null}
             parentId={null}
+            defaultValues={draft}
           />
         </div>
       </Modal>

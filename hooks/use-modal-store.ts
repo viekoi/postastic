@@ -28,6 +28,7 @@ interface NewMediaModalStore {
 export const useNewMediaModal = create<NewMediaModalStore>((set) => ({
   isOpen: false,
   media: null,
+  isDraft: false,
   onOpen: (media: MediaWithData | null) =>
     set({
       isOpen: true,

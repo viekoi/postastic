@@ -45,7 +45,7 @@ function refineFiles(files: AttachmentFile[]): boolean {
   return files.every((file: AttachmentFile) => !isTooLarge(file, file.type));
 }
 
-export const NewMediaShcema = z
+export const NewMediaSchema = z
   .object({
     content: z
       .string()
@@ -75,8 +75,9 @@ export const NewMediaShcema = z
     }
   );
 
-export const EditShcema = z
+export const EditMediaShcema = z
   .object({
+    id:z.string(),
     content: z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),

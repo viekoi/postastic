@@ -15,7 +15,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EditShcema } from "@/schemas";
+import { EditMediaShcema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -44,14 +45,17 @@ import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 import { useUpdateMedia } from "@/queries/react-query/queris";
 import { getPostPrivacyOption } from "@/lib/utils";
-import DrawerModal from "@/components/protected/drawers/drawer";
-import Modal from "@/components/protected/modals/modal";
+import { useEditMediaDrafts } from "@/hooks/use-edit-media-drafts-store";
+import useDebounce from "@/hooks/use-debounce";
+import { isEqual } from "lodash";
 
 interface EditFormProps {
-  defaultValues: z.infer<typeof EditShcema>;
-  id: string;
+  defaultValues: {
+    draft?: z.infer<typeof EditMediaShcema>;
+    default: z.infer<typeof EditMediaShcema>;
+  };
   queryKey: QueryKey;
-  }
+}
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -59,22 +63,27 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const EditForm = ({ defaultValues, id, queryKey }: EditFormProps) => {
-    const [privacyOption, setPrivacyOption] = useState(
-    getPostPrivacyOption(defaultValues.privacyType)
+const EditForm = ({ defaultValues, queryKey }: EditFormProps) => {
+  const data = defaultValues.draft
+    ? defaultValues.draft
+    : defaultValues.default;
+  const [privacyOption, setPrivacyOption] = useState(
+    getPostPrivacyOption(data.privacyType)
   );
 
-  const queryClient = useQueryClient();
-  const { mutateAsync: updatePost, isPending } = useUpdateMedia(queryKey);
-  const [files, setFiles] = useState<AttachmentFile[]>(
-    defaultValues.attachments
-  );
+  const {
+    mutateAsync: updatePost,
+    isPending,
+    isSuccess,
+  } = useUpdateMedia(queryKey);
+  const [files, setFiles] = useState<AttachmentFile[]>(data.attachments);
   const { onClose } = useEditMediaModal();
   const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
   const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
   );
+  const { setDrafts, removeDraft } = useEditMediaDrafts();
   const { getInputProps, getRootProps, open } = useDropzone({
     onDrop,
     accept: {
@@ -120,16 +129,18 @@ const EditForm = ({ defaultValues, id, queryKey }: EditFormProps) => {
   };
   const baseMediaClassName = "max-h-[100%]  !static ";
 
-  const form = useForm<z.infer<typeof EditShcema>>({
-    resolver: zodResolver(EditShcema),
+  const form = useForm<z.infer<typeof EditMediaShcema>>({
+    resolver: zodResolver(EditMediaShcema),
     defaultValues: {
-      ...defaultValues,
-      attachments: [],
+      ...data,
+      attachments: files,
     },
   });
+  const id = form.getValues("id");
+  const contentValue = useDebounce(form.watch("content"), 300);
+  const attachmentsValue = useDebounce(form.watch("attachments"));
+  const privacyTypeValue = useDebounce(form.watch("privacyType"));
 
-  const contentValue = form.watch("content");
-  const attachmentsValue = form.watch("attachments");
   const { user } = useCurrentUser();
 
   useLayoutEffect(() => {
@@ -148,17 +159,27 @@ const EditForm = ({ defaultValues, id, queryKey }: EditFormProps) => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleSaveDraft = () => {
+      if (!isSuccess) {
+        setDrafts(form.getValues());
+      }
+    };
+    handleSaveDraft();
+  }, [contentValue, attachmentsValue, privacyTypeValue]);
+
   if (!user) return null;
 
-  const onSubmit = async (values: z.infer<typeof EditShcema>) => {
+  const onSubmit = async (values: z.infer<typeof EditMediaShcema>) => {
     try {
-      const res = await updatePost({ values, id: id });
+      const res = await updatePost({ values, id });
       if (res.success) {
         toast.success(res.success, { closeButton: false });
         form.reset();
         onCancel();
         onRemoveFiles();
         onClose();
+        removeDraft(id);
       } else {
         toast.error(res.error, { closeButton: false });
       }
@@ -197,32 +218,32 @@ const EditForm = ({ defaultValues, id, queryKey }: EditFormProps) => {
                 </FormItem>
               )}
             />
-            {isAddingFiles && (
-              <FormField
-                control={form.control}
-                name="attachments"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FileUploader
-                        files={files}
-                        onRemoveFile={onRemoveFile}
-                        onRemoveFiles={onRemoveFiles}
-                        getInputProps={getInputProps}
-                        getRootProps={getRootProps}
-                        open={open}
-                        baseContainerClassName={baseContainerClassName}
-                        baseAttachmentClassName={baseMediaClassName}
-                        indexContainerClassName={indexContainerClassName}
-                        disabled={isPending}
-                        fieldChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+
+            <FormField
+              control={form.control}
+              name="attachments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FileUploader
+                      files={files}
+                      onRemoveFile={onRemoveFile}
+                      onRemoveFiles={onRemoveFiles}
+                      getInputProps={getInputProps}
+                      getRootProps={getRootProps}
+                      open={open}
+                      baseContainerClassName={baseContainerClassName}
+                      baseAttachmentClassName={baseMediaClassName}
+                      indexContainerClassName={indexContainerClassName}
+                      disabled={isPending}
+                      fieldChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {form.formState.errors.isEmpty && (
               <FormField
                 control={form.control}
@@ -313,14 +334,33 @@ const EditForm = ({ defaultValues, id, queryKey }: EditFormProps) => {
                 )}
               />
             </div>
-            <Button
-              disabled={isPending}
-              type="submit"
-              variant={"blue"}
-              className="rounded-3xl  px-6 text-sm"
-            >
-              edit
-            </Button>
+            <div className="flex gap-x-2  items-center">
+              {defaultValues.draft &&
+                !isEqual(defaultValues.default, defaultValues.draft) && (
+                  <Button
+                    onClick={() => {
+                      removeDraft(id);
+                      form.reset(defaultValues.default);
+                      setFiles([...defaultValues.default.attachments]);
+                    }}
+                    disabled={isPending}
+                    type="button"
+                    variant={"destructive"}
+                    className="rounded-3xl  px-6 text-sm"
+                  >
+                    clear draft
+                  </Button>
+                )}
+
+              <Button
+                disabled={isPending}
+                type="submit"
+                variant={"blue"}
+                className="rounded-3xl  px-6 text-sm"
+              >
+                edit
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
