@@ -1,5 +1,4 @@
 "use client";
-import { useGetInfinitePostComments } from "@/queries/react-query/queris";
 import { Button } from "../../../ui/button";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
@@ -10,6 +9,7 @@ import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
 import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
+import { useGetInfiniteMedias } from "@/queries/react-query/queris";
 
 const CommentContainer = ({
   postId,
@@ -20,7 +20,7 @@ const CommentContainer = ({
 }) => {
   const queryClient = useQueryClient();
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
-    useGetInfinitePostComments(postId);
+    useGetInfiniteMedias({parentId:postId,type:"comment"});
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
@@ -35,7 +35,7 @@ const CommentContainer = ({
     ) {
       updateInteractCount({
         queryClient,
-        queryKey: [QUERY_KEYS.GET_HOME_POSTS],
+        queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,null],
         parentId: postId,
         newCount: data?.pages[0].total,
       });

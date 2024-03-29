@@ -22,18 +22,15 @@ const NewMediaModal = () => {
     const draft = getDraftByParentId(parentId)
     const currentListQueryKey =
       media.type === "comment"
-        ? [QUERY_KEYS.GET_COMMENT_REPLIES, media.postId, media.id, "replies"]
+        ? [QUERY_KEYS.GET_INFINITE_MEDIAS, media.id]
         : [
-            QUERY_KEYS.GET_COMMENT_REPLIES,
-            media.postId,
+            QUERY_KEYS.GET_INFINITE_MEDIAS,
             media.parentId,
-            "replies",
           ];
 
     const parentListQueryKey = [
-      QUERY_KEYS.GET_POST_COMMENTS,
+      QUERY_KEYS.GET_INFINITE_MEDIAS,
       media.postId,
-      "comments",
     ];
 
     if (isMobile) {
@@ -95,7 +92,7 @@ const NewMediaModal = () => {
           <div className="overflow-x-hidden over-y-auto custom-scrollbar">
             <NewMediaForm
               type={"post"}
-              currentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+              currentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
               postId={null}
               parentId={null}
               defaultValues={draft}
@@ -116,7 +113,7 @@ const NewMediaModal = () => {
         <div className="overflow-x-hidden over-y-auto custom-scrollbar">
           <NewMediaForm
             type={"post"}
-            currentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+            currentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
             postId={null}
             parentId={null}
             defaultValues={draft}

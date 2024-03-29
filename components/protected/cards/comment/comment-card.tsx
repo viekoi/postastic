@@ -111,9 +111,8 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
               <div className="flex gap-x-4">
                 <LikeButton
                   queryKey={[
-                    QUERY_KEYS.GET_POST_COMMENTS,
+                    QUERY_KEYS.GET_INFINITE_MEDIAS,
                     comment.postId,
-                    "comments",
                   ]}
                   parent={comment}
                   className="flex space-x-1 px-0 leading-[140%]"

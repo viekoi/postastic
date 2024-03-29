@@ -131,7 +131,7 @@ const PostCard = ({
           )}
         >
           <LikeButton
-            queryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+            queryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
             parent={post}
             className=" col-span-1 space-x-2"
           />

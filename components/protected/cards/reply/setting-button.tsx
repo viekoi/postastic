@@ -37,10 +37,8 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
   const { data: creator, isPending, error } = useGetPostCreator(reply.postId);
   const { mutateAsync: deleteMedia, isPending: isPendingDelete } =
     useDeleteMedia([
-      QUERY_KEYS.GET_COMMENT_REPLIES,
-      reply.postId,
+      QUERY_KEYS.GET_INFINITE_MEDIAS,
       reply.parentId,
-      "replies",
     ]);
 
   const onDeleteMedia = async () => {
@@ -49,7 +47,7 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
       if (data.success) {
         updateInteractCount({
           queryClient,
-          queryKey: [QUERY_KEYS.GET_POST_COMMENTS, reply.postId, "comments"],
+          queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,reply.postId],
           parentId: reply.parentId,
           action: "delete",
         });
@@ -91,10 +89,8 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
             <DropdownMenuItem
               onClick={() =>
                 onOpen(reply.id, [
-                  QUERY_KEYS.GET_COMMENT_REPLIES,
-                  reply.postId,
+                  QUERY_KEYS.GET_INFINITE_MEDIAS,
                   reply.parentId,
-                  "replies",
                 ])
               }
             >

@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { InferModel, relations } from "drizzle-orm";
-
+import { user } from "@/migrations/schema";
 
 //Emums
 export const privacyType = pgEnum("privacyType", ["public", "private"]);
@@ -158,39 +158,20 @@ export type Like = InferModel<typeof likes>;
 //Relations
 
 export const usersRelations = relations(users, ({ many }) => ({
-  posts: many(medias, { relationName: "posts" }),
-  comments: many(medias, { relationName: "comments" }),
-  replies: many(medias, { relationName: "replies" }),
+  medias: many(medias),
   likes: many(likes),
 }));
 
 export const mediasRelations = relations(medias, ({ one, many }) => ({
-  postBy: one(users, {
+  createdUser: one(users, {
     fields: [medias.userId],
-    references: [users.id],
-    relationName: "posts",
+    references: [user.id],
   }),
-  commentBy: one(users, {
-    fields: [medias.userId],
-    references: [users.id],
-    relationName: "comments",
-  }),
-  replyBy: one(users, {
-    fields: [medias.userId],
-    references: [users.id],
-    relationName: "replies",
-  }),
-  postComments: many(medias, { relationName: "postComments" }),
-  commentReplies: many(medias, { relationName: "commentReplies" }),
-  commentOf: one(medias, {
+  childrenMedias: many(medias, { relationName: "childrenMedias" }),
+  parentMedia: one(medias, {
     fields: [medias.parentId],
     references: [medias.id],
-    relationName: "postComments",
-  }),
-  replyOf: one(medias, {
-    fields: [medias.parentId],
-    references: [medias.id],
-    relationName: "commentReplies",
+    relationName: "childrenMedias",
   }),
   likes: many(likes),
   attachments: many(attachments),

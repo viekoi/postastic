@@ -16,7 +16,7 @@ export const getPostCreator = async (postId: string | null) => {
       where: (m) => eq(m.id, postId),
       columns: {},
       with: {
-        postBy: {
+        createdUser: {
           columns: {
             id: true,
           },
@@ -25,7 +25,7 @@ export const getPostCreator = async (postId: string | null) => {
     });
 
     if (creator) {
-      return { success: { postCreatorId: creator.postBy.id } };
+      return { success: { postCreatorId: creator.createdUser.id } };
     }
 
     return { error: "Could not get creator" };

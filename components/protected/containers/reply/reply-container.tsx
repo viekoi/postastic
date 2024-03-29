@@ -1,5 +1,4 @@
 "use client";
-import { useGetInfiniteCommentReplies } from "@/queries/react-query/queris";
 import { Button } from "../../../ui/button";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
@@ -10,6 +9,7 @@ import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
 import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
+import { useGetInfiniteMedias } from "@/queries/react-query/queris";
 
 const ReplyContainer = ({
   postId,
@@ -22,7 +22,7 @@ const ReplyContainer = ({
 }) => {
   const queryClient = useQueryClient();
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
-    useGetInfiniteCommentReplies(postId, parentId);
+    useGetInfiniteMedias({parentId,type:"reply"});
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
@@ -34,7 +34,7 @@ const ReplyContainer = ({
     if (data?.pages[0].total && data!.pages[0].total !== initialInteractCount) {
       updateInteractCount({
         queryClient,
-        queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId, "comments"],
+        queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,postId],
         parentId: postId,
         newCount: data?.pages[0].total,
       });

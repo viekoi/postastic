@@ -36,7 +36,7 @@ const SettingButton = ({ post }: SettingButtonProps) => {
   const { user, isLoading } = useCurrentUser();
   const { onOpen } = useEditMediaModal();
   const { mutateAsync: deleteMedia, isPending } = useDeleteMedia([
-    QUERY_KEYS.GET_HOME_POSTS,
+    QUERY_KEYS.GET_INFINITE_MEDIAS,null
   ]);
 
   const onDeleteMedia = async () => {
@@ -82,7 +82,7 @@ const SettingButton = ({ post }: SettingButtonProps) => {
           {isAuthor && (
             <>
               <DropdownMenuItem
-                onClick={() => onOpen(post.id, [QUERY_KEYS.GET_HOME_POSTS])}
+                onClick={() => onOpen(post.id, [QUERY_KEYS.GET_INFINITE_MEDIAS,null])}
               >
                 edit post
                 <DropdownMenuShortcut>

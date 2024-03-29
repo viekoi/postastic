@@ -1,4 +1,3 @@
-import { getHomePosts } from "@/actions/get-home-posts";
 import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import {
   dehydrate,
@@ -7,31 +6,18 @@ import {
 } from "@tanstack/react-query";
 import PostFormCard from "@/components/protected/cards/post-form-card";
 import PostContainer from "@/components/protected/containers/post/post-container";
+import { getInfiniteMedias } from "@/actions/get-infinite-medias";
 
 const Home = async () => {
   const queryClient = new QueryClient();
   await queryClient.prefetchInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_HOME_POSTS],
-    queryFn: ({ pageParam }) => getHomePosts(pageParam),
-    initialPageParam: 1,
+    queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,null],
+    queryFn: ({ pageParam }) => getInfiniteMedias(pageParam),
+    initialPageParam: {type:"post" as "post" },
     getNextPageParam: (lastPage) => {
-      if (!lastPage) return null;
-
-      if (lastPage.error) return null;
-
-      if (lastPage.totalPages === 0) {
-        return null;
-      }
-
-      if (
-        lastPage.currentPage &&
-        lastPage.totalPages &&
-        lastPage.currentPage === lastPage.totalPages
-      ) {
-        return null;
-      }
-
-      return lastPage.nextPage;
+      return lastPage?.nextCursor
+        ? { cursor: lastPage.nextCursor, type: "post" as "post" }
+        : undefined;
     },
     pages: 1, // prefetch the first 1 pages
   });

@@ -1,6 +1,5 @@
 "use client";
 
-import { useGetInfinitePosts } from "@/queries/react-query/queris";
 import { useInView } from "react-intersection-observer";
 import React, { useEffect } from "react";
 
@@ -8,6 +7,7 @@ import { Button } from "../../../ui/button";
 import { MessageSquareText } from "lucide-react";
 import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
+import { useGetInfiniteMedias } from "@/queries/react-query/queris";
 
 const PostContainer = () => {
   const {
@@ -18,7 +18,7 @@ const PostContainer = () => {
     refetch,
     isPending,
     isRefetching,
-  } = useGetInfinitePosts();
+  } = useGetInfiniteMedias({type:"post"});
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {

@@ -111,10 +111,8 @@ const ReplyCard = ({ reply, className }: ReplyCardProps) => {
               <div className="flex gap-x-4">
                 <LikeButton
                   queryKey={[
-                    QUERY_KEYS.GET_COMMENT_REPLIES,
-                    reply.postId,
+                    QUERY_KEYS.GET_INFINITE_MEDIAS,
                     reply.parentId,
-                    "replies",
                   ]}
                   parent={reply}
                   className="flex space-x-1 px-0 leading-[140%]"

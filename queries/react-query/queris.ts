@@ -1,4 +1,3 @@
-import { getHomePosts } from "@/actions/get-home-posts";
 import { QUERY_KEYS } from "./query-keys";
 import {
   QueryKey,
@@ -9,9 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import { like } from "@/actions/like";
-import { getPostComments } from "@/actions/get-post-comments";
 import { updateLikesCount } from "./optimistic-functions";
-import { getCommentReplies } from "@/actions/get-comment-replies";
 import { getPostById } from "@/actions/get-post-by-id";
 import { updateMedia } from "@/actions/update-media";
 import { EditMediaShcema, NewMediaSchema } from "@/schemas";
@@ -19,86 +16,23 @@ import * as z from "zod";
 import { getPostCreator } from "@/actions/get-post-creator";
 import { deleteMedia } from "@/actions/delete-media";
 import { newMedia } from "@/actions/new-media";
+import { getInfiniteMedias } from "@/actions/get-infinite-medias";
 
-export const useGetInfinitePosts = () => {
+export const useGetInfiniteMedias = ({
+  parentId,
+  type,
+}: {
+  parentId?: string | null;
+  type: "post" | "comment" | "reply";
+}) => {
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_HOME_POSTS],
-    queryFn: ({ pageParam }) => getHomePosts(pageParam),
-    initialPageParam: 1,
+    queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,parentId],
+    queryFn: ({ pageParam }) => getInfiniteMedias(pageParam),
+    initialPageParam: { parentId: parentId, type: type },
     getNextPageParam: (lastPage) => {
-      if (!lastPage) return null;
-
-      if (lastPage.error) return null;
-
-      if (lastPage.totalPages === 0) {
-        return null;
-      }
-
-      if (
-        lastPage.currentPage &&
-        lastPage.totalPages &&
-        lastPage.currentPage >= lastPage.totalPages
-      )
-        return null;
-
-      return lastPage.nextPage;
-    },
-  });
-};
-
-export const useGetInfinitePostComments = (postId: string | null) => {
-  return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId, "comments"],
-    queryFn: ({ pageParam }) => getPostComments(pageParam, postId),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage) return null;
-
-      if (lastPage.error) return null;
-
-      if (lastPage.totalPages === 0) {
-        return null;
-      }
-
-      if (
-        lastPage.currentPage &&
-        lastPage.totalPages &&
-        lastPage.currentPage >= lastPage.totalPages
-      ) {
-        return null;
-      }
-
-      return lastPage.nextPage;
-    },
-  });
-};
-
-export const useGetInfiniteCommentReplies = (
-  postId: string | null,
-  parentId: string | null
-) => {
-  return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_COMMENT_REPLIES, postId, parentId, "replies"],
-    queryFn: ({ pageParam }) => getCommentReplies(pageParam, postId, parentId),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage) return null;
-
-      if (lastPage.error) return null;
-
-      if (lastPage.totalPages === 0) {
-        return null;
-      }
-
-      if (
-        lastPage.currentPage &&
-        lastPage.totalPages &&
-        lastPage.currentPage >= lastPage.totalPages
-      ) {
-        return null;
-      }
-
-      return lastPage.nextPage;
+      return lastPage?.nextCursor
+        ? { cursor: lastPage.nextCursor, parentId, type }
+        : undefined;
     },
   });
 };
@@ -132,10 +66,7 @@ export const useLike = (querykey: QueryKey) => {
       return { previousData };
     },
     onError: (err, newData, context) => {
-      queryClient.setQueryData(
-        [QUERY_KEYS.GET_HOME_POSTS],
-        context?.previousData
-      );
+      queryClient.setQueryData(querykey, context?.previousData);
     },
   });
 };

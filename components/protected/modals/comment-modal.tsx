@@ -36,11 +36,10 @@ const CommentModal = () => {
           />
         </div>
         <NewMediaForm
-          parentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+          parentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
           currentListQueryKey={[
-            QUERY_KEYS.GET_POST_COMMENTS,
+            QUERY_KEYS.GET_INFINITE_MEDIAS,
             post.id,
-            "comments",
           ]}
           type="comment"
           postId={post.id}
@@ -68,11 +67,10 @@ const CommentModal = () => {
           />
         </div>
         <NewMediaForm
-          parentListQueryKey={[QUERY_KEYS.GET_HOME_POSTS]}
+          parentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
           currentListQueryKey={[
-            QUERY_KEYS.GET_POST_COMMENTS,
+            QUERY_KEYS.GET_INFINITE_MEDIAS,
             post.id,
-            "comments",
           ]}
           type="comment"
           postId={post.id}

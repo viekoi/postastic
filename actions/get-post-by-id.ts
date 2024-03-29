@@ -19,7 +19,7 @@ export const getPostById = async (postId: string) => {
             userId: true,
           },
         },
-        postBy: true,
+        createdUser: true,
         attachments: true,
       },
     });
@@ -31,7 +31,7 @@ export const getPostById = async (postId: string) => {
           type: post.type as "post",
           isLikedByMe: !!post.likes.find((like) => like.userId === user.id),
           likesCount: post.likes.length,
-          user: post.postBy,
+          user: post.createdUser,
         },
       };
     }
