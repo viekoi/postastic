@@ -2,12 +2,11 @@
 import Link from "next/link";
 import { sidebarLinks } from "@/constansts";
 import { Button } from "../ui/button";
-import UserButton from "./user-button";
+import UserButton from "./user/user-button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Twitter } from "lucide-react";
 import { useNewMediaModal } from "@/hooks/use-modal-store";
-
 
 const LeftSidebar = () => {
   const pathName = usePathname();

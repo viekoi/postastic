@@ -7,15 +7,16 @@ import CommentCard from "../../cards/comment/comment-card";
 import { cn } from "@/lib/utils";
 import PostCard from "../../cards/post/post-card";
 import ReplyCard from "../../cards/reply/reply-card";
+import { MediaTypes } from "@/constansts";
 
 interface MediaListProps {
   medias: MediaWithData[];
   className?: string;
-  type: "post" | "comment" | "reply";
+  type: (typeof MediaTypes)[number];
 }
 
 const MediaList = ({ medias, className, type }: MediaListProps) => {
-  let ListBody:ReactNode[] = [];
+  let ListBody: ReactNode[] = [];
 
   switch (type) {
     case "post":
@@ -37,11 +38,7 @@ const MediaList = ({ medias, className, type }: MediaListProps) => {
       break;
   }
 
-  return (
-    <div className={cn("", className)}>
-      {ListBody}
-    </div>
-  );
+  return <div className={cn("", className)}>{ListBody}</div>;
 };
 
 export default MediaList;

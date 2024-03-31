@@ -29,16 +29,15 @@ import {
   useState,
 } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import UserAvatar from "../../../user-avatar";
+import UserAvatar from "../../../user/user-avatar";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { postPrivacyOtptions, videoMaxSize } from "@/constansts";
 import FileUploader from "../../../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { useEditMediaModal } from "@/hooks/use-modal-store";
+import { useCommentModal, useEditMediaModal } from "@/hooks/use-modal-store";
 import { EmojiPicker } from "../../../emoji-picker";
-import useIsMobile from "@/hooks/use-is-mobile";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { AttachmentFile } from "@/type";
 import { useDropzone } from "react-dropzone";
@@ -48,13 +47,15 @@ import { getPostPrivacyOption } from "@/lib/utils";
 import { useEditMediaDrafts } from "@/hooks/use-edit-media-drafts-store";
 import useDebounce from "@/hooks/use-debounce";
 import { isEqual } from "lodash";
+import { useIsMobile } from "@/providers/is-mobile-provider";
+import { useRouter } from "next/navigation";
 
 interface EditFormProps {
   defaultValues: {
     draft?: z.infer<typeof EditMediaShcema>;
     default: z.infer<typeof EditMediaShcema>;
   };
-  queryKey: QueryKey;
+  queryKeyPreflix: QueryKey;
 }
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
@@ -63,7 +64,7 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   textArea.style.height = `${textArea.scrollHeight}px`;
 }
 
-const EditForm = ({ defaultValues, queryKey }: EditFormProps) => {
+const EditForm = ({ defaultValues, queryKeyPreflix }: EditFormProps) => {
   const data = defaultValues.draft
     ? defaultValues.draft
     : defaultValues.default;
@@ -75,9 +76,11 @@ const EditForm = ({ defaultValues, queryKey }: EditFormProps) => {
     mutateAsync: updatePost,
     isPending,
     isSuccess,
-  } = useUpdateMedia(queryKey);
+  } = useUpdateMedia(queryKeyPreflix);
   const [files, setFiles] = useState<AttachmentFile[]>(data.attachments);
+  const router = useRouter();
   const { onClose } = useEditMediaModal();
+  const { onClose: onCommentModalClose } = useCommentModal();
   const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
   const { onRemoveFiles, onDrop, onRemoveFile } = useFilesUploadActions(
     files,
@@ -97,7 +100,7 @@ const EditForm = ({ defaultValues, queryKey }: EditFormProps) => {
     maxFiles: 5,
   });
 
-  const isMobile = useIsMobile(1024);
+  const { isMobile } = useIsMobile();
 
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
@@ -203,7 +206,14 @@ const EditForm = ({ defaultValues, queryKey }: EditFormProps) => {
                 <FormItem>
                   <FormControl>
                     <div className="flex">
-                      <UserAvatar user={user} />
+                      <UserAvatar
+                        onClick={() => {
+                          router.push(`/profile/${user.id}`);
+                          onClose();
+                          onCommentModalClose();
+                        }}
+                        user={user}
+                      />
                       <Textarea
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"

@@ -3,19 +3,27 @@ import { QueryKey } from "@tanstack/react-query";
 import { create } from "zustand";
 
 interface EditMediaModal {
+  media: MediaWithData | null;
   isOpen: boolean;
-  onOpen: (id: string, queryKey: QueryKey) => void;
+  onOpen: (id: string, queryKeyPreflix: QueryKey, media: MediaWithData) => void;
   onClose: () => void;
   id: string | null;
-  queryKey: QueryKey | null;
+  queryKeyPreflix: QueryKey | null;
 }
 export const useEditMediaModal = create<EditMediaModal>((set) => ({
+  media: null,
   id: null,
-  queryKey: null,
+  queryKeyPreflix: null,
   isOpen: false,
-  onOpen: (id: string, queryKey: QueryKey) =>
-    set({ isOpen: true, id: id, queryKey: queryKey }),
-  onClose: () => set({ isOpen: false, id: null, queryKey: null }),
+  onOpen: (id: string, queryKeyPreflix: QueryKey, media: MediaWithData) =>
+    set({
+      isOpen: true,
+      id: id,
+      queryKeyPreflix: queryKeyPreflix,
+      media: media,
+    }),
+  onClose: () =>
+    set({ isOpen: false, id: null, queryKeyPreflix: null, media: null }),
 }));
 
 interface NewMediaModalStore {
@@ -66,9 +74,10 @@ export const useCommentModal = create<CommentModalStore>((set) => ({
   post: null,
   onOpen: (post: MediaWithData) => set({ isOpen: true, post: post }),
   onClose: () => set({ isOpen: false, post: null }),
+  queryFn: null,
 }));
 
-interface useAlertModal {
+interface AlertModalStore {
   isOpen: boolean;
   isPending: boolean;
   onConfirm: () => void;
@@ -77,7 +86,7 @@ interface useAlertModal {
   onClose: () => void;
 }
 
-export const useAlertModal = create<useAlertModal>((set) => ({
+export const useAlertModal = create<AlertModalStore>((set) => ({
   isOpen: false,
   isPending: false,
   onConfirm: () => {},
@@ -85,4 +94,28 @@ export const useAlertModal = create<useAlertModal>((set) => ({
   onOpen: (onConfirm: () => void) =>
     set({ isOpen: true, onConfirm: onConfirm }),
   onClose: () => set({ isOpen: false, isPending: false, onConfirm: () => {} }),
+}));
+
+interface MobileNavSideModal {
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+}
+
+export const useMobileNavSideModal = create<MobileNavSideModal>((set) => ({
+  isOpen: false,
+  onOpen: () => set({ isOpen: true }),
+  onClose: () => set({ isOpen: false }),
+}));
+
+interface EditProfileModal {
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+}
+
+export const useEditProfileModal = create<EditProfileModal>((set) => ({
+  isOpen: false,
+  onOpen: () => set({ isOpen: true }),
+  onClose: () => set({ isOpen: false }),
 }));

@@ -11,7 +11,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useAlertModal, useEditMediaModal } from "@/hooks/use-modal-store";
 
 import { useDeleteMedia } from "@/queries/react-query/queris";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { MediaWithData } from "@/type";
 import {
   Bookmark,
@@ -35,8 +35,10 @@ const SettingButton = ({ post }: SettingButtonProps) => {
   } = useAlertModal();
   const { user, isLoading } = useCurrentUser();
   const { onOpen } = useEditMediaModal();
+
   const { mutateAsync: deleteMedia, isPending } = useDeleteMedia([
-    QUERY_KEYS.GET_INFINITE_MEDIAS,null
+    QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+    "post",
   ]);
 
   const onDeleteMedia = async () => {
@@ -82,7 +84,12 @@ const SettingButton = ({ post }: SettingButtonProps) => {
           {isAuthor && (
             <>
               <DropdownMenuItem
-                onClick={() => onOpen(post.id, [QUERY_KEYS.GET_INFINITE_MEDIAS,null])}
+                onClick={() =>
+                  onOpen(
+                    post.id,
+                    [QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,"post"],post
+                  )
+                }
               >
                 edit post
                 <DropdownMenuShortcut>

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { MediaWithData } from "@/type";
-import UserAvatar from "../../user-avatar";
+import UserAvatar from "../../user/user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
@@ -14,11 +14,13 @@ import LikeButton from "../../like-button";
 
 import AttachmentDisplayer from "../../attachment-displayer";
 
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
-import { useNewMediaModal } from "@/hooks/use-modal-store";
-import useIsMobile from "@/hooks/use-is-mobile";
+import { useCommentModal, useNewMediaModal } from "@/hooks/use-modal-store";
 import SettingButton from "./setting-button";
+import Link from "next/link";
+import { useIsMobile } from "@/providers/is-mobile-provider";
+import { useRouter } from "next/navigation";
 
 interface ReplyCardProps {
   reply: MediaWithData;
@@ -27,9 +29,11 @@ interface ReplyCardProps {
 }
 
 const ReplyCard = ({ reply, className }: ReplyCardProps) => {
-  const { onOpen } = useNewMediaModal();
   const [expandContent, setExpandContent] = useState(false);
-  const isMobile = useIsMobile(1024);
+  const { onOpen } = useNewMediaModal();
+  const { onClose } = useCommentModal();
+  const { isMobile } = useIsMobile();
+  const router = useRouter();
 
   const onNewReplyModalOpen = () => {
     onOpen(reply);
@@ -69,15 +73,25 @@ const ReplyCard = ({ reply, className }: ReplyCardProps) => {
       >
         <div className="flex gap-x-2 ">
           <div className="flex flex-col items-center gap-x-2 mt-1">
-            <UserAvatar user={reply.user} />
+            <UserAvatar
+              onClick={() => {
+                router.push(`/profile/${reply.userId}`);
+                onClose();
+              }}
+              user={reply.user}
+            />
             <SettingButton reply={reply} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">
               <div className=" p-4 pt-2 overflow-hidden border-solid flex-col gap-y-2 flex  bg-white rounded-3xl">
-                <h4 className="font-bold text-md leading-[140%]">
+                <Link
+                  onClick={onClose}
+                  href={`/profile/${reply.userId}`}
+                  className="font-bold text-md leading-[140%]"
+                >
                   {reply.user.name}
-                </h4>
+                </Link>
 
                 <div className="">
                   <p
@@ -110,10 +124,7 @@ const ReplyCard = ({ reply, className }: ReplyCardProps) => {
               </div>
               <div className="flex gap-x-4">
                 <LikeButton
-                  queryKey={[
-                    QUERY_KEYS.GET_INFINITE_MEDIAS,
-                    reply.parentId,
-                  ]}
+                  queryKey={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "reply",{parentId:reply.parentId}]}
                   parent={reply}
                   className="flex space-x-1 px-0 leading-[140%]"
                 />

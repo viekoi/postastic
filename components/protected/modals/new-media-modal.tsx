@@ -4,33 +4,34 @@ import Modal from "./modal";
 import { useNewMediaModal } from "@/hooks/use-modal-store";
 
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
 import NewMediaForm from "../forms/media/new/new-media-form";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { useNewMediaDrafts } from "@/hooks/use-new-media-drafts-store";
+import { useIsMobile } from "@/providers/is-mobile-provider";
 
 
 const NewMediaModal = () => {
   const { isOpen, onClose, media } = useNewMediaModal();
   const { onCancel } = useIsAddingFiles();
-  const {getDraftByParentId,mediaDrafts} = useNewMediaDrafts()
-  const isMobile = useIsMobile(1024);
+  const { getDraftByParentId } = useNewMediaDrafts();
+  const { isMobile } = useIsMobile();
+
 
   if (media) {
     const parentId = media.type === "comment" ? media.id : media.parentId;
-    const draft = getDraftByParentId(parentId)
-    const currentListQueryKey =
-      media.type === "comment"
-        ? [QUERY_KEYS.GET_INFINITE_MEDIAS, media.id]
-        : [
-            QUERY_KEYS.GET_INFINITE_MEDIAS,
-            media.parentId,
-          ];
+    const draft = getDraftByParentId(parentId);
 
-    const parentListQueryKey = [
-      QUERY_KEYS.GET_INFINITE_MEDIAS,
-      media.postId,
+    const currentListQueryKey = [
+      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+      "reply",
+      { parentId: parentId },
+    ];
+
+    const parentListPreflix = [
+      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+      "comment",
+      { parentId: media.postId },
     ];
 
     if (isMobile) {
@@ -46,7 +47,7 @@ const NewMediaModal = () => {
           <div className="overflow-x-hidden over-y-auto custom-scrollbar">
             <NewMediaForm
               type={"reply"}
-              parentListQueryKey={parentListQueryKey}
+              parentListPreflix={parentListPreflix}
               currentListQueryKey={currentListQueryKey}
               postId={media.postId}
               parentId={parentId}
@@ -68,7 +69,7 @@ const NewMediaModal = () => {
         <div className="overflow-x-hidden over-y-auto custom-scrollbar">
           <NewMediaForm
             type={"reply"}
-            parentListQueryKey={parentListQueryKey}
+            parentListPreflix={parentListPreflix}
             currentListQueryKey={currentListQueryKey}
             postId={media.postId}
             parentId={parentId}
@@ -78,7 +79,7 @@ const NewMediaModal = () => {
       </Modal>
     );
   } else {
-    const draft = getDraftByParentId(null)
+    const draft = getDraftByParentId(null);
     if (isMobile) {
       return (
         <DrawerModal
@@ -92,7 +93,10 @@ const NewMediaModal = () => {
           <div className="overflow-x-hidden over-y-auto custom-scrollbar">
             <NewMediaForm
               type={"post"}
-              currentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
+              currentListQueryKey={[
+                QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+                "post",
+              ]}
               postId={null}
               parentId={null}
               defaultValues={draft}
@@ -113,7 +117,10 @@ const NewMediaModal = () => {
         <div className="overflow-x-hidden over-y-auto custom-scrollbar">
           <NewMediaForm
             type={"post"}
-            currentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
+            currentListQueryKey={[
+              QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+              "post",
+            ]}
             postId={null}
             parentId={null}
             defaultValues={draft}

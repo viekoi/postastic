@@ -1,9 +1,13 @@
 "use server";
-import { asc, count, desc } from "drizzle-orm";
+import { and, asc, count, desc, eq, lte } from "drizzle-orm";
 import db from "../lib/db";
 import { currentUser } from "@/lib/user";
 import { medias as mediaTable } from "@/lib/db/schema";
-import { InferResultType, getMediasWhereClause } from "../lib/db/util";
+import {
+  InferResultType,
+  getMediasWhereClause,
+  getPofileMediasWhereClause,
+} from "../lib/db/util";
 import { MediaTypes } from "@/constansts";
 
 type MediaWithRelations = InferResultType<
@@ -24,13 +28,15 @@ type MediaWithRelations = InferResultType<
   }
 >;
 
-export const getInfiniteMedias = async ({
+export const getInfiniteProfileMedias = async ({
   cursor,
+  profileId,
   parentId,
   type,
 }: {
   cursor?: { id: string; createdAt: Date };
   parentId?: string | null;
+  profileId: string;
   type: (typeof MediaTypes)[number];
 }) => {
   const user = await currentUser();
@@ -40,14 +46,27 @@ export const getInfiniteMedias = async ({
     const totalPages = await db
       .select({ value: count() })
       .from(mediaTable)
-      .where(getMediasWhereClause({ userId: user.id, type, parentId }));
+      .where(
+        getPofileMediasWhereClause({
+          profileId,
+          parentId,
+          userId: user.id,
+          type,
+        })
+      );
 
     let posts: MediaWithRelations[] = [];
 
     if (cursor) {
       posts = await db.query.medias.findMany({
         where: () =>
-          getMediasWhereClause({ userId: user.id, type, parentId, cursor }),
+          getPofileMediasWhereClause({
+            profileId,
+            parentId,
+            userId: user.id,
+            type,
+            cursor,
+          }),
         with: {
           likes: {
             columns: {
@@ -70,9 +89,26 @@ export const getInfiniteMedias = async ({
         ],
         limit: limit,
       });
+      console.log(profileId);
+      const test = await db.query.medias.findMany({
+        where: and(
+          lte(mediaTable.createdAt, cursor.createdAt),
+          eq(mediaTable.userId, profileId)
+          // type ? eq(mediaTable.type, type) : undefined,
+          // parentId ? eq(mediaTable.parentId, parentId) : undefined
+        ),
+      });
+
+      console.log("test:", test);
     } else {
       posts = await db.query.medias.findMany({
-        where: () => getMediasWhereClause({ userId: user.id, type, parentId }),
+        where: () =>
+          getPofileMediasWhereClause({
+            profileId,
+            parentId,
+            userId: user.id,
+            type,
+          }),
         with: {
           likes: {
             columns: {

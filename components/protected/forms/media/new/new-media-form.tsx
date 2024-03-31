@@ -31,18 +31,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Image } from "lucide-react";
 import { toast } from "sonner";
-import { postPrivacyOtptions, videoMaxSize } from "@/constansts";
-import { useNewMediaModal } from "@/hooks/use-modal-store";
-import useIsMobile from "@/hooks/use-is-mobile";
-import { QueryKey, useQueryClient } from "@tanstack/react-query";
-import { AttachmentFile, MediaWithData } from "@/type";
-import {
-  optimisticInsert,
-  updateInteractCount,
-} from "@/queries/react-query/optimistic-functions";
+import { MediaTypes, postPrivacyOtptions, videoMaxSize } from "@/constansts";
+import { useCommentModal, useNewMediaModal } from "@/hooks/use-modal-store";
+import { QueryKey} from "@tanstack/react-query";
+import { AttachmentFile} from "@/type";
+
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
-import UserAvatar from "@/components/protected/user-avatar";
+import UserAvatar from "@/components/protected/user/user-avatar";
 import FileUploader from "@/components/protected/file-uploader";
 import { EmojiPicker } from "@/components/protected/emoji-picker";
 import { useCreateMedia } from "@/queries/react-query/queris";
@@ -51,13 +47,15 @@ import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { useNewMediaDrafts } from "@/hooks/use-new-media-drafts-store";
 import useDebounce from "@/hooks/use-debounce";
 import { isEqual } from "lodash";
+import { useIsMobile } from "@/providers/is-mobile-provider";
+import { useRouter } from "next/navigation";
 
 interface NewMediaFormProps {
-  type: "post" | "comment" | "reply";
+  type: (typeof MediaTypes)[number];
   postId: string | null;
   parentId: string | null;
   currentListQueryKey: QueryKey;
-  parentListQueryKey?: QueryKey;
+  parentListPreflix?: QueryKey;
   defaultValues?: z.infer<typeof NewMediaSchema>;
 }
 
@@ -71,7 +69,7 @@ const NewMediaForm = ({
   type,
   postId,
   parentId,
-  parentListQueryKey,
+  parentListPreflix,
   currentListQueryKey,
   defaultValues,
 }: NewMediaFormProps) => {
@@ -87,15 +85,25 @@ const NewMediaForm = ({
   const [privacyOption, setPrivacyOption] = useState(
     getPostPrivacyOption(defaultValues ? defaultValues.privacyType : "public")
   );
-  const queryClient = useQueryClient();
+  const router = useRouter();
   const { setDrafts, removeDraft } = useNewMediaDrafts();
-  const { mutateAsync: createMedia, isPending, isSuccess } = useCreateMedia();
-  const { onClose, isOpen } = useNewMediaModal();
+  const {
+    mutateAsync: createMedia,
+    isPending,
+    isSuccess,
+  } = useCreateMedia({
+    type,
+    currentListQueryKey,
+    parentId,
+    parentListPreflix,
+  });
+  const { onClose } = useNewMediaModal();
+  const { onClose: onCommentModalClose } = useCommentModal();
   const { onDrop, onRemoveFiles, onRemoveFile } = useFilesUploadActions(
     files,
     setFiles
   );
-  const { onAdd, onCancel } = useIsAddingFiles();
+  const { onAdd, onCancel,isAddingFiles} = useIsAddingFiles();
   const { getInputProps, getRootProps, open } = useDropzone({
     onDrop,
     accept: {
@@ -109,7 +117,7 @@ const NewMediaForm = ({
     maxFiles: 5,
   });
 
-  const isMobile = useIsMobile(1024);
+  const { isMobile } = useIsMobile();
   const textAreaRef = useRef<HTMLTextAreaElement>();
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
     updateTextAreaSize(textArea);
@@ -173,7 +181,7 @@ const NewMediaForm = ({
 
   useEffect(() => {
     const handleSetDraft = () => {
-      if (!isSuccess && !isEqual(form.getValues,defaultValues)) {
+      if (!isSuccess && !isEqual(form.getValues, defaultValues)) {
         setDrafts(form.getValues());
       }
     };
@@ -188,27 +196,6 @@ const NewMediaForm = ({
         if (res.success && res.data) {
           toast.success(res.success, { closeButton: false });
           form.reset();
-          const newCacheComment: MediaWithData = {
-            ...res.data,
-            isLikedByMe: false,
-            likesCount: 0,
-            interactsCount: 0,
-            user: user,
-          };
-          optimisticInsert({
-            queryClient,
-            queryKey: currentListQueryKey,
-            data: newCacheComment,
-            orderBy: type !== "post" ? "asc" : "dsc",
-          });
-          if (type !== "post" && parentId && parentListQueryKey) {
-            updateInteractCount({
-              queryClient,
-              queryKey: parentListQueryKey,
-              parentId: parentId,
-              action: "insert",
-            });
-          }
           removeDraft(res.data.parentId);
           onClose();
           onRemoveFiles();
@@ -242,7 +229,14 @@ const NewMediaForm = ({
                 <FormItem>
                   <FormControl>
                     <div className="flex">
-                      <UserAvatar user={user} />
+                      <UserAvatar
+                        onClick={() => {
+                          router.push(`/profile/${user.id}`);
+                          onClose();
+                          onCommentModalClose();
+                        }}
+                        user={user}
+                      />
                       <Textarea
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
@@ -300,7 +294,7 @@ const NewMediaForm = ({
           <div className="flex items-center justify-between py-2">
             <div className="inline-flex items-center">
               <Button
-                disabled={isPending}
+                disabled={isPending || isAddingFiles}
                 type="button"
                 variant={"ghost"}
                 size={"icon"}

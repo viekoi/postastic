@@ -6,6 +6,7 @@ import { auth } from "../auth";
 import QueryProvider from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import ModalProvider from "@/providers/modal-provider";
+import { IsMobileProvider } from "@/providers/is-mobile-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,23 +27,25 @@ export default async function RootLayout({
       <html lang="en">
         <body className={inter.className}>
           <QueryProvider>
-            <div className="lg:block hidden">
-              <Toaster
-                theme="dark"
-                toastOptions={{
-                  actionButtonStyle: {
-                    backgroundColor: "white",
-                    color: "black",
-                    fontWeight: 500,
-                  },
-                }}
-                closeButton
-                duration={3000}
-                className="text-white z-50"
-              />
-            </div>
-            <ModalProvider />
-            {children}
+            <IsMobileProvider breakPoint={1024}>
+              <div className="lg:block hidden">
+                <Toaster
+                  theme="dark"
+                  toastOptions={{
+                    actionButtonStyle: {
+                      backgroundColor: "white",
+                      color: "black",
+                      fontWeight: 500,
+                    },
+                  }}
+                  closeButton
+                  duration={3000}
+                  className="text-white z-50"
+                />
+              </div>
+              <ModalProvider />
+              {children}
+            </IsMobileProvider>
           </QueryProvider>
         </body>
       </html>

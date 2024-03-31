@@ -1,5 +1,6 @@
 import db from "@/lib/db";
 import { attachments } from "@/lib/db/schema";
+import { cloudinaryEditDelete } from "@/lib/upload";
 import { isNull } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -8,12 +9,15 @@ export async function GET() {
     const res = await db
       .delete(attachments)
       .where(isNull(attachments.parentId))
-     
-    if (res)
+      .returning();
+
+    if (res) {
+      await cloudinaryEditDelete(res);
       return NextResponse.json(
         { susscess: "Attachments cleaned" },
         { status: 200 }
       );
+    }
     return NextResponse.json(
       { error: "something went wrong!!!" },
       { status: 500 }

@@ -2,22 +2,22 @@
 import { useCommentModal } from "@/hooks/use-modal-store";
 import Modal from "./modal";
 import CommentContainer from "../containers/comment/comment-container";
-import useIsMobile from "@/hooks/use-is-mobile";
+
 import DrawerModal from "../drawers/drawer";
 import NewMediaForm from "../forms/media/new/new-media-form";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import { useNewMediaDrafts } from "@/hooks/use-new-media-drafts-store";
+import { useIsMobile } from "@/providers/is-mobile-provider";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 
 const CommentModal = () => {
   const { isOpen, onClose, post } = useCommentModal();
   const { getDraftByParentId } = useNewMediaDrafts();
-  const isMobile = useIsMobile(1024);
+  const { isMobile } = useIsMobile();
   if (!post) {
-    return null
+    return null;
   }
 
   const draft = getDraftByParentId(post.id);
-
 
   if (!isMobile) {
     return (
@@ -36,10 +36,11 @@ const CommentModal = () => {
           />
         </div>
         <NewMediaForm
-          parentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
+          parentListPreflix={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "post"]}
           currentListQueryKey={[
-            QUERY_KEYS.GET_INFINITE_MEDIAS,
-            post.id,
+            QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+            "comment",
+            { parentId: post.id },
           ]}
           type="comment"
           postId={post.id}
@@ -67,10 +68,11 @@ const CommentModal = () => {
           />
         </div>
         <NewMediaForm
-          parentListQueryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
+          parentListPreflix={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,"post"]}
           currentListQueryKey={[
-            QUERY_KEYS.GET_INFINITE_MEDIAS,
-            post.id,
+            QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+            "comment",
+            { parentId: post.id },
           ]}
           type="comment"
           postId={post.id}

@@ -14,7 +14,7 @@ import {
   useDeleteMedia,
   useGetPostCreator,
 } from "@/queries/react-query/queris";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { MediaWithData } from "@/type";
 import { useQueryClient } from "@tanstack/react-query";
 import { Delete, EyeOff, FileCog, MoreHorizontal } from "lucide-react";
@@ -35,10 +35,12 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
   const { user, isLoading } = useCurrentUser();
   const { onOpen } = useEditMediaModal();
   const { data: creator, isPending, error } = useGetPostCreator(reply.postId);
+
   const { mutateAsync: deleteMedia, isPending: isPendingDelete } =
     useDeleteMedia([
-      QUERY_KEYS.GET_INFINITE_MEDIAS,
-      reply.parentId,
+      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+      "comment",
+      { parentId: reply.parentId },
     ]);
 
   const onDeleteMedia = async () => {
@@ -47,7 +49,7 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
       if (data.success) {
         updateInteractCount({
           queryClient,
-          queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,reply.postId],
+          queryKeyPreflix: [QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "comment",{parentId:reply.parentId}],
           parentId: reply.parentId,
           action: "delete",
         });
@@ -89,9 +91,10 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
             <DropdownMenuItem
               onClick={() =>
                 onOpen(reply.id, [
-                  QUERY_KEYS.GET_INFINITE_MEDIAS,
-                  reply.parentId,
-                ])
+                  QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+                  "reply",
+                  { parentId: reply.parentId },
+                ],reply)
               }
             >
               edit reply

@@ -10,14 +10,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "next-auth/react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import UserAvatar from "./user-avatar";
 
 const UserButton = () => {
   const { user, isLoading } = useCurrentUser();
 
   return (
-    <Link href={`/user/${user?.id}`} className="group">
+    <Link href={`/profile/${user?.id}`} className="group">
       <Button
         variant={"ghost"}
         className="h-auto justify-between"
@@ -32,7 +32,7 @@ const UserButton = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="outline-none">
             <div className="rounded-[50%] hover:bg-black  p-1">
-              <MoreHorizontal className="text-white"/>
+              <MoreHorizontal className="text-white" />
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent

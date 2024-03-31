@@ -1,4 +1,3 @@
-
 import {
   Home,
   Search,
@@ -17,6 +16,9 @@ export enum privacyTypeValue {
   PUBLIC = "public",
   PRIVATE = "private",
 }
+
+export const MediaTypes = ["post", "reply", "comment"] as const;
+export const InfinitePostsRoutes = ["home", "profile", "save"] as const;
 
 export const sidebarLinks = [
   {
@@ -99,9 +101,6 @@ export const postPrivacyOtptions = [
     value: privacyTypeValue.PRIVATE,
   },
 ];
-
-
-
 
 export const imageMaxSize = 8388608;
 export const videoMaxSize = 20971520;

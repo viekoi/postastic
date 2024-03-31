@@ -4,12 +4,15 @@ import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
 import { MessageSquareText } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
-
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
 import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
 import { useGetInfiniteMedias } from "@/queries/react-query/queris";
+import { getInfiniteMedias } from "@/actions/get-infinite-medias";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
+
+const type = "comment";
+const parentType = "post";
 
 const CommentContainer = ({
   postId,
@@ -20,7 +23,16 @@ const CommentContainer = ({
 }) => {
   const queryClient = useQueryClient();
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
-    useGetInfiniteMedias({parentId:postId,type:"comment"});
+    useGetInfiniteMedias({
+      queryKey: [
+        QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+        "comment",
+        { parentId: postId },
+      ],
+      parentId: postId,
+      type: type,
+      queryFn: getInfiniteMedias,
+    });
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
@@ -35,7 +47,11 @@ const CommentContainer = ({
     ) {
       updateInteractCount({
         queryClient,
-        queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,null],
+        queryKeyPreflix: [
+          QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+          "comment",
+          { parentId: postId },
+        ],
         parentId: postId,
         newCount: data?.pages[0].total,
       });

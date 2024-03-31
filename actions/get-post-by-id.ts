@@ -2,7 +2,7 @@
 
 import db from "@/lib/db";
 import { currentUser } from "@/lib/user";
-import { and, eq, or } from "drizzle-orm";
+import {eq } from "drizzle-orm";
 
 export const getPostById = async (postId: string) => {
   if (!postId) return null;

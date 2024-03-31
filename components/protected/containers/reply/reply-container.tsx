@@ -4,13 +4,15 @@ import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
 import { MessageSquareText } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
 import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
 import { useGetInfiniteMedias } from "@/queries/react-query/queris";
-
+import { getInfiniteMedias } from "@/actions/get-infinite-medias";
+const type = "reply";
+const parentType = "comment";
 const ReplyContainer = ({
   postId,
   parentId,
@@ -22,7 +24,16 @@ const ReplyContainer = ({
 }) => {
   const queryClient = useQueryClient();
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
-    useGetInfiniteMedias({parentId,type:"reply"});
+    useGetInfiniteMedias({
+      parentId,
+      type: type,
+      queryFn: getInfiniteMedias,
+      queryKey: [
+        QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+        "reply",
+        { parentId: parentId },
+      ],
+    });
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
@@ -34,7 +45,11 @@ const ReplyContainer = ({
     if (data?.pages[0].total && data!.pages[0].total !== initialInteractCount) {
       updateInteractCount({
         queryClient,
-        queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,postId],
+        queryKeyPreflix: [
+          QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+          "reply",
+          { parentId: parentId },
+        ],
         parentId: postId,
         newCount: data?.pages[0].total,
       });
@@ -74,7 +89,12 @@ const ReplyContainer = ({
     <div className="max-h-[40vh] overflow-y-scroll custom-scrollbar ">
       {data.pages.flat().map((page, index) => {
         return (
-          <MediaList className="flex flex-col gap-y-4 w-full" key={index} medias={page.success ? page.success : []} type="reply"/>
+          <MediaList
+            className="flex flex-col gap-y-4 w-full"
+            key={index}
+            medias={page.success ? page.success : []}
+            type="reply"
+          />
         );
       })}
       {hasNextPage && (

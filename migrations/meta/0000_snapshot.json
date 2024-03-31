@@ -1,5 +1,5 @@
 {
-  "id": "eed04691-4cb2-4ee9-b0cc-2ec67b5b31b9",
+  "id": "fbe7db1c-90fa-4bbc-9517-1c1a2d3d52ef",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -443,6 +443,12 @@
         },
         "image": {
           "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "coverImage": {
+          "name": "coverImage",
           "type": "text",
           "primaryKey": false,
           "notNull": false

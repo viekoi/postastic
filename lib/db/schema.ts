@@ -28,6 +28,7 @@ export const users = pgTable("user", {
     mode: "date",
   }),
   image: text("image"),
+  coverImage:text("coverImage"),
   password: text("password"),
 });
 

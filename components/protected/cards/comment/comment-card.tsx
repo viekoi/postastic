@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { MediaWithData } from "@/type";
-import UserAvatar from "../../user-avatar";
+import UserAvatar from "../../user/user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
@@ -14,12 +14,14 @@ import LikeButton from "../../like-button";
 
 import AttachmentDisplayer from "../../attachment-displayer";
 
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { privacyTypeValue } from "@/constansts";
 import ReplyContainer from "../../containers/reply/reply-container";
-import { useNewMediaModal } from "@/hooks/use-modal-store";
-import useIsMobile from "@/hooks/use-is-mobile";
+import { useCommentModal, useNewMediaModal } from "@/hooks/use-modal-store";
 import SettingButton from "./setting-button";
+import Link from "next/link";
+import { useIsMobile } from "@/providers/is-mobile-provider";
+import { useRouter } from "next/navigation";
 
 interface CommentCardProps {
   comment: MediaWithData;
@@ -28,10 +30,12 @@ interface CommentCardProps {
 }
 
 const CommentCard = ({ comment, className }: CommentCardProps) => {
-  const { onOpen } = useNewMediaModal();
   const [expandContent, setExpandContent] = useState(false);
   const [open, setOpen] = useState(false);
-  const isMobile = useIsMobile(1024);
+  const { onOpen } = useNewMediaModal();
+  const { onClose } = useCommentModal();
+  const { isMobile } = useIsMobile();
+  const router = useRouter();
   const onNewReplyModalOpen = () => {
     onOpen(comment);
   };
@@ -70,15 +74,25 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
       >
         <div className="flex gap-x-2 ">
           <div className="flex items-center gap-y-2 mt-1 flex-col">
-            <UserAvatar user={comment.user} />
+            <UserAvatar
+              onClick={() => {
+                router.push(`/profile/${comment.userId}`);
+                onClose();
+              }}
+              user={comment.user}
+            />
             <SettingButton comment={comment} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">
               <div className=" p-4 pt-2 overflow-hidden border-solid flex-col gap-y-2 flex  bg-white rounded-3xl">
-                <h4 className="font-bold text-md leading-[140%]">
+                <Link
+                  onClick={onClose}
+                  href={`/profile/${comment.userId}`}
+                  className="font-bold text-md leading-[140%]"
+                >
                   {comment.user.name}
-                </h4>
+                </Link>
                 <div className="">
                   <p
                     className={`whitespace-pre-wrap leading-[140%] break-words ${
@@ -110,10 +124,7 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
               </div>
               <div className="flex gap-x-4">
                 <LikeButton
-                  queryKey={[
-                    QUERY_KEYS.GET_INFINITE_MEDIAS,
-                    comment.postId,
-                  ]}
+                  queryKey={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,"comment",{parentId:comment.postId}]}
                   parent={comment}
                   className="flex space-x-1 px-0 leading-[140%]"
                 />

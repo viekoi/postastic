@@ -8,7 +8,7 @@ import {
 import { cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
 import { EditMediaShcema } from "@/schemas";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import * as z from "zod";
 
 export const updateMedia = async (
@@ -28,19 +28,20 @@ export const updateMedia = async (
     const { content, attachments, privacyType } = validatedFields.data;
 
     if (attachments.length === 0 && !content.trim().length)
-      return { error: "Your post is empty" };
+      return { error: "Your media is empty" };
 
     const isOverFlowContent = content.length > 300;
 
     if (attachments.length === 0 && content.length) {
-      const updatedPost = await db
+      const updatedMedia = await db
         .update(mediaTable)
         .set({
           content,
           isOverFlowContent,
           privacyType,
         })
-        .where(eq(mediaTable.id, id));
+        .where(eq(mediaTable.id, id))
+        .returning();
 
       await db
         .update(attachmentTable)
@@ -48,17 +49,22 @@ export const updateMedia = async (
         .where(eq(attachmentTable.parentId, id));
 
       return {
-        success: "Post updated!",
+        success: "media updated!",
+        data: {
+          ...updatedMedia[0],
+          attachments: [],
+        },
       };
     } else {
-      await db
+      const updatedMedia = await db
         .update(mediaTable)
         .set({
           content,
           isOverFlowContent,
           privacyType,
         })
-        .where(eq(mediaTable.id, id));
+        .where(eq(mediaTable.id, id))
+        .returning();
 
       const currentAttachments = await db.query.attachments.findMany({
         where: (a) => eq(a.parentId, id),
@@ -68,16 +74,16 @@ export const updateMedia = async (
         (a) => !attachments.find((na) => na.publicId === a.publicId)
       );
 
+      const addedAttachments = attachments.filter(
+        (a) => a.publicId === undefined
+      );
+
       if (removedAttachments.length) {
         await db
           .update(attachmentTable)
           .set({ parentId: null })
           .where(eq(attachmentTable.parentId, id));
       }
-
-      const addedAttachments = attachments.filter(
-        (a) => a.publicId === undefined
-      );
 
       if (addedAttachments.length) {
         const uploadedFiles = await cloudinaryUpload(addedAttachments);
@@ -98,8 +104,17 @@ export const updateMedia = async (
         await db.insert(attachmentTable).values(formatedUploadedFiles);
       }
 
+      const updatedAtachments = await db.query.attachments.findMany({
+        where: (a) => eq(a.parentId, id),
+        orderBy: (a) => desc(a.createdAt),
+      });
+
       return {
         success: "Post updated!",
+        data: {
+          ...updatedMedia[0],
+          attachments: updatedAtachments,
+        },
       };
     }
   } catch (error) {

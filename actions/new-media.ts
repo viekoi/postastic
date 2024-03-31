@@ -9,6 +9,7 @@ import {
 import { cloudinaryDelete, cloudinaryUpload } from "@/lib/upload";
 import { currentUser } from "@/lib/user";
 import { NewMediaSchema } from "@/schemas";
+import { eq } from "drizzle-orm";
 import * as z from "zod";
 
 export const newMedia = async (values: z.infer<typeof NewMediaSchema>) => {
@@ -25,18 +26,24 @@ export const newMedia = async (values: z.infer<typeof NewMediaSchema>) => {
 
     if (!user) return { error: "Email does not exist!" };
 
-    if (type === "reply" && !postId && !parentId) {
+    if (type !== "post" && !postId && !parentId) {
       return {
         error: "postId and parentId is need for creating a comment ",
       };
     }
 
-    if (type === "reply" && !postId && !parentId) {
-      return {
-        error: "postId and parentId is need for creating a reply",
-      };
-    }
+    if (parentId) {
+      const existingParentMedia = await db.query.medias.findFirst({
+        where: (m) => eq(m.id, parentId),
+      });
 
+      if (!existingParentMedia) {
+        return {
+          error:
+            "something went wrong, the media that you are interact with may not exist or had been deleted!!!",
+        };
+      }
+    }
     if (attachments.length === 0 && !content.trim().length)
       return { error: "Your media is empty" };
 
@@ -60,6 +67,7 @@ export const newMedia = async (values: z.infer<typeof NewMediaSchema>) => {
         data: {
           ...newMedia[0],
           attachments: [],
+          user: user,
         },
       };
     } else {
@@ -105,6 +113,7 @@ export const newMedia = async (values: z.infer<typeof NewMediaSchema>) => {
         data: {
           ...newMedia[0],
           attachments: newAttachments,
+          user: user,
         },
       };
     }

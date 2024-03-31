@@ -10,6 +10,14 @@ export const like = async (id: string) => {
 
   if (!user) return { error: "Unauthenticated!!!" };
   try {
+    const existingMedia = await db.query.medias.findFirst({
+      where: (m) => eq(m.id, id),
+    });
+
+    if (!existingMedia) {
+      return { error: "something went wrong, this media may not exist or had been deleted!!!" };
+    }
+
     const existingLike = await db.query.likes.findFirst({
       where: and(eq(likes.parentId, id), eq(likes.userId, user.id)),
     });

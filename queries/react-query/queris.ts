@@ -1,4 +1,4 @@
-import { QUERY_KEYS } from "./query-keys";
+import { QUERY_KEYS_PREFLIX } from "./query-keys";
 import {
   QueryKey,
   useInfiniteQuery,
@@ -8,76 +8,122 @@ import {
 } from "@tanstack/react-query";
 
 import { like } from "@/actions/like";
-import { updateLikesCount } from "./optimistic-functions";
-import { getPostById } from "@/actions/get-post-by-id";
+import {
+  optimisticInsert,
+  optimisticUpdate,
+  updateInteractCount,
+  updateLikesCount,
+} from "./optimistic-functions";
 import { updateMedia } from "@/actions/update-media";
 import { EditMediaShcema, NewMediaSchema } from "@/schemas";
 import * as z from "zod";
 import { getPostCreator } from "@/actions/get-post-creator";
 import { deleteMedia } from "@/actions/delete-media";
 import { newMedia } from "@/actions/new-media";
-import { getInfiniteMedias } from "@/actions/get-infinite-medias";
+import { InfinitePostsRoutes, MediaTypes } from "@/constansts";
 
 export const useGetInfiniteMedias = ({
+  profileId,
   parentId,
   type,
+  queryFn,
+  queryKey,
+  route,
 }: {
+  profileId?: string;
   parentId?: string | null;
-  type: "post" | "comment" | "reply";
+  type: (typeof MediaTypes)[number];
+  queryFn: (pageParam: any) => Promise<any>;
+  queryKey: QueryKey;
+  route?: (typeof InfinitePostsRoutes)[number];
 }) => {
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,parentId],
-    queryFn: ({ pageParam }) => getInfiniteMedias(pageParam),
-    initialPageParam: { parentId: parentId, type: type },
+    queryKey,
+    queryFn: ({ pageParam }) => queryFn(pageParam),
+    initialPageParam: {
+      cursor: undefined,
+      parentId: parentId,
+      type: type,
+      profileId: profileId,
+      route,
+    },
     getNextPageParam: (lastPage) => {
       return lastPage?.nextCursor
-        ? { cursor: lastPage.nextCursor, parentId, type }
+        ? {
+            cursor: lastPage.nextCursor,
+            parentId,
+            type,
+            profileId: profileId,
+            route,
+          }
         : undefined;
     },
   });
 };
 
-export const useGetMediaById = (id: string) => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, id],
-    queryFn: () => getPostById(id),
-  });
-};
-
 export const useGetPostCreator = (postId: string | null) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_POST_CREATOR, postId],
+    queryKey: [QUERY_KEYS_PREFLIX.GET_POST_CREATOR, { mediaId: postId }],
     queryFn: () => getPostCreator(postId),
   });
 };
 
-export const useLike = (querykey: QueryKey) => {
+export const useLike = (querykeyPreflix: QueryKey) => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) => like(id),
     onMutate: (id) => {
-      const previousData = updateLikesCount({
+      updateLikesCount({
         queryClient: queryClient,
-        queryKey: querykey,
+        queryKeyPreflix: querykeyPreflix,
         id,
       });
-
-      return { previousData };
-    },
-    onError: (err, newData, context) => {
-      queryClient.setQueryData(querykey, context?.previousData);
     },
   });
 };
 
-export const useCreateMedia = () => {
+export const useCreateMedia = ({
+  type,
+  currentListQueryKey,
+  parentListPreflix,
+  parentId,
+}: {
+  type: (typeof MediaTypes)[number];
+  currentListQueryKey: QueryKey;
+  parentListPreflix?: QueryKey;
+  parentId: string | null;
+}) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (values: z.infer<typeof NewMediaSchema>) => newMedia(values),
+    onSettled(data, error, variables, context) {
+      if (data?.success && data.data) {
+        optimisticInsert({
+          queryClient,
+          queryKey: currentListQueryKey,
+          data: {
+            ...data.data,
+            isLikedByMe: false,
+            interactsCount: 0,
+            likesCount: 0,
+          },
+          orderBy: type !== "post" ? "asc" : "dsc",
+        });
+        if (type !== "post" && parentId && parentListPreflix) {
+          console.log(parentListPreflix);
+          updateInteractCount({
+            queryClient,
+            queryKeyPreflix: parentListPreflix,
+            parentId: parentId,
+            action: "insert",
+          });
+        }
+      }
+    },
   });
 };
 
-export const useUpdateMedia = (querykey: QueryKey) => {
+export const useUpdateMedia = (queryKeyPreflix: QueryKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -89,24 +135,20 @@ export const useUpdateMedia = (querykey: QueryKey) => {
       id: string;
     }) => updateMedia(values, id),
     onSettled: (data, error, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: querykey });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, variables.id],
-      });
+      if (data?.success && data.data) {
+        optimisticUpdate({ queryClient, queryKeyPreflix, data: data.data });
+      }
     },
   });
 };
 
-export const useDeleteMedia = (querykey: QueryKey) => {
+export const useDeleteMedia = (querykeyPreflix: QueryKey) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) => deleteMedia(id),
     onSettled: (data, error, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: querykey });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_MEDIA_BY_ID, variables],
-      });
+      queryClient.invalidateQueries({ queryKey: querykeyPreflix, exact: true });
     },
   });
 };

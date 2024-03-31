@@ -7,7 +7,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { MediaWithData } from "@/type";
-import UserAvatar from "../../user-avatar";
+import UserAvatar from "../../user/user-avatar";
 import {
   cn,
   mobileMultiFormatDateString,
@@ -16,12 +16,14 @@ import {
 import { Globe, Lock, MessageCircle, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LikeButton from "../../like-button";
-import { privacyTypeValue } from "@/constansts";
+import {  privacyTypeValue } from "@/constansts";
 import AttachmentDisplayer from "../../attachment-displayer";
 import { useCommentModal } from "@/hooks/use-modal-store";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
 import SettingButton from "./setting-button";
-import useIsMobile from "@/hooks/use-is-mobile";
+import Link from "next/link";
+import { useIsMobile } from "@/providers/is-mobile-provider";
+import { useRouter } from "next/navigation";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 
 interface PostCardProps {
   post: MediaWithData;
@@ -34,9 +36,10 @@ const PostCard = ({
   className,
   isModalContent = false,
 }: PostCardProps) => {
-  const { onOpen } = useCommentModal();
   const [expandConent, setExpandContent] = useState(false);
-  const isMobile = useIsMobile(1024);
+  const { onOpen } = useCommentModal();
+  const { isMobile } = useIsMobile();
+  const router = useRouter();
   const baseContainerClassName = "border border-gray-600 ";
   const indexContainerClassName = (index: number, dataLength: number) => {
     var className = "";
@@ -77,11 +80,17 @@ const PostCard = ({
         <CardHeader>
           <div className="flex justify-between">
             <div className="flex items-start gap-x-2 ">
-              <UserAvatar user={post.user} />
+              <UserAvatar
+                onClick={() => router.push(`/profile/${post.userId}`)}
+                user={post.user}
+              />
               <div className="flex flex-col ">
-                <span className="font-medium text-sm leading-[140%]">
+                <Link
+                  href={`/profile/${post.userId}`}
+                  className="font-medium text-sm leading-[140%]"
+                >
                   {post.user.name}
-                </span>
+                </Link>
                 <h4 className=" items-center flex gap-x-1 text-[12px] font-medium text-muted-foreground">
                   {isMobile
                     ? mobileMultiFormatDateString(post.createdAt.toUTCString())
@@ -131,7 +140,7 @@ const PostCard = ({
           )}
         >
           <LikeButton
-            queryKey={[QUERY_KEYS.GET_INFINITE_MEDIAS,null]}
+            queryKey={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,"post"]}
             parent={post}
             className=" col-span-1 space-x-2"
           />
@@ -147,7 +156,7 @@ const PostCard = ({
           )}
           <Button variant={"postCard"} className=" col-span-1 space-x-2">
             <Repeat2 size={18} />
-            <span>10</span>
+            <span>0</span>
           </Button>
         </CardFooter>
       </Card>

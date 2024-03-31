@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS "user" (
 	"email" text NOT NULL,
 	"emailVerified" timestamp with time zone,
 	"image" text,
+	"coverImage" text,
 	"password" text
 );
 --> statement-breakpoint

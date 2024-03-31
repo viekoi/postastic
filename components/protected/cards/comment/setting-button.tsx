@@ -9,17 +9,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useAlertModal, useEditMediaModal } from "@/hooks/use-modal-store";
+import { media } from "@/migrations/schema";
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
 import {
   useDeleteMedia,
   useGetPostCreator,
 } from "@/queries/react-query/queris";
-import { QUERY_KEYS } from "@/queries/react-query/query-keys";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { MediaWithData } from "@/type";
 import { useQueryClient } from "@tanstack/react-query";
 import { Delete, EyeOff, FileCog, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import { AlertModal } from "../../modals/alert-modal";
 
 interface SettingButtonProps {
   comment: MediaWithData;
@@ -37,7 +37,11 @@ const SettingButton = ({ comment }: SettingButtonProps) => {
   const { onOpen } = useEditMediaModal();
   const { data: creator, isPending, error } = useGetPostCreator(comment.postId);
   const { mutateAsync: deleteMedia, isPending: isPendingDelete } =
-    useDeleteMedia([QUERY_KEYS.GET_INFINITE_MEDIAS,comment.postId]);
+    useDeleteMedia([
+      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+      "comment",
+      { parentId: comment.parentId },
+    ]);
 
   const onDeleteMedia = async () => {
     setIsPending(isPendingDelete);
@@ -45,7 +49,7 @@ const SettingButton = ({ comment }: SettingButtonProps) => {
       if (data.success) {
         updateInteractCount({
           queryClient,
-          queryKey: [QUERY_KEYS.GET_INFINITE_MEDIAS,null],
+          queryKeyPreflix: [QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "post"],
           parentId: comment.parentId,
           action: "delete",
         });
@@ -88,10 +92,15 @@ const SettingButton = ({ comment }: SettingButtonProps) => {
             <>
               <DropdownMenuItem
                 onClick={() =>
-                  onOpen(comment.id, [
-                    QUERY_KEYS.GET_INFINITE_MEDIAS,
-                    comment.postId,
-                  ])
+                  onOpen(
+                    comment.id,
+                    [
+                      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+                      "comment",
+                      { parentId: comment.postId },
+                    ],
+                    comment
+                  )
                 }
               >
                 edit comment

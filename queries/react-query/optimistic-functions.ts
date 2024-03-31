@@ -1,33 +1,23 @@
-import { MediaWithData, OptimisticUpdateData } from "@/type";
+import { MediaWithData } from "@/type";
 import { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
 
 export const updateLikesCount = async ({
   queryClient,
-  queryKey,
+  queryKeyPreflix,
   id,
 }: {
   queryClient: QueryClient;
-  queryKey: QueryKey;
+  queryKeyPreflix: QueryKey;
   id: string;
 }) => {
   await queryClient.cancelQueries({
-    queryKey: queryKey,
+    queryKey: queryKeyPreflix,
   });
 
-  const previousData = queryClient.getQueryData(queryKey);
-
-  queryClient.setQueryData(
-    queryKey,
-    (
-      old: InfiniteData<{
-        success: MediaWithData[];
-        currentPage: number;
-        nextPage: number;
-        total: number;
-        totalPages: number;
-        limit: number;
-      }>
-    ) => {
+  queryClient.setQueriesData(
+    { queryKey: queryKeyPreflix },
+    (old: InfiniteData<{ success: MediaWithData[] }> | undefined) => {
+      if (!old) return;
       return {
         ...old,
         pages: old.pages.map((page) => {
@@ -48,19 +38,17 @@ export const updateLikesCount = async ({
       };
     }
   );
-
-  return previousData;
 };
 
 export const updateInteractCount = async ({
   queryClient,
-  queryKey,
+  queryKeyPreflix,
   parentId,
   newCount,
   action,
 }: {
   queryClient: QueryClient;
-  queryKey: QueryKey;
+  queryKeyPreflix: QueryKey;
   parentId: string | null;
   newCount?: number;
   action?: "insert" | "delete";
@@ -69,21 +57,16 @@ export const updateInteractCount = async ({
   if (!newCount && !action)
     throw new Error("neither give a action or a newCount");
   await queryClient.cancelQueries({
-    queryKey: queryKey,
+    queryKey: queryKeyPreflix,
   });
-  queryClient.setQueryData(
-    queryKey,
-    (
-      old: InfiniteData<{
-        success: MediaWithData[];
-        currentPage: number;
-        nextPage: number;
-        total: number;
-        totalPages: number;
-        limit: number;
-      }>
-    ) => {
-      if (!old) return;
+
+  queryClient.setQueriesData(
+    { queryKey: queryKeyPreflix },
+    (old: InfiniteData<{ success: MediaWithData[] }> | undefined) => {
+      console.log(old);
+      if (!old) {
+        return;
+      }
       return {
         ...old,
         pages: old.pages.map((page) => {
@@ -122,20 +105,21 @@ export const optimisticInsert = async ({
     queryKey: queryKey,
   });
 
-  queryClient.setQueryData(
-    queryKey,
+  queryClient.setQueriesData(
+    { queryKey: queryKey },
     (
-      old: InfiniteData<{
-        error?: string;
-        success?: MediaWithData[];
-        currentPage: number;
-        nextPage: number;
-        total: number;
-        totalPages: number;
-        limit: number;
-      }>
+      old:
+        | InfiniteData<{ success?: MediaWithData[]; error?: string }>
+        | undefined
     ) => {
-      if (!old) return;
+      console.log(old);
+      if (!old) {
+        return;
+      }
+      //@ts-ignore
+      if (old.pageParams[0].route && old.pageParams[0].route === "dev") {
+        return;
+      }
       const firstPage = old.pages[0];
       const currentLastPageIndex = old.pages.length - 1;
       const currentLastPage = old.pages[currentLastPageIndex];
@@ -187,29 +171,31 @@ export const optimisticInsert = async ({
 
 export const optimisticUpdate = async ({
   queryClient,
-  queryKey,
+  queryKeyPreflix,
   data,
 }: {
   queryClient: QueryClient;
-  queryKey: QueryKey;
-  data: OptimisticUpdateData;
+  queryKeyPreflix: QueryKey;
+  data: Omit<
+    MediaWithData,
+    "interactsCount" | "user" | "likesCount" | "isLikedByMe"
+  >;
 }) => {
   await queryClient.cancelQueries({
-    queryKey: queryKey,
+    queryKey: queryKeyPreflix,
   });
-
-  queryClient.setQueryData(
-    queryKey,
+  console.log(queryKeyPreflix);
+  queryClient.setQueriesData(
+    { queryKey: queryKeyPreflix },
     (
-      old: InfiniteData<{
-        success: MediaWithData[];
-        currentPage: number;
-        nextPage: number;
-        total: number;
-        totalPages: number;
-        limit: number;
-      }>
+      old:
+        | InfiniteData<{
+            success: MediaWithData[];
+          }>
+        | undefined
     ) => {
+      console.log(old);
+      if (!old) return;
       return {
         ...old,
         pages: old.pages.map((page) => {
@@ -219,6 +205,9 @@ export const optimisticUpdate = async ({
               if (media.id === data.id) {
                 return {
                   ...data,
+                  isLikedByMe: media.isLikedByMe,
+                  likesCount: media.likesCount,
+                  user: media.user,
                   interactsCount: media.interactsCount,
                 };
               } else return media;

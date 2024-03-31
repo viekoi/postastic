@@ -1,14 +1,15 @@
 import {
+  InfinitePostsRoutes,
+  MediaTypes,
   imageMaxSize,
   postPrivacyOtptions,
-  privacyTypeValue,
   videoMaxSize,
 } from "@/constansts";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { AttachmentFile } from "@/type";
 import { type ClassValue, clsx } from "clsx";
 import { FileWithPath } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
-import { string } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -102,8 +103,28 @@ export const isTooLarge = (
   return false;
 };
 
-export const getPostPrivacyOption = (privacyType: "public" | "private")=> {
-  const res = postPrivacyOtptions.find((option) => option.value === privacyType);
+export const getPostPrivacyOption = (privacyType: "public" | "private") => {
+  const res = postPrivacyOtptions.find(
+    (option) => option.value === privacyType
+  );
 
-  return res ? res : postPrivacyOtptions[0]
-}
+  return res ? res : postPrivacyOtptions[0];
+};
+
+export const InfiniteMediasQueryKeyBuilder = ({
+  parentId,
+  type,
+  route,
+  profileId,
+}: {
+  parentId: string | null;
+  type: (typeof MediaTypes)[number];
+  route: (typeof InfinitePostsRoutes)[number];
+  profileId?: string;
+}) => {
+  return [
+    QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+    type,
+    { parentId: parentId, profileId: profileId, route: route },
+  ];
+};

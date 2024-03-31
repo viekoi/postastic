@@ -3,19 +3,21 @@ import React from "react";
 import Modal from "./modal";
 import { useEditMediaModal } from "@/hooks/use-modal-store";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import useIsMobile from "@/hooks/use-is-mobile";
 import DrawerModal from "../drawers/drawer";
 import Edit from "../forms/media/edit/edit";
+import { useIsMobile } from "@/providers/is-mobile-provider";
 
 const EditMediaModal = () => {
-  const { isOpen, onClose, id, queryKey } = useEditMediaModal();
+  const { isOpen, onClose, id, queryKeyPreflix, media } = useEditMediaModal();
   const { onCancel } = useIsAddingFiles();
-  
-  const isMobile = useIsMobile(1024);
 
-  if (id === null) return;
+  const { isMobile } = useIsMobile();
 
-  if (queryKey === null) return;
+  if (!id) return;
+
+  if (queryKeyPreflix === null) return;
+
+  if (!media) return;
 
   if (isMobile) {
     return (
@@ -28,7 +30,7 @@ const EditMediaModal = () => {
         }}
       >
         <div className="overflow-x-hidden overflow-y-auto custom-scrollbar">
-          <Edit id={id} queryKey={queryKey} />
+          <Edit id={id} queryKeyPreflix={queryKeyPreflix} media={media} />
         </div>
       </DrawerModal>
     );
@@ -43,7 +45,7 @@ const EditMediaModal = () => {
       }}
     >
       <div className="overflow-x-hidden overflow-y-auto custom-scrollbar">
-        <Edit id={id} queryKey={queryKey} />
+        <Edit id={id} queryKeyPreflix={queryKeyPreflix} media={media} />
       </div>
     </Modal>
   );

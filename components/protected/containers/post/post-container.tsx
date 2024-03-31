@@ -8,8 +8,24 @@ import { MessageSquareText } from "lucide-react";
 import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
 import { useGetInfiniteMedias } from "@/queries/react-query/queris";
+import { QueryKey } from "@tanstack/react-query";
+import { InfinitePostsRoutes } from "@/constansts";
 
-const PostContainer = () => {
+const type = "post";
+
+interface PostContainerProps {
+  profileId?: string;
+  queryKey: QueryKey;
+  queryFn: (pageParam: any) => Promise<any>;
+  route:(typeof InfinitePostsRoutes)[number]
+}
+
+const PostContainer = ({
+  queryFn,
+  queryKey,
+  profileId,
+  route
+}: PostContainerProps) => {
   const {
     data,
     fetchNextPage,
@@ -18,7 +34,14 @@ const PostContainer = () => {
     refetch,
     isPending,
     isRefetching,
-  } = useGetInfiniteMedias({type:"post"});
+  } = useGetInfiniteMedias({
+    profileId,
+    parentId: null,
+    queryKey: queryKey,
+    type: type,
+    queryFn: queryFn,
+    route
+  });
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
