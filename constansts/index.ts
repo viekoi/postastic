@@ -7,9 +7,6 @@ import {
   Settings2,
   Globe,
   Lock,
-  Bookmark,
-  FileCog,
-  Delete,
 } from "lucide-react";
 
 export enum privacyTypeValue {
@@ -48,8 +45,8 @@ export const sidebarLinks = [
   },
   {
     icon: Settings2,
-    route: "/setting",
-    label: "Setting",
+    route: "/settings",
+    label: "Settings",
   },
 ];
 
@@ -61,8 +58,8 @@ export const userSheetLinks = [
   },
   {
     icon: Settings2,
-    route: "/setting",
-    label: "Setting",
+    route: "/settings",
+    label: "Settings",
   },
 ];
 

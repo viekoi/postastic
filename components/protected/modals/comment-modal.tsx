@@ -31,7 +31,7 @@ const CommentModal = () => {
       >
         <div className="overflow-y-scroll custom-scrollbar flex-1">
           <CommentContainer
-            postId={post.id}
+            post={post}
             initiaParentInteractCount={post.interactsCount}
           />
         </div>
@@ -63,12 +63,12 @@ const CommentModal = () => {
       >
         <div className="overflow-y-scroll custom-scrollbar flex-1">
           <CommentContainer
-            postId={post.id}
+            post={post}
             initiaParentInteractCount={post.interactsCount}
           />
         </div>
         <NewMediaForm
-          parentListPreflix={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,"post"]}
+          parentListPreflix={[QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "post"]}
           currentListQueryKey={[
             QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
             "comment",

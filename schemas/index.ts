@@ -1,5 +1,5 @@
 import { isTooLarge } from "@/lib/utils";
-import { AttachmentFile } from "@/type";
+import { UploadFile } from "@/type";
 import * as z from "zod";
 
 export const LoginSchema = z.object({
@@ -41,8 +41,8 @@ export const NewPasswordSchema = z.object({
   }),
 });
 
-function refineFiles(files: AttachmentFile[]): boolean {
-  return files.every((file: AttachmentFile) => !isTooLarge(file, file.type));
+function refineFiles(files: UploadFile[]): boolean {
+  return files.every((file: UploadFile) => !isTooLarge(file, file.type));
 }
 
 export const NewMediaSchema = z
@@ -51,7 +51,7 @@ export const NewMediaSchema = z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),
     attachments: z
-      .array(z.custom<AttachmentFile>())
+      .array(z.custom<UploadFile>())
       .max(5, { message: "Maximum of 5 media allowed" })
       .refine((data) => refineFiles(data), {
         message:
@@ -77,12 +77,12 @@ export const NewMediaSchema = z
 
 export const EditMediaShcema = z
   .object({
-    id:z.string(),
+    id: z.string(),
     content: z
       .string()
       .max(2200, { message: "Exceeded the maximum character" }),
     attachments: z
-      .array(z.custom<AttachmentFile>())
+      .array(z.custom<UploadFile>())
       .max(5, { message: "Maximum of 5 media allowed" })
       .refine((data) => refineFiles(data), {
         message:
@@ -102,3 +102,11 @@ export const EditMediaShcema = z
       message: "Post is empty!!!",
     }
   );
+
+export const EditUserProfileShcema = z.object({
+  id:z.string(),
+  name: z.string().min(1, { message: "user name can not be empty" }),
+  avatarImage: z.custom<UploadFile>().nullable(),
+  coverImage: z.custom<UploadFile>().nullable(),
+  bio:z.string()
+});

@@ -28,21 +28,20 @@ export default async function RootLayout({
         <body className={inter.className}>
           <QueryProvider>
             <IsMobileProvider breakPoint={1024}>
-              <div className="lg:block hidden">
-                <Toaster
-                  theme="dark"
-                  toastOptions={{
-                    actionButtonStyle: {
-                      backgroundColor: "white",
-                      color: "black",
-                      fontWeight: 500,
-                    },
-                  }}
-                  closeButton
-                  duration={3000}
-                  className="text-white z-50"
-                />
-              </div>
+              <Toaster
+                position="top-center"
+                theme="dark"
+                toastOptions={{
+                  actionButtonStyle: {
+                    backgroundColor: "white",
+                    color: "black",
+                    fontWeight: 500,
+                  },
+                }}
+                closeButton
+                duration={3000}
+                className="text-white z-50"
+              />
               <ModalProvider />
               {children}
             </IsMobileProvider>

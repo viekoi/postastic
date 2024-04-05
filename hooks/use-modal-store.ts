@@ -1,4 +1,4 @@
-import { AttachmentFile, MediaWithData } from "@/type";
+import { UploadFile, MediaWithData } from "@/type";
 import { QueryKey } from "@tanstack/react-query";
 import { create } from "zustand";
 
@@ -47,9 +47,9 @@ export const useNewMediaModal = create<NewMediaModalStore>((set) => ({
 
 interface ImageCarouselModalStore {
   isOpen: boolean;
-  onOpen: (index: number, attachments: AttachmentFile[]) => void;
+  onOpen: (index: number, attachments: UploadFile[]) => void;
   onClose: () => void;
-  attachments: AttachmentFile[];
+  attachments: UploadFile[];
   startIndex: null | number;
 }
 
@@ -103,18 +103,6 @@ interface MobileNavSideModal {
 }
 
 export const useMobileNavSideModal = create<MobileNavSideModal>((set) => ({
-  isOpen: false,
-  onOpen: () => set({ isOpen: true }),
-  onClose: () => set({ isOpen: false }),
-}));
-
-interface EditProfileModal {
-  isOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
-}
-
-export const useEditProfileModal = create<EditProfileModal>((set) => ({
   isOpen: false,
   onOpen: () => set({ isOpen: true }),
   onClose: () => set({ isOpen: false }),

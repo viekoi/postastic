@@ -10,15 +10,13 @@ import MediaList from "../../lists/media/media-list";
 import { useGetInfiniteMedias } from "@/queries/react-query/queris";
 import { getInfiniteMedias } from "@/actions/get-infinite-medias";
 import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
-
-const type = "comment";
-const parentType = "post";
+import { MediaWithData } from "@/type";
 
 const CommentContainer = ({
-  postId,
+  post,
   initiaParentInteractCount,
 }: {
-  postId: string;
+  post: MediaWithData;
   initiaParentInteractCount: number;
 }) => {
   const queryClient = useQueryClient();
@@ -27,10 +25,10 @@ const CommentContainer = ({
       queryKey: [
         QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
         "comment",
-        { parentId: postId },
+        { parentId: post.id },
       ],
-      parentId: postId,
-      type: type,
+      parentId: post.id,
+      type: "post",
       queryFn: getInfiniteMedias,
     });
   const { ref, inView } = useInView();
@@ -50,9 +48,9 @@ const CommentContainer = ({
         queryKeyPreflix: [
           QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
           "comment",
-          { parentId: postId },
+          { parentId: post.id },
         ],
-        parentId: postId,
+        parentId: post.id,
         newCount: data?.pages[0].total,
       });
     }
@@ -93,6 +91,7 @@ const CommentContainer = ({
       {data.pages.flat().map((page, index) => {
         return (
           <MediaList
+            postAuthorId={post.userId}
             className="flex flex-col gap-y-4 w-full"
             key={index}
             medias={page.success ? page.success : []}

@@ -10,10 +10,7 @@ import {
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useAlertModal, useEditMediaModal } from "@/hooks/use-modal-store";
 import { updateInteractCount } from "@/queries/react-query/optimistic-functions";
-import {
-  useDeleteMedia,
-  useGetPostCreator,
-} from "@/queries/react-query/queris";
+import { useDeleteMedia } from "@/queries/react-query/queris";
 import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { MediaWithData } from "@/type";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,20 +18,15 @@ import { Delete, EyeOff, FileCog, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 interface SettingButtonProps {
+  postAuthorId?: string;
   reply: MediaWithData;
 }
 
-const SettingButton = ({ reply }: SettingButtonProps) => {
+const SettingButton = ({ reply, postAuthorId }: SettingButtonProps) => {
   const queryClient = useQueryClient();
-  const {
-    isOpen,
-    onOpen: onAlertModalOpen,
-    onClose,
-    setIsPending,
-  } = useAlertModal();
+  const { onOpen: onAlertModalOpen, onClose, setIsPending } = useAlertModal();
   const { user, isLoading } = useCurrentUser();
   const { onOpen } = useEditMediaModal();
-  const { data: creator, isPending, error } = useGetPostCreator(reply.postId);
 
   const { mutateAsync: deleteMedia, isPending: isPendingDelete } =
     useDeleteMedia([
@@ -49,7 +41,11 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
       if (data.success) {
         updateInteractCount({
           queryClient,
-          queryKeyPreflix: [QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "comment",{parentId:reply.parentId}],
+          queryKeyPreflix: [
+            QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+            "comment",
+            { parentId: reply.parentId },
+          ],
           parentId: reply.parentId,
           action: "delete",
         });
@@ -62,10 +58,9 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
     });
   };
 
-  if (isPending || !user) return null;
-  if (error || !creator?.success) return null;
+  if (isLoading || !user) return null;
 
-  const isPostAuthor = creator.success.postCreatorId === user.id;
+  const isPostAuthor = postAuthorId === user.id;
   const isAuthor = user.id === reply.userId;
   return (
     <DropdownMenu>
@@ -90,11 +85,15 @@ const SettingButton = ({ reply }: SettingButtonProps) => {
           <>
             <DropdownMenuItem
               onClick={() =>
-                onOpen(reply.id, [
-                  QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
-                  "reply",
-                  { parentId: reply.parentId },
-                ],reply)
+                onOpen(
+                  reply.id,
+                  [
+                    QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+                    "reply",
+                    { parentId: reply.parentId },
+                  ],
+                  reply
+                )
               }
             >
               edit reply

@@ -11,12 +11,13 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { InferModel, relations } from "drizzle-orm";
-import { user } from "@/migrations/schema";
+
 
 //Emums
 export const privacyType = pgEnum("privacyType", ["public", "private"]);
 export const mediaType = pgEnum("mediaType", ["post", "comment", "reply"]);
 export const attachmentType = pgEnum("attachmentType", ["image", "video"]);
+export const profileImageType = pgEnum("profileImageType", ["image", "cover"]);
 
 // Tables
 export const users = pgTable("user", {
@@ -28,8 +29,8 @@ export const users = pgTable("user", {
     mode: "date",
   }),
   image: text("image"),
-  coverImage:text("coverImage"),
   password: text("password"),
+  bio: text("bio").notNull().default(""),
 });
 
 export type User = InferModel<typeof users>;
@@ -141,6 +142,23 @@ export const attachments = pgTable("attachment", {
 
 export type Attachment = InferModel<typeof attachments>;
 
+export const profileImages = pgTable("profileImages", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  type: attachmentType("type").default("image").notNull(),
+  profileImageType: profileImageType("profileImageType").notNull(),
+  url: text("url").notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" })
+    .notNull()
+    .defaultNow(),
+  publicId: text("publicId").notNull(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "set null" }),
+  isActive: boolean("isActive").notNull(),
+});
+
+export type ProfileImage = InferModel<typeof profileImages>;
+
 export const likes = pgTable("like", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("userId")
@@ -161,12 +179,14 @@ export type Like = InferModel<typeof likes>;
 export const usersRelations = relations(users, ({ many }) => ({
   medias: many(medias),
   likes: many(likes),
+  avatarImages: many(profileImages, { relationName: "avatarImages" }),
+  coverImages: many(profileImages, { relationName: "coverImages" }),
 }));
 
 export const mediasRelations = relations(medias, ({ one, many }) => ({
   createdUser: one(users, {
     fields: [medias.userId],
-    references: [user.id],
+    references: [users.id],
   }),
   childrenMedias: many(medias, { relationName: "childrenMedias" }),
   parentMedia: one(medias, {
@@ -183,7 +203,7 @@ export const likesRelations = relations(likes, ({ one }) => ({
     fields: [likes.userId],
     references: [users.id],
   }),
-  parnet: one(medias, {
+  parent: one(medias, {
     fields: [likes.parentId],
     references: [medias.id],
   }),
@@ -193,5 +213,19 @@ export const attachmentsRelations = relations(attachments, ({ many, one }) => ({
   parent: one(medias, {
     fields: [attachments.parentId],
     references: [medias.id],
+  }),
+}));
+
+export const profileImagesRelations = relations(profileImages, ({ one }) => ({
+  userImages: one(users, {
+    fields: [profileImages.userId],
+    references: [users.id],
+    relationName: "avatarImages",
+  }),
+
+  userCoverImages: one(users, {
+    fields: [profileImages.userId],
+    references: [users.id],
+    relationName: "coverImages",
   }),
 }));

@@ -2,7 +2,7 @@
 
 import db from "@/lib/db";
 import { currentUser } from "@/lib/user";
-import {eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const getPostById = async (postId: string) => {
   if (!postId) return null;
@@ -19,7 +19,18 @@ export const getPostById = async (postId: string) => {
             userId: true,
           },
         },
-        createdUser: true,
+        createdUser: {
+          with: {
+            coverImages: {
+              where: (p) =>
+                and(eq(p.isActive, true), eq(p.profileImageType, "cover")),
+            },
+            avatarImages: {
+              where: (p) =>
+                and(eq(p.isActive, true), eq(p.profileImageType, "image")),
+            },
+          },
+        },
         attachments: true,
       },
     });
@@ -31,7 +42,18 @@ export const getPostById = async (postId: string) => {
           type: post.type as "post",
           isLikedByMe: !!post.likes.find((like) => like.userId === user.id),
           likesCount: post.likes.length,
-          user: post.createdUser,
+          user: {
+            id: post.createdUser.id,
+            email: post.createdUser.email,
+            emailVerified: post.createdUser.emailVerified,
+            name: post.createdUser.name,
+            avatarImage: post.createdUser.avatarImages.length
+              ? post.createdUser.avatarImages[0]
+              : null,
+            coverImage: post.createdUser.coverImages.length
+              ? post.createdUser.coverImages[0]
+              : null,
+          },
         },
       };
     }

@@ -1,7 +1,9 @@
-import { getInfiniteProfileMedias } from "@/actions/get-infinite-profile-medias";
+import { getInfiniteMedias } from "@/actions/get-infinite-medias";
+import { getUserByIdAction } from "@/actions/get-user-by-id";
 import UserProfile from "@/components/protected/user/user-profile";
 import { InfiniteMediasQueryKeyBuilder } from "@/lib/utils";
-import { getUserById } from "@/queries/user";
+import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
+
 import {
   HydrationBoundary,
   QueryClient,
@@ -9,9 +11,13 @@ import {
 } from "@tanstack/react-query";
 
 const page = async ({ params }: { params: { id: string } }) => {
-  const user = await getUserById(params.id);
-
   const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: [QUERY_KEYS_PREFLIX.GET_USER, { userId: params.id }],
+    queryFn: () => getUserByIdAction(params.id),
+  });
+
   await queryClient.prefetchInfiniteQuery({
     queryKey: InfiniteMediasQueryKeyBuilder({
       parentId: null,
@@ -19,7 +25,7 @@ const page = async ({ params }: { params: { id: string } }) => {
       route: "profile",
       profileId: params.id,
     }),
-    queryFn: ({ pageParam }) => getInfiniteProfileMedias(pageParam),
+    queryFn: ({ pageParam }) => getInfiniteMedias(pageParam),
     initialPageParam: { type: "post" as "post", profileId: params.id },
     getNextPageParam: (lastPage) => {
       return lastPage?.nextCursor
@@ -34,7 +40,7 @@ const page = async ({ params }: { params: { id: string } }) => {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <UserProfile user={user} />
+      <UserProfile id={params.id} />
     </HydrationBoundary>
   );
 };

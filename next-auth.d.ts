@@ -1,7 +1,9 @@
-import { User } from "./lib/db/schema";
+import { ProfileImage, User } from "./lib/db/schema";
 
-export type ExtendedUser = User & {
+export type ExtendedUser = Omit<User,"image" |"password"> & {
   isOAuth: boolean;
+  coverImage: ProfileImage | null;
+  avatarImage: ProfileImage | null;
 };
 
 declare module "next-auth" {

@@ -1,5 +1,5 @@
 {
-  "id": "fbe7db1c-90fa-4bbc-9517-1c1a2d3d52ef",
+  "id": "7c6325c6-f88c-439e-bab6-78975b2fc2a7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -412,6 +412,81 @@
         }
       }
     },
+    "profileImages": {
+      "name": "profileImages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'image'"
+        },
+        "profileImageType": {
+          "name": "profileImageType",
+          "type": "profileImageType",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "publicId": {
+          "name": "publicId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "isActive": {
+          "name": "isActive",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "profileImages_userId_user_id_fk": {
+          "name": "profileImages_userId_user_id_fk",
+          "tableFrom": "profileImages",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "user": {
       "name": "user",
       "schema": "",
@@ -447,17 +522,18 @@
           "primaryKey": false,
           "notNull": false
         },
-        "coverImage": {
-          "name": "coverImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "password": {
           "name": "password",
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         }
       },
       "indexes": {},
@@ -558,6 +634,13 @@
       "values": {
         "public": "public",
         "private": "private"
+      }
+    },
+    "profileImageType": {
+      "name": "profileImageType",
+      "values": {
+        "image": "image",
+        "cover": "cover"
       }
     }
   },

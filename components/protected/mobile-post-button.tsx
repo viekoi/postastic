@@ -1,14 +1,28 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import { useNewMediaModal } from "@/hooks/use-modal-store";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const MobilePostButton = () => {
   const { onOpen } = useNewMediaModal();
+  const pathName = usePathname();
+  const matchRouteHandler = (string: string, words: string[]) =>
+    words.some((word) => string.includes(word));
 
+  const isMatchRoute = useMemo(() => {
+    if (pathName === "/") return true;
+    return !!matchRouteHandler(pathName, ["/profile"]);
+  }, [pathName]);
   return (
-    <div className="absolute -top-[90%] right-4 ">
+    <div
+      className={cn(
+        "absolute -top-[90%] right-4 hidden",
+        isMatchRoute && "block"
+      )}
+    >
       <Button
         variant={"blue"}
         size={"icon"}

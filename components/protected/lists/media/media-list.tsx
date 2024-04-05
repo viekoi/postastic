@@ -10,12 +10,13 @@ import ReplyCard from "../../cards/reply/reply-card";
 import { MediaTypes } from "@/constansts";
 
 interface MediaListProps {
+  postAuthorId?:string
   medias: MediaWithData[];
   className?: string;
   type: (typeof MediaTypes)[number];
 }
 
-const MediaList = ({ medias, className, type }: MediaListProps) => {
+const MediaList = ({ medias, className, type,postAuthorId}: MediaListProps) => {
   let ListBody: ReactNode[] = [];
 
   switch (type) {
@@ -26,12 +27,12 @@ const MediaList = ({ medias, className, type }: MediaListProps) => {
       break;
     case "comment":
       ListBody = medias.map((media) => (
-        <CommentCard comment={media} key={media.id} />
+        <CommentCard postAuthorId={postAuthorId}  comment={media} key={media.id} />
       ));
       break;
     case "reply":
       ListBody = medias.map((media) => (
-        <ReplyCard reply={media} key={media.id} />
+        <ReplyCard postAuthorId={postAuthorId} reply={media} key={media.id} />
       ));
       break;
     default:

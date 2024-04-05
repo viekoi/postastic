@@ -24,12 +24,13 @@ import { useIsMobile } from "@/providers/is-mobile-provider";
 import { useRouter } from "next/navigation";
 
 interface CommentCardProps {
+  postAuthorId?:string
   comment: MediaWithData;
   className?: string;
   isModalContent?: boolean;
 }
 
-const CommentCard = ({ comment, className }: CommentCardProps) => {
+const CommentCard = ({ comment, className,postAuthorId}: CommentCardProps) => {
   const [expandContent, setExpandContent] = useState(false);
   const [open, setOpen] = useState(false);
   const { onOpen } = useNewMediaModal();
@@ -81,7 +82,7 @@ const CommentCard = ({ comment, className }: CommentCardProps) => {
               }}
               user={comment.user}
             />
-            <SettingButton comment={comment} />
+            <SettingButton postAuthorId={postAuthorId} comment={comment} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">

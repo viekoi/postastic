@@ -24,7 +24,6 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -38,8 +37,8 @@ import FileUploader from "../../../file-uploader";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
 import { useCommentModal, useEditMediaModal } from "@/hooks/use-modal-store";
 import { EmojiPicker } from "../../../emoji-picker";
-import { QueryKey, useQueryClient } from "@tanstack/react-query";
-import { AttachmentFile } from "@/type";
+import { QueryKey } from "@tanstack/react-query";
+import { UploadFile } from "@/type";
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
 import { useUpdateMedia } from "@/queries/react-query/queris";
@@ -77,7 +76,7 @@ const EditForm = ({ defaultValues, queryKeyPreflix }: EditFormProps) => {
     isPending,
     isSuccess,
   } = useUpdateMedia(queryKeyPreflix);
-  const [files, setFiles] = useState<AttachmentFile[]>(data.attachments);
+  const [files, setFiles] = useState<UploadFile[]>(data.attachments);
   const router = useRouter();
   const { onClose } = useEditMediaModal();
   const { onClose: onCommentModalClose } = useCommentModal();

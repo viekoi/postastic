@@ -3,7 +3,7 @@ import React from "react";
 import Media from "./attachment";
 import { VariantProps, cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { AttachmentFile } from "@/type";
+import { UploadFile } from "@/type";
 import { Button } from "../ui/button";
 import { Plus, X } from "lucide-react";
 import { useImageCarouselModal } from "@/hooks/use-modal-store";
@@ -30,7 +30,7 @@ const AttachmentDisplayerVariants = cva(
 );
 interface AttachmentDisplayerProps
   extends VariantProps<typeof AttachmentDisplayerVariants> {
-  medias: AttachmentFile[];
+  medias: UploadFile[];
   className?: string;
   control: boolean;
   disabled?: boolean;

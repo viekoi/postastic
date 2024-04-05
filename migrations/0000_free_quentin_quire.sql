@@ -16,6 +16,12 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "profileImageType" AS ENUM('image', 'cover');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "account" (
 	"userId" uuid NOT NULL,
 	"type" text NOT NULL,
@@ -70,14 +76,25 @@ CREATE TABLE IF NOT EXISTS "passwordResetToken" (
 	CONSTRAINT "passwordResetToken_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "profileImages" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"type" text DEFAULT 'image' NOT NULL,
+	"profileImageType" "profileImageType" NOT NULL,
+	"url" text NOT NULL,
+	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"publicId" text NOT NULL,
+	"userId" uuid NOT NULL,
+	"isActive" boolean NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"emailVerified" timestamp with time zone,
 	"image" text,
-	"coverImage" text,
-	"password" text
+	"password" text,
+	"bio" text DEFAULT '' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "verificationToken" (
@@ -134,6 +151,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "passwordResetToken" ADD CONSTRAINT "passwordResetToken_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "profileImages" ADD CONSTRAINT "profileImages_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE set null ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

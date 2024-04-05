@@ -33,8 +33,8 @@ import { Image } from "lucide-react";
 import { toast } from "sonner";
 import { MediaTypes, postPrivacyOtptions, videoMaxSize } from "@/constansts";
 import { useCommentModal, useNewMediaModal } from "@/hooks/use-modal-store";
-import { QueryKey} from "@tanstack/react-query";
-import { AttachmentFile} from "@/type";
+import { QueryKey } from "@tanstack/react-query";
+import { UploadFile } from "@/type";
 
 import { useDropzone } from "react-dropzone";
 import { useFilesUploadActions } from "@/hooks/use-files-upload-actions";
@@ -79,7 +79,7 @@ const NewMediaForm = ({
     );
   }
 
-  const [files, setFiles] = useState<AttachmentFile[]>(
+  const [files, setFiles] = useState<UploadFile[]>(
     defaultValues ? defaultValues.attachments : []
   );
   const [privacyOption, setPrivacyOption] = useState(
@@ -103,7 +103,7 @@ const NewMediaForm = ({
     files,
     setFiles
   );
-  const { onAdd, onCancel,isAddingFiles} = useIsAddingFiles();
+  const { onAdd, onCancel, isAddingFiles } = useIsAddingFiles();
   const { getInputProps, getRootProps, open } = useDropzone({
     onDrop,
     accept: {
@@ -198,6 +198,7 @@ const NewMediaForm = ({
           form.reset();
           removeDraft(res.data.parentId);
           onClose();
+          onCancel();
           onRemoveFiles();
         } else if (res.error) {
           toast.error(res.error, { closeButton: false });

@@ -1,36 +1,23 @@
 "use server";
-import { asc, count, desc } from "drizzle-orm";
+import { and, asc, count, desc, eq, lte } from "drizzle-orm";
 import db from "../lib/db";
 import { currentUser } from "@/lib/user";
 import { medias as mediaTable } from "@/lib/db/schema";
-import { InferResultType, getMediasWhereClause } from "../lib/db/util";
+import {
+  getMediasWhereClause,
+  getPofileMediasWhereClause,
+} from "../lib/db/util";
 import { MediaTypes } from "@/constansts";
-
-type MediaWithRelations = InferResultType<
-  "medias",
-  {
-    likes: {
-      columns: {
-        userId: true;
-      };
-    };
-    childrenMedias: {
-      columns: {
-        id: true;
-      };
-    };
-    createdUser: true;
-    attachments: true;
-  }
->;
 
 export const getInfiniteMedias = async ({
   cursor,
+  profileId,
   parentId,
   type,
 }: {
   cursor?: { id: string; createdAt: Date };
   parentId?: string | null;
+  profileId?: string;
   type: (typeof MediaTypes)[number];
 }) => {
   const user = await currentUser();
@@ -40,61 +27,61 @@ export const getInfiniteMedias = async ({
     const totalPages = await db
       .select({ value: count() })
       .from(mediaTable)
-      .where(getMediasWhereClause({ userId: user.id, type, parentId }));
+      .where(
+        profileId
+          ? getPofileMediasWhereClause({
+              profileId,
+              parentId,
+              userId: user.id,
+              type,
+            })
+          : getMediasWhereClause({ userId: user.id, type, parentId })
+      );
 
-    let posts: MediaWithRelations[] = [];
-
-    if (cursor) {
-      posts = await db.query.medias.findMany({
-        where: () =>
-          getMediasWhereClause({ userId: user.id, type, parentId, cursor }),
-        with: {
-          likes: {
-            columns: {
-              userId: true,
-            },
+    const posts = await db.query.medias.findMany({
+      where: () =>
+        profileId
+          ? getPofileMediasWhereClause({
+              profileId,
+              parentId,
+              userId: user.id,
+              type,
+              cursor,
+            })
+          : getMediasWhereClause({ userId: user.id, type, parentId, cursor }),
+      with: {
+        likes: {
+          columns: {
+            userId: true,
           },
-          childrenMedias: {
-            columns: {
-              id: true,
-            },
-            where: () => getMediasWhereClause({ userId: user.id }),
-          },
-
-          createdUser: true,
-          attachments: true,
         },
-        orderBy: (p) => [
-          type !== "post" ? asc(p.createdAt) : desc(p.createdAt),
-          desc(p.id),
-        ],
-        limit: limit,
-      });
-    } else {
-      posts = await db.query.medias.findMany({
-        where: () => getMediasWhereClause({ userId: user.id, type, parentId }),
-        with: {
-          likes: {
-            columns: {
-              userId: true,
-            },
+        childrenMedias: {
+          columns: {
+            id: true,
           },
-          childrenMedias: {
-            columns: {
-              id: true,
-            },
-            where: () => getMediasWhereClause({ userId: user.id }),
-          },
-          createdUser: true,
-          attachments: true,
+          where: () => getMediasWhereClause({ userId: user.id }),
         },
-        orderBy: (p) => [
-          type !== "post" ? asc(p.createdAt) : desc(p.createdAt),
-          desc(p.id),
-        ],
-        limit: limit,
-      });
-    }
+
+        createdUser: {
+          with: {
+            coverImages: {
+              where: (p) =>
+                and(eq(p.isActive, true), eq(p.profileImageType, "cover")),
+            },
+            avatarImages: {
+              where: (p) =>
+                and(eq(p.isActive, true), eq(p.profileImageType, "image")),
+            },
+          },
+        },
+        attachments: true,
+      },
+      orderBy: (p) => [
+        type !== "post" ? asc(p.createdAt) : desc(p.createdAt),
+        desc(p.id),
+      ],
+      limit: limit,
+    });
 
     let nextCursor = undefined;
 
@@ -113,7 +100,18 @@ export const getInfiniteMedias = async ({
           isLikedByMe: !!post.likes.find((like) => like.userId === user.id),
           likesCount: post.likes.length,
           interactsCount: post.childrenMedias.length,
-          user: post.createdUser,
+          user: {
+            id: post.createdUser.id,
+            email: post.createdUser.email,
+            emailVerified: post.createdUser.emailVerified,
+            name: post.createdUser.name,
+            avatarImage: post.createdUser.avatarImages.length
+              ? post.createdUser.avatarImages[0]
+              : null,
+            coverImage: post.createdUser.coverImages.length
+              ? post.createdUser.coverImages[0]
+              : null,
+          },
         };
       }),
       nextCursor: nextCursor,

@@ -1,5 +1,5 @@
 import { UploadApiResponse, v2 as cloudinary } from "cloudinary";
-import { AttachmentFile } from "@/type";
+import { UploadFile } from "@/type";
 import { Attachment } from "./db/schema";
 
 cloudinary.config({
@@ -8,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const cloudinaryUpload = async (files: AttachmentFile[]) => {
+export const cloudinaryUpload = async (files: UploadFile[]) => {
   const uploadedFiles = await Promise.all(
     files.map(async (file) => {
       const result = cloudinary.uploader.upload(file.url as string, {

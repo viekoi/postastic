@@ -15,12 +15,19 @@ import {
   updateLikesCount,
 } from "./optimistic-functions";
 import { updateMedia } from "@/actions/update-media";
-import { EditMediaShcema, NewMediaSchema } from "@/schemas";
+import {
+  EditMediaShcema,
+  EditUserProfileShcema,
+  NewMediaSchema,
+} from "@/schemas";
 import * as z from "zod";
-import { getPostCreator } from "@/actions/get-post-creator";
 import { deleteMedia } from "@/actions/delete-media";
 import { newMedia } from "@/actions/new-media";
 import { InfinitePostsRoutes, MediaTypes } from "@/constansts";
+import { updateProfile } from "@/actions/update-user-profile";
+import { getUserByIdAction } from "@/actions/get-user-by-id";
+
+// query
 
 export const useGetInfiniteMedias = ({
   profileId,
@@ -61,13 +68,14 @@ export const useGetInfiniteMedias = ({
   });
 };
 
-export const useGetPostCreator = (postId: string | null) => {
+export const getUserById = (userId: string) => {
   return useQuery({
-    queryKey: [QUERY_KEYS_PREFLIX.GET_POST_CREATOR, { mediaId: postId }],
-    queryFn: () => getPostCreator(postId),
+    queryKey: [QUERY_KEYS_PREFLIX.GET_USER, { userId }],
+    queryFn: () => getUserByIdAction(userId),
   });
 };
 
+//mutaion
 export const useLike = (querykeyPreflix: QueryKey) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -110,7 +118,6 @@ export const useCreateMedia = ({
           orderBy: type !== "post" ? "asc" : "dsc",
         });
         if (type !== "post" && parentId && parentListPreflix) {
-          console.log(parentListPreflix);
           updateInteractCount({
             queryClient,
             queryKeyPreflix: parentListPreflix,
@@ -144,11 +151,24 @@ export const useUpdateMedia = (queryKeyPreflix: QueryKey) => {
 
 export const useDeleteMedia = (querykeyPreflix: QueryKey) => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) => deleteMedia(id),
     onSettled: (data, error, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: querykeyPreflix, exact: true });
+      queryClient.invalidateQueries({ queryKey: querykeyPreflix });
+    },
+  });
+};
+
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (values: z.infer<typeof EditUserProfileShcema>) =>
+      updateProfile(values),
+    onSettled: (data, error, variables, context) => {
+      if (data?.success) {
+        queryClient.invalidateQueries({ queryKey:[QUERY_KEYS_PREFLIX.GET_USER,{userId:variables.id}], });
+      }
     },
   });
 };

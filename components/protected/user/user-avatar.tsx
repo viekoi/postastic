@@ -1,28 +1,26 @@
 "use client";
 import { ExtendedUser } from "@/next-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
-import { User } from "@/lib/db/schema";
-import { User as UserIcon } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface UserAvatarProps {
-  user?: ExtendedUser | User;
-
+  user?: ExtendedUser;
+  value?: string | null;
   className?: string;
   onClick?: () => void;
 }
 
-const UserAvatar = ({ user, className, onClick }: UserAvatarProps) => {
+const UserAvatar = ({ user, className, onClick, value }: UserAvatarProps) => {
+
   return (
     <Avatar
       className={cn("", className, onClick && "cursor-pointer")}
       onClick={onClick}
     >
-      <AvatarImage src={user?.image || ""} />
+      <AvatarImage src={value ? value : user?.avatarImage?.url || ""} />
       <AvatarFallback>
-        {" "}
-        <UserIcon stroke="black" />
+        <Image priority src={"/images/default-avatar.png"} fill alt="avatar" />
       </AvatarFallback>
     </Avatar>
   );

@@ -1,18 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
-
-import React from "react";
-import UserHero from "./user-hero";
-import UserBio from "./user-bio";
-import UserProfileTab from "../tabs/user-profile-tab";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { ExtendedUser } from "@/next-auth";
+import SettingsTab from "../../tabs/settings-tab";
 import { getUserById } from "@/queries/react-query/queris";
 import { Loader } from "@/components/Loader";
 
-interface UserProfileProps {
+interface EditProps {
   id: string;
 }
 
-const UserProfile = ({ id }: UserProfileProps) => {
+const Edit = ({ id }: EditProps) => {
   const {
     data: user,
     error,
@@ -20,7 +19,10 @@ const UserProfile = ({ id }: UserProfileProps) => {
     isRefetching,
     isPending,
   } = getUserById(id);
-
+  const [isEdit, setIsEdit] = useState(false);
+  const handleSetIsEdit = () => {
+    setIsEdit((prev) => !prev);
+  };
   if (isPending || isRefetching)
     return (
       <div className="flex justify-center items-center w-full h-full">
@@ -36,14 +38,10 @@ const UserProfile = ({ id }: UserProfileProps) => {
       </div>
     );
   return (
-    <div className="h-full">
-      <div className="flex flex-col gap-y-20">
-        <UserHero user={user} />
-        <UserBio user={user} />
-      </div>
-      <UserProfileTab user={user} />
+    <div className="">
+      <SettingsTab setIsEdit={handleSetIsEdit} isEdit={isEdit} user={user} />
     </div>
   );
 };
 
-export default UserProfile;
+export default Edit;

@@ -15,6 +15,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="lg:block hidden">right-side-bar</div>
         
       </div>
+      
       <Bottombar />
     </div>
   );

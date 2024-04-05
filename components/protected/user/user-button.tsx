@@ -16,6 +16,8 @@ import UserAvatar from "./user-avatar";
 const UserButton = () => {
   const { user, isLoading } = useCurrentUser();
 
+  
+
   return (
     <Link href={`/profile/${user?.id}`} className="group">
       <Button

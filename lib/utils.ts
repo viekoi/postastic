@@ -6,7 +6,7 @@ import {
   videoMaxSize,
 } from "@/constansts";
 import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
-import { AttachmentFile } from "@/type";
+import { UploadFile } from "@/type";
 import { type ClassValue, clsx } from "clsx";
 import { FileWithPath } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
@@ -88,7 +88,7 @@ export const mobileMultiFormatDateString = (timestamp: string = ""): string => {
 };
 
 export const isTooLarge = (
-  file: AttachmentFile | FileWithPath,
+  file: UploadFile | FileWithPath,
   type: "video" | "image"
 ) => {
   if (!file.size) return false;

@@ -4,14 +4,14 @@ import { Image, X } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 import { useIsAddingFiles } from "@/hooks/use-is-adding-files";
-import { AttachmentFile } from "@/type";
+import { UploadFile } from "@/type";
 import AttachmentDisplayer from "./attachment-displayer";
 import { cn } from "@/lib/utils";
 import { DropzoneInputProps, DropzoneRootProps } from "react-dropzone";
 
 type FileUploaderProps = {
-  files: AttachmentFile[];
-  fieldChange: (files: AttachmentFile[]) => void;
+  files: UploadFile[];
+  fieldChange: (files: UploadFile[]) => void;
   disabled: boolean;
   getRootProps: <T extends DropzoneRootProps>(props?: T | undefined) => T;
   getInputProps: <T extends DropzoneInputProps>(props?: T | undefined) => T;

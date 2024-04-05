@@ -23,12 +23,13 @@ import { useIsMobile } from "@/providers/is-mobile-provider";
 import { useRouter } from "next/navigation";
 
 interface ReplyCardProps {
+  postAuthorId?:string
   reply: MediaWithData;
   className?: string;
   isModalContent?: boolean;
 }
 
-const ReplyCard = ({ reply, className }: ReplyCardProps) => {
+const ReplyCard = ({ reply, className,postAuthorId }: ReplyCardProps) => {
   const [expandContent, setExpandContent] = useState(false);
   const { onOpen } = useNewMediaModal();
   const { onClose } = useCommentModal();
@@ -80,7 +81,7 @@ const ReplyCard = ({ reply, className }: ReplyCardProps) => {
               }}
               user={reply.user}
             />
-            <SettingButton reply={reply} />
+            <SettingButton postAuthorId={postAuthorId} reply={reply} />
           </div>
           <div className="flex flex-col min-w-[0] w-full ">
             <div className="flex-shrink-0 max-w-fit">

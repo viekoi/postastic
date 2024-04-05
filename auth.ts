@@ -8,8 +8,7 @@ import { LoginSchema } from "./schemas";
 import { getUserByEmail, getUserById } from "./queries/user";
 
 import { eq } from "drizzle-orm";
-import { getAccountByUserId } from "./queries/account";
-import { users } from "./lib/db/schema";
+import { ProfileImage, users } from "./lib/db/schema";
 
 export const authConfig = {
   adapter: DrizzleAdapter(db),
@@ -17,7 +16,6 @@ export const authConfig = {
     Github({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       async authorize(credentials) {
@@ -53,15 +51,16 @@ export const authConfig = {
       return true;
     },
     async session({ token, session }) {
-
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
 
       if (session.user) {
-        session.user.name = token.name!;
-        session.user.email = token.email!;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
         session.user.isOAuth = token.isOAuth as boolean;
+        session.user.coverImage = token.coverImage as ProfileImage | null;
+        session.user.avatarImage = token.avatarImage as ProfileImage | null;
       }
 
       return session;
@@ -72,11 +71,11 @@ export const authConfig = {
 
       if (!existingUser) return token;
 
-      const existingAccount = await getAccountByUserId(existingUser.id);
-
-      token.isOAuth = !!existingAccount;
+      token.isOAuth = existingUser.isOAuth;
       token.name = existingUser.name;
       token.email = existingUser.email;
+      token.coverImage = existingUser.coverImage;
+      token.avatarImage = existingUser.avatarImage;
 
       return token;
     },
@@ -97,4 +96,5 @@ export const authConfig = {
   session: { strategy: "jwt" },
 } satisfies NextAuthConfig;
 
-export const { handlers, auth, signOut, signIn } = NextAuth(authConfig);
+export const { handlers, auth, signOut, signIn, unstable_update } =
+  NextAuth(authConfig);

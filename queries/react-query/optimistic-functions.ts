@@ -63,7 +63,6 @@ export const updateInteractCount = async ({
   queryClient.setQueriesData(
     { queryKey: queryKeyPreflix },
     (old: InfiniteData<{ success: MediaWithData[] }> | undefined) => {
-      console.log(old);
       if (!old) {
         return;
       }
@@ -112,7 +111,6 @@ export const optimisticInsert = async ({
         | InfiniteData<{ success?: MediaWithData[]; error?: string }>
         | undefined
     ) => {
-      console.log(old);
       if (!old) {
         return;
       }
@@ -184,7 +182,6 @@ export const optimisticUpdate = async ({
   await queryClient.cancelQueries({
     queryKey: queryKeyPreflix,
   });
-  console.log(queryKeyPreflix);
   queryClient.setQueriesData(
     { queryKey: queryKeyPreflix },
     (
@@ -194,7 +191,6 @@ export const optimisticUpdate = async ({
           }>
         | undefined
     ) => {
-      console.log(old);
       if (!old) return;
       return {
         ...old,

@@ -2,11 +2,11 @@ import { isTooLarge } from "@/lib/utils";
 
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { FileWithPath } from "react-dropzone";
-import { AttachmentFile } from "@/type";
+import { UploadFile } from "@/type";
 
 export const useFilesUploadActions = (
-  files: AttachmentFile[],
-  setFiles: Dispatch<SetStateAction<AttachmentFile[]>>
+  files: UploadFile[],
+  setFiles: Dispatch<SetStateAction<UploadFile[]>>
 ) => {
   const handleSetFiles = (acceptedFiles: FileWithPath[]) => {
     if (files.length + acceptedFiles.length > 5) return;
