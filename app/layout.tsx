@@ -39,7 +39,7 @@ export default async function RootLayout({
                   },
                 }}
                 closeButton
-                duration={3000}
+                duration={1500}
                 className="text-white z-50"
               />
               <ModalProvider />

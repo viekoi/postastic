@@ -1,10 +1,11 @@
 "use client";
 
 import TabMenu from "./tab";
-import { useParams, useSearchParams } from "next/navigation";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { useSearchParams } from "next/navigation";
 import EditUserProfileForm from "../forms/profile/edit-user-profile-form";
 import { ExtendedUser } from "@/next-auth";
+import CollapseMenu from "../accordions/accordion";
+import Edit from "../forms/security/edit";
 
 interface SettingsTabProps {
   user: ExtendedUser;
@@ -20,7 +21,9 @@ const SettingsTab = ({ user, isEdit, setIsEdit }: SettingsTabProps) => {
     <>
       <EditUserProfileForm setIsEdit={setIsEdit} isEdit={isEdit} user={user} />
     </>,
-    <>security</>,
+    <>
+      <Edit user={user}/>
+    </>,
   ];
 
   return (

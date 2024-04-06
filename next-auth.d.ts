@@ -1,6 +1,6 @@
 import { ProfileImage, User } from "./lib/db/schema";
 
-export type ExtendedUser = Omit<User,"image" |"password"> & {
+export type ExtendedUser = Omit<User,"image"> & {
   isOAuth: boolean;
   coverImage: ProfileImage | null;
   avatarImage: ProfileImage | null;

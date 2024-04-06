@@ -3,64 +3,77 @@
 import * as z from "zod";
 import bcrypt from "bcryptjs";
 
-import { NewPasswordSchema } from "@/schemas";
+import { ResetPasswordSchema } from "@/schemas";
 
 import db from "@/lib/db";
 
 import { eq } from "drizzle-orm";
-import { getUserByEmail } from "@/queries/user";
-import { getPasswordResetTokenByToken } from "@/queries/password-reset-token";
-import { passwordResetTokens, users } from "@/lib/db/schema";
+import { getUserById } from "@/queries/user";
+import { currentUser } from "@/lib/user";
+import { users } from "@/lib/db/schema";
 
 export const newPassword = async (
-  values: z.infer<typeof NewPasswordSchema>,
-  token?: string | null
+  values: z.infer<typeof ResetPasswordSchema>
 ) => {
   try {
-    if (!token) {
-      return { error: "Missing token!" };
+    const user = await currentUser();
+
+    if (!user) {
+      return { error: "Unauthorized" };
+    }
+    const dbUser = await getUserById(user.id);
+
+    if (!dbUser) {
+      return { error: "Unauthorized" };
     }
 
-    const validatedFields = NewPasswordSchema.safeParse(values);
+    const validatedFields = ResetPasswordSchema.safeParse(values);
 
     if (!validatedFields.success) {
       return { error: "Invalid fields!" };
     }
 
-    const { password, confirmPassword } = validatedFields.data;
+    const { currentPassword, newPassword, confirmNewPassword } =
+      validatedFields.data;
 
-    if (password !== confirmPassword) {
-      return { error: "Invalid confirm password!" };
+    if (currentPassword && dbUser.password) {
+      const passwordsMatch = await bcrypt.compare(
+        currentPassword,
+        dbUser.password
+      );
+
+      if (!passwordsMatch) {
+        return { error: "Incorrect password!" };
+      }
+
+      if (newPassword !== confirmNewPassword) {
+        return { error: "Invalid confirm password!" };
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await db
+        .update(users)
+        .set({
+          password: hashedPassword,
+        })
+        .where(eq(users.id, dbUser.id));
     }
 
-    const existingToken = await getPasswordResetTokenByToken(token);
+    if (!currentPassword && !dbUser.password) {
+      if (newPassword !== confirmNewPassword) {
+        return { error: "Invalid confirm password!" };
+      }
 
-    if (!existingToken) {
-      return { error: "Invalid token!" };
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await db
+        .update(users)
+        .set({
+          password: hashedPassword,
+        })
+        .where(eq(users.id, dbUser.id));
     }
-
-    const hasExpired = new Date(existingToken.expires) < new Date();
-
-    if (hasExpired) {
-      return { error: "Token has expired!" };
-    }
-
-    const existingUser = await getUserByEmail(existingToken.email);
-
-    if (!existingUser) {
-      return { error: "Email does not exist!" };
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await db
-      .update(users)
-      .set({ password: hashedPassword })
-      .where(eq(users.id, existingUser.id));
-
-    await db
-      .delete(passwordResetTokens)
-      .where(eq(passwordResetTokens.id, existingToken.id));
 
     return { success: "Password updated!" };
   } catch (error) {

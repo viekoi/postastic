@@ -37,7 +37,6 @@ const UserProfileTab = ({ user }: UserProfileTabProps) => {
       <div className="px-4">
         {user.bio.length ? user.bio : "This user has not given a bio yet"}
       </div>
-      ,
     </>,
   ];
 

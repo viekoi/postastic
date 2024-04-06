@@ -28,7 +28,7 @@ export const getInfiniteMedias = async ({
       .select({ value: count() })
       .from(mediaTable)
       .where(
-        profileId
+        profileId && type === "post"
           ? getPofileMediasWhereClause({
               profileId,
               parentId,
@@ -38,9 +38,9 @@ export const getInfiniteMedias = async ({
           : getMediasWhereClause({ userId: user.id, type, parentId })
       );
 
-    const posts = await db.query.medias.findMany({
+    const medias = await db.query.medias.findMany({
       where: () =>
-        profileId
+        profileId && type === "post"
           ? getPofileMediasWhereClause({
               profileId,
               parentId,
@@ -85,15 +85,17 @@ export const getInfiniteMedias = async ({
 
     let nextCursor = undefined;
 
-    if (posts.length === limit) {
+    if (medias.length === limit) {
       nextCursor = {
-        id: posts[limit - 1].id,
-        createdAt: posts[limit - 1].createdAt,
+        id: medias[limit - 1].id,
+        createdAt: medias[limit - 1].createdAt,
       };
     }
 
+   
+
     return {
-      success: posts.map((post) => {
+      success: medias.map((post) => {
         return {
           ...post,
           type: post.type,

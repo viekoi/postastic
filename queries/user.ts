@@ -38,6 +38,7 @@ export const getUserById = async (id: string) => {
         bio:user.bio,
         email: user.email,
         emailVerified: user.emailVerified,
+        password:user.password,
         name: user.name,
         avatarImage: user.avatarImages.length ? user.avatarImages[0] : null,
         coverImage: user.coverImages.length ? user.coverImages[0] : null,

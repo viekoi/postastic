@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { NewPasswordSchema } from "@/schemas";
+import { ResetPasswordViaEmailSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -20,7 +20,7 @@ import { AuthFormCard } from "../cards/auth-form-card";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
-import { newPassword } from "@/actions/new-password";
+import { newPasswordViaEmail } from "@/actions/new-password-via-email";
 import { Eye, EyeOff } from "lucide-react";
 
 export const NewPasswordForm = () => {
@@ -39,8 +39,8 @@ export const NewPasswordForm = () => {
     }
   };
 
-  const form = useForm<z.infer<typeof NewPasswordSchema>>({
-    resolver: zodResolver(NewPasswordSchema),
+  const form = useForm<z.infer<typeof ResetPasswordViaEmailSchema>>({
+    resolver: zodResolver(ResetPasswordViaEmailSchema),
     defaultValues: {
       password: "",
     },
@@ -48,12 +48,12 @@ export const NewPasswordForm = () => {
 
   const formErrors = form.formState.errors;
 
-  const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
+  const onSubmit = (values: z.infer<typeof ResetPasswordViaEmailSchema>) => {
     setError("");
     setSuccess("");
 
     startTransition(() => {
-      newPassword(values, token).then((data) => {
+      newPasswordViaEmail(values, token).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
       });

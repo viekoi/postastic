@@ -32,7 +32,7 @@ export const ResetSchema = z.object({
   }),
 });
 
-export const NewPasswordSchema = z.object({
+export const ResetPasswordViaEmailSchema = z.object({
   password: z.string().min(6, {
     message: "Minimum of 6 characters required",
   }),
@@ -40,6 +40,35 @@ export const NewPasswordSchema = z.object({
     message: "Invalid confirm password",
   }),
 });
+
+export const ResetPasswordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(6, {
+        message: "Minimum of 6 characters required",
+      })
+      .optional(),
+    newPassword: z.string().min(6, {
+      message: "Minimum of 6 characters required",
+    }),
+    confirmNewPassword: z.string().min(6, {
+      message: "Invalid confirm password",
+    }),
+  })
+  .refine(
+    (data) => {
+      if (data.newPassword && !data.confirmNewPassword) {
+        return false;
+      }
+
+      return true;
+    },
+    {
+      message: "Password does not match confirm password!!!",
+      path: ["confirmNewPassword"],
+    }
+  );
 
 function refineFiles(files: UploadFile[]): boolean {
   return files.every((file: UploadFile) => !isTooLarge(file, file.type));
@@ -104,9 +133,9 @@ export const EditMediaShcema = z
   );
 
 export const EditUserProfileShcema = z.object({
-  id:z.string(),
+  id: z.string(),
   name: z.string().min(1, { message: "user name can not be empty" }),
   avatarImage: z.custom<UploadFile>().nullable(),
   coverImage: z.custom<UploadFile>().nullable(),
-  bio:z.string()
+  bio: z.string(),
 });

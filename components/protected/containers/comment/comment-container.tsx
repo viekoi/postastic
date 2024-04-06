@@ -28,7 +28,7 @@ const CommentContainer = ({
         { parentId: post.id },
       ],
       parentId: post.id,
-      type: "post",
+      type: "comment",
       queryFn: getInfiniteMedias,
     });
   const { ref, inView } = useInView();
