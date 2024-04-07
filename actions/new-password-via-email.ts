@@ -10,7 +10,7 @@ import db from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { getUserByEmail } from "@/queries/user";
 import { getPasswordResetTokenByToken } from "@/queries/password-reset-token";
-import { passwordResetTokens, users } from "@/lib/db/schema";
+import {  mailToken, users } from "@/lib/db/schema";
 
 export const newPasswordViaEmail = async (
   values: z.infer<typeof ResetPasswordViaEmailSchema>,
@@ -59,8 +59,8 @@ export const newPasswordViaEmail = async (
       .where(eq(users.id, existingUser.id));
 
     await db
-      .delete(passwordResetTokens)
-      .where(eq(passwordResetTokens.id, existingToken.id));
+      .delete(mailToken)
+      .where(eq(mailToken.id, existingToken.id));
 
     return { success: "Password updated!" };
   } catch (error) {

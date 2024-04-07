@@ -1,7 +1,7 @@
 "use server";
 
 import db from "@/lib/db";
-import { users, verificationTokens } from "@/lib/db/schema";
+import { mailToken, users } from "@/lib/db/schema";
 import { getUserByEmail } from "@/queries/user";
 import { getVerificationTokenByToken } from "@/queries/verification-token";
 
@@ -33,8 +33,8 @@ export const newVerification = async (token: string) => {
       .where(eq(users.id, existingUser.id));
 
     await db
-      .delete(verificationTokens)
-      .where(eq(verificationTokens.id, existingToken.id));
+      .delete(mailToken)
+      .where(eq(mailToken.id, existingToken.id));
 
     return { success: "Email verified!" };
   } catch (error) {

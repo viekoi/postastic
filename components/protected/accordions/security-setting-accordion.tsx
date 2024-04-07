@@ -1,19 +1,25 @@
-"use client"
+"use client";
 import React from "react";
-import CollapseMenu from "../../accordions/accordion";
-import NewPasswordForm from "./new-password-form";
+import CollapseMenu from "./accordion";
+import NewPasswordForm from "../forms/security/new-password-form";
 import { ExtendedUser } from "@/next-auth";
+import NewEmailForm from "../forms/security/new-email-form";
 
-interface EditProps{
-  user:ExtendedUser
+
+interface EditProps {
+  user: ExtendedUser;
 }
 
-const Edit = ({user}:EditProps) => {
+const SecuritySettingAccordion = ({ user }: EditProps) => {
   const contents = [
     {
       value: "email",
       triggerText: "Change your email ?",
-      content: <>email</>,
+      content: (
+        <>
+          <NewEmailForm user={user} />
+        </>
+      ),
     },
     {
       value: "password",
@@ -29,4 +35,4 @@ const Edit = ({user}:EditProps) => {
   return <CollapseMenu collapseMenuContents={contents} />;
 };
 
-export default Edit;
+export default SecuritySettingAccordion;

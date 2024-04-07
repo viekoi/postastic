@@ -4,8 +4,8 @@ import TabMenu from "./tab";
 import { useSearchParams } from "next/navigation";
 import EditUserProfileForm from "../forms/profile/edit-user-profile-form";
 import { ExtendedUser } from "@/next-auth";
-import CollapseMenu from "../accordions/accordion";
-import Edit from "../forms/security/edit";
+
+import SecuritySettingAccordion from "../accordions/security-setting-accordion";
 
 interface SettingsTabProps {
   user: ExtendedUser;
@@ -22,7 +22,7 @@ const SettingsTab = ({ user, isEdit, setIsEdit }: SettingsTabProps) => {
       <EditUserProfileForm setIsEdit={setIsEdit} isEdit={isEdit} user={user} />
     </>,
     <>
-      <Edit user={user}/>
+      <SecuritySettingAccordion user={user} />
     </>,
   ];
 

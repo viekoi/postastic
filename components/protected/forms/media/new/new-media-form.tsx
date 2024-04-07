@@ -239,6 +239,7 @@ const NewMediaForm = ({
                         user={user}
                       />
                       <Textarea
+                        
                         disabled={isPending}
                         className="border-none overflow-hidden flex-grow resize-none"
                         {...field}

@@ -32,6 +32,10 @@ export const ResetSchema = z.object({
   }),
 });
 
+export const ConfirmCodeSchema = z.object({
+  code: z.string().length(6, { message: "6 number is required" }),
+});
+
 export const ResetPasswordViaEmailSchema = z.object({
   password: z.string().min(6, {
     message: "Minimum of 6 characters required",

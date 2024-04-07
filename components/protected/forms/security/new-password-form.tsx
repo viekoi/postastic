@@ -17,6 +17,7 @@ import { ExtendedUser } from "@/next-auth";
 import { ResetPasswordSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -70,12 +71,18 @@ const NewPasswordForm = ({ user }: NewPasswordFormProps) => {
   const formErrors = form.formState.errors;
 
   const onSubmit = (values: z.infer<typeof ResetPasswordSchema>) => {
+    setError("");
+    setSuccess("");
     startTransition(() => {
       newPassword(values).then((data) => {
-        setError("");
-        setSuccess("");
-        setError(data?.error);
-        setSuccess(data?.success);
+        if (data.success) {
+          setSuccess(data.success);
+          signOut();
+        }
+
+        if (data.error) {
+          setError(data.error);
+        }
       });
     });
   };

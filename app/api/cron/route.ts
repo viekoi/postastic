@@ -1,11 +1,15 @@
 import db from "@/lib/db";
-import { attachments } from "@/lib/db/schema";
+import { attachments, mailToken } from "@/lib/db/schema";
 import { cloudinaryEditDelete } from "@/lib/upload";
-import { isNull } from "drizzle-orm";
+import { isNull, lte } from "drizzle-orm";
+
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const expires = new Date(new Date().getTime());
+    await db.delete(mailToken).where(lte(mailToken.expires, expires));
+
     const res = await db
       .delete(attachments)
       .where(isNull(attachments.parentId))

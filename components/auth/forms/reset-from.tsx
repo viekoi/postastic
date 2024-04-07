@@ -51,7 +51,7 @@ export const ResetForm = () => {
     <AuthFormCard
       headerLabel="Forgot your password?"
       backButtonLabel="Back to login"
-      backButtonHref="/auth/login"
+      backButtonHref="/login"
       isPending={isPending}
     >
       <Form {...form}>

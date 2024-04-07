@@ -158,6 +158,7 @@ const EditUserProfileForm = ({
                   </FormLabel>
                   <FormControl>
                     <Textarea
+                      variant={formErrors.bio ? "destructive" : "outline"}
                       disabled={isPending || !isEdit}
                       className="border-none overflow-hidden flex-grow resize-none bg-white text-black"
                       {...field}

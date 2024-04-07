@@ -1,10 +1,10 @@
 import db from "@/lib/db";
 import { and, eq } from "drizzle-orm";
 
-export const getPasswordResetTokenByEmail = async (email: string) => {
+export const getEmailResetTokenByEmail = async (email: string) => {
   try {
     const passwordResetToken = await db.query.mailToken.findFirst({
-      where: (t) => and(eq(t.email, email), eq(t.type, "resetPassword")),
+      where: (t) => and(eq(t.email, email), eq(t.type, "resetEmail")),
     });
 
     return passwordResetToken;
@@ -13,10 +13,10 @@ export const getPasswordResetTokenByEmail = async (email: string) => {
   }
 };
 
-export const getPasswordResetTokenByToken = async (token: string) => {
+export const getEmailResetTokenByToken = async (token: string) => {
   try {
     const passwordResetToken = await db.query.mailToken.findFirst({
-      where: (t) => and(eq(t.token, token), eq(t.type, "resetPassword")),
+      where: (t) => and(eq(t.token, token), eq(t.type, "resetEmail")),
     });
 
     return passwordResetToken;

@@ -12,12 +12,16 @@ import {
 import type { AdapterAccount } from "@auth/core/adapters";
 import { InferModel, relations } from "drizzle-orm";
 
-
 //Emums
 export const privacyType = pgEnum("privacyType", ["public", "private"]);
 export const mediaType = pgEnum("mediaType", ["post", "comment", "reply"]);
 export const attachmentType = pgEnum("attachmentType", ["image", "video"]);
 export const profileImageType = pgEnum("profileImageType", ["image", "cover"]);
+export const mailTokenType = pgEnum("mailTokenType", [
+  "resetPassword",
+  "resetEmail",
+  "confirmEmail",
+]);
 
 // Tables
 export const users = pgTable("user", {
@@ -61,7 +65,7 @@ export const accounts = pgTable(
 
 export type Account = InferModel<typeof accounts>;
 
-export const verificationTokens = pgTable(
+export const mailToken = pgTable(
   "verificationToken",
   {
     userId: uuid("userId")
@@ -70,6 +74,7 @@ export const verificationTokens = pgTable(
     id: uuid("id").defaultRandom().notNull(),
     email: text("email").notNull(),
     token: text("token").notNull().unique(),
+    type: mailTokenType("type").notNull(),
     expires: timestamp("expires", {
       withTimezone: true,
       mode: "date",
@@ -80,24 +85,7 @@ export const verificationTokens = pgTable(
   })
 );
 
-export const passwordResetTokens = pgTable(
-  "passwordResetToken",
-  {
-    userId: uuid("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    id: uuid("id").defaultRandom().notNull(),
-    email: text("email").notNull(),
-    token: text("token").notNull().unique(),
-    expires: timestamp("expires", {
-      withTimezone: true,
-      mode: "date",
-    }).notNull(),
-  },
-  (prt) => ({
-    compoundKey: primaryKey({ columns: [prt.id, prt.token] }),
-  })
-);
+
 
 export const medias = pgTable("media", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),

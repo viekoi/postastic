@@ -1,30 +1,26 @@
 import db from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
-export const getVerificationTokenByToken = async (
-  token: string
-) => {
+export const getVerificationTokenByToken = async (token: string) => {
   try {
-    const verificationToken = await db.query.verificationTokens.findFirst({
-      where:(vt=>eq(vt.token,token))
+    const verificationToken = await db.query.mailToken.findFirst({
+      where: (t) => and(eq(t.token, token), eq(t.type, "confirmEmail")),
     });
 
     return verificationToken;
   } catch {
     return null;
   }
-}
+};
 
-export const getVerificationTokenByEmail = async (
-  email: string
-) => {
+export const getVerificationTokenByEmail = async (email: string) => {
   try {
-    const verificationToken = await db.query.verificationTokens.findFirst({
-      where: (vt=>eq(vt.email,email))
+    const verificationToken = await db.query.mailToken.findFirst({
+      where: (t) => and(eq(t.email, email), eq(t.type, "confirmEmail")),
     });
 
     return verificationToken;
   } catch {
     return null;
   }
-}
+};
