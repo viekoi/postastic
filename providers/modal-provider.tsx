@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import EditMediaModal from "@/components/protected/modals/edit-media-modal";
 import { AlertModal } from "@/components/protected/modals/alert-modal";
 import NewMediaModal from "@/components/protected/modals/new-media-modal";
+import SearchModal from "@/components/protected/modals/search-modal";
 
 const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -20,6 +21,7 @@ const ModalProvider = () => {
 
   return (
     <>
+      <SearchModal />
       <AlertModal />
       <NewMediaModal />
       <ImageCarouselModal />

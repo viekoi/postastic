@@ -1,8 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { ExtendedUser } from "@/next-auth";
 import SettingsTab from "../../tabs/settings-tab";
 import { getUserById } from "@/queries/react-query/queris";
 import { Loader } from "@/components/Loader";

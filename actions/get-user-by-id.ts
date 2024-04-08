@@ -1,7 +1,7 @@
-"use server"
+"use server";
 
-import { getUserById } from "@/queries/user"
+import { getUserById } from "@/queries/user";
 
-export const getUserByIdAction = async(id:string)=>{
-    return getUserById(id)
-}
+export const getUserByIdAction = async (id: string) => {
+  return getUserById(id);
+};

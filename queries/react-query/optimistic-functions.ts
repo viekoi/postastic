@@ -16,14 +16,14 @@ export const updateLikesCount = async ({
 
   queryClient.setQueriesData(
     { queryKey: queryKeyPreflix },
-    (old: InfiniteData<{ success: MediaWithData[] }> | undefined) => {
+    (old: InfiniteData<{ data: MediaWithData[] }> | undefined) => {
       if (!old) return;
       return {
         ...old,
         pages: old.pages.map((page) => {
           return {
             ...page,
-            success: page.success.map((media) => {
+            data: page.data.map((media) => {
               if (media.id === id) {
                 const countModifier = media.isLikedByMe ? -1 : +1;
                 return {
@@ -62,7 +62,7 @@ export const updateInteractCount = async ({
 
   queryClient.setQueriesData(
     { queryKey: queryKeyPreflix },
-    (old: InfiniteData<{ success: MediaWithData[] }> | undefined) => {
+    (old: InfiniteData<{ data: MediaWithData[] }> | undefined) => {
       if (!old) {
         return;
       }
@@ -71,7 +71,7 @@ export const updateInteractCount = async ({
         pages: old.pages.map((page) => {
           return {
             ...page,
-            success: page.success.map((media) => {
+            data: page.data.map((media) => {
               if (media.id === parentId) {
                 const countModifier = action === "insert" ? +1 : -1;
                 return {
@@ -108,28 +108,28 @@ export const optimisticInsert = async ({
     { queryKey: queryKey },
     (
       old:
-        | InfiniteData<{ success?: MediaWithData[]; error?: string }>
+        | InfiniteData<{ data: MediaWithData[]; status: "success" | "failed" }>
         | undefined
     ) => {
       if (!old) {
         return;
       }
       //@ts-ignore
-      if (old.pageParams[0].route && old.pageParams[0].route === "dev") {
+      if (old.pageParams[0].route && old.pageParams[0].route === "save") {
         return;
       }
       const firstPage = old.pages[0];
       const currentLastPageIndex = old.pages.length - 1;
       const currentLastPage = old.pages[currentLastPageIndex];
 
-      if (old && firstPage.success && currentLastPage.success) {
+      if (old && firstPage.data && currentLastPage.status === "success") {
         if (orderBy === "dsc") {
           return {
             ...old,
             pages: [
               {
                 ...firstPage,
-                success: [data, ...firstPage.success],
+                data: [data, ...firstPage.data],
               },
               ...old.pages.slice(1).map((page) => {
                 return page;
@@ -143,7 +143,7 @@ export const optimisticInsert = async ({
               pages: [
                 {
                   ...currentLastPage,
-                  success: [...currentLastPage.success, data],
+                  data: [...currentLastPage.data, data],
                 },
               ],
             };
@@ -157,7 +157,7 @@ export const optimisticInsert = async ({
               }),
               {
                 ...currentLastPage,
-                success: [...currentLastPage.success, data],
+                data: [...currentLastPage.data, data],
               },
             ],
           };
@@ -187,7 +187,7 @@ export const optimisticUpdate = async ({
     (
       old:
         | InfiniteData<{
-            success: MediaWithData[];
+            data: MediaWithData[];
           }>
         | undefined
     ) => {
@@ -197,7 +197,7 @@ export const optimisticUpdate = async ({
         pages: old.pages.map((page) => {
           return {
             ...page,
-            success: page.success.map((media) => {
+            data: page.data.map((media) => {
               if (media.id === data.id) {
                 return {
                   ...data,

@@ -1,18 +1,19 @@
 "use client";
-import { ExtendedUser } from "@/next-auth";
+
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { cn } from "@/lib/utils";
+import { SessionUser } from "@/type";
+
 import Image from "next/image";
 
 interface UserAvatarProps {
-  user?: ExtendedUser;
+  user?: Omit<SessionUser, "isOAuth">;
   value?: string | null;
   className?: string;
   onClick?: () => void;
 }
 
 const UserAvatar = ({ user, className, onClick, value }: UserAvatarProps) => {
-
   return (
     <Avatar
       className={cn("", className, onClick && "cursor-pointer")}

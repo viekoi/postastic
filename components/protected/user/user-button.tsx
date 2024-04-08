@@ -12,12 +12,10 @@ import {
 import { signOut } from "next-auth/react";
 import { Button } from "../../ui/button";
 import UserAvatar from "./user-avatar";
+import { SessionUser } from "@/type";
 
-const UserButton = () => {
-  const { user, isLoading } = useCurrentUser();
 
-  
-
+const UserButton = ({ user }: { user: SessionUser | undefined }) => {
   return (
     <Link href={`/profile/${user?.id}`} className="group">
       <Button

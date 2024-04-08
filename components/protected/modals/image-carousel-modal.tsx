@@ -16,6 +16,7 @@ const ImageCarouselModal = () => {
   const { isOpen, onClose, attachments, startIndex } = useImageCarouselModal();
   return (
     <Modal
+      showCloseBtn
       isOpen={isOpen}
       onClose={onClose}
       className=" h-screen items-center justify-center z-[1001] "

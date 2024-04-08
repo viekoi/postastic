@@ -14,7 +14,6 @@ import { useDeleteMedia } from "@/queries/react-query/queris";
 import { QUERY_KEYS_PREFLIX } from "@/queries/react-query/query-keys";
 import { MediaWithData } from "@/type";
 import {
-  Bookmark,
   Delete,
   EyeOff,
   FileCog,
@@ -67,12 +66,6 @@ const SettingButton = ({ post }: SettingButtonProps) => {
           className="w-56 "
           onClick={(e) => e.stopPropagation()}
         >
-          <DropdownMenuItem onClick={() => {}}>
-            save post
-            <DropdownMenuShortcut>
-              <Bookmark />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
           {!isAuthor && (
             <DropdownMenuItem onClick={() => {}}>
               hide post
@@ -87,7 +80,8 @@ const SettingButton = ({ post }: SettingButtonProps) => {
                 onClick={() =>
                   onOpen(
                     post.id,
-                    [QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,"post"],post
+                    [QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS, "post"],
+                    post
                   )
                 }
               >

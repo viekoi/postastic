@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ExtendedUser } from "@/next-auth";
 import { ResetSchema } from "@/schemas";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,9 +19,10 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import ConfirmCodeForm from "./confirm-code-form";
+import { SessionUser } from "@/type";
 
 interface NewEmailFormProps {
-  user: ExtendedUser;
+  user: SessionUser;
 }
 
 const NewEmailForm = ({ user }: NewEmailFormProps) => {

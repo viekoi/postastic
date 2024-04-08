@@ -13,8 +13,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ExtendedUser } from "@/next-auth";
 import { ResetPasswordSchema } from "@/schemas";
+import { SessionUser } from "@/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -23,7 +23,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 interface NewPasswordFormProps {
-  user: ExtendedUser;
+  user: SessionUser;
 }
 
 const NewPasswordForm = ({ user }: NewPasswordFormProps) => {

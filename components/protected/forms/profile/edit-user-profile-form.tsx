@@ -19,11 +19,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ImageUpload from "../../user/profile-image-uploader";
 import { FormError } from "@/components/form-error";
-import { ExtendedUser } from "@/next-auth";
+
 
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 import { Textarea } from "@/components/ui/textarea";
+import { SessionUser } from "@/type";
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -32,7 +33,7 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
 }
 
 interface EditUserProfileFormProps {
-  user: ExtendedUser;
+  user: SessionUser;
   isEdit: boolean;
   setIsEdit: () => void;
 }
@@ -48,7 +49,6 @@ const EditUserProfileForm = ({
     textAreaRef.current = textArea;
   }, []);
   const [error, setError] = useState("");
-  const router = useRouter();
   const { update } = useCurrentUser();
   const form = useForm<z.infer<typeof EditUserProfileShcema>>({
     resolver: zodResolver(EditUserProfileShcema),

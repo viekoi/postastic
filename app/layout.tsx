@@ -7,6 +7,7 @@ import QueryProvider from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import ModalProvider from "@/providers/modal-provider";
 import { IsMobileProvider } from "@/providers/is-mobile-provider";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +26,7 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <body className={inter.className}>
+        <body className={cn("custom-scrollbar",inter.className) }>
           <QueryProvider>
             <IsMobileProvider breakPoint={1024}>
               <Toaster

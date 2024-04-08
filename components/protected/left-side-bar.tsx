@@ -1,16 +1,63 @@
 "use client";
 import Link from "next/link";
-import { sidebarLinks } from "@/constansts";
+
 import { Button } from "../ui/button";
 import UserButton from "./user/user-button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Twitter } from "lucide-react";
-import { useNewMediaModal } from "@/hooks/use-modal-store";
+import {
+  Bell,
+  Home,
+  MessageSquareText,
+  Search,
+  Settings2,
+  Twitter,
+} from "lucide-react";
+import { useNewMediaModal, useSearchModal } from "@/hooks/use-modal-store";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const LeftSidebar = () => {
+  const { onOpen: openSearchModal } = useSearchModal();
   const pathName = usePathname();
   const { onOpen } = useNewMediaModal();
+  const { user } = useCurrentUser();
+
+  const sidebarLinks = [
+    {
+      icon: Home,
+      type: "link",
+      route: "/",
+      label: "Home",
+    },
+    {
+      icon: Search,
+      type: "button",
+      route: "/search",
+      label: "Search",
+      onclick: openSearchModal,
+    },
+    {
+      icon: MessageSquareText,
+      type: "button",
+      route: "/message",
+      label: "Message",
+      onclick: () => {},
+    },
+    {
+      icon: Bell,
+      type: "button",
+      route: "/notification",
+      label: "Notification",
+      onclick: () => {},
+    },
+    {
+      icon: Settings2,
+      type: "link",
+      route: "/settings",
+      label: "Settings",
+    },
+  ];
+
   return (
     <div className="col-span-1 hidden lg:block sticky top-0  h-screen">
       <div className="w-full h-full flex">
@@ -26,19 +73,45 @@ const LeftSidebar = () => {
                 const isActive = pathName === link.route;
 
                 return (
-                  <Link className="group" href={link.route} key={link.route}>
-                    <Button variant={"ghost"} size={"link"}>
-                      <div
-                        className={cn(
-                          "relative",
-                          isActive && "side-link-active"
-                        )}
+                  <div key={link.route}>
+                    {link.type === "link" ? (
+                      <Link
+                        className="group"
+                        href={link.route}
+                       
                       >
-                        <link.icon />
+                        <Button variant={"ghost"} size={"link"}>
+                          <div
+                            className={cn(
+                              "relative",
+                              isActive && "side-link-active"
+                            )}
+                          >
+                            <link.icon />
+                          </div>
+                          {link.label}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <div className="group">
+                        <Button
+                          variant={"ghost"}
+                          size={"link"}
+                          onClick={link.onclick}
+                        >
+                          <div
+                            className={cn(
+                              "relative",
+                              isActive && "side-link-active"
+                            )}
+                          >
+                            <link.icon />
+                          </div>
+                          {link.label}
+                        </Button>
                       </div>
-                      {link.label}
-                    </Button>
-                  </Link>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -51,7 +124,7 @@ const LeftSidebar = () => {
             </Button>
           </div>
 
-          <UserButton />
+          <UserButton user={user} />
         </div>
       </div>
     </div>

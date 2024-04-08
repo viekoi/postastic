@@ -22,11 +22,6 @@ const CommentContainer = ({
   const queryClient = useQueryClient();
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
     useGetInfiniteMedias({
-      queryKey: [
-        QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
-        "comment",
-        { parentId: post.id },
-      ],
       parentId: post.id,
       type: "comment",
       queryFn: getInfiniteMedias,
@@ -76,7 +71,7 @@ const CommentContainer = ({
       </div>
     );
 
-  if (data.pages[0].success?.length === 0) {
+  if (data.pages[0].data?.length === 0) {
     return (
       <div className="flex h-full flex-col  justify-center items-center">
         <MessageSquareText className="size-[20%]" />
@@ -94,7 +89,7 @@ const CommentContainer = ({
             postAuthorId={post.userId}
             className="flex flex-col gap-y-4 w-full"
             key={index}
-            medias={page.success ? page.success : []}
+            medias={page.data ? page.data : []}
             type="comment"
           />
         );

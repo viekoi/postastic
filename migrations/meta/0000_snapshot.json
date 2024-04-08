@@ -1,5 +1,5 @@
 {
-  "id": "ccd21512-106b-450f-9f0e-eb985dff6e08",
+  "id": "69e9a8e5-0aaa-481d-8ca3-af09e63389ef",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -158,6 +158,62 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "follow": {
+      "name": "follow",
+      "schema": "",
+      "columns": {
+        "followerId": {
+          "name": "followerId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "followingId": {
+          "name": "followingId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "follow_followerId_user_id_fk": {
+          "name": "follow_followerId_user_id_fk",
+          "tableFrom": "follow",
+          "tableTo": "user",
+          "columnsFrom": [
+            "followerId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "follow_followingId_user_id_fk": {
+          "name": "follow_followingId_user_id_fk",
+          "tableFrom": "follow",
+          "tableTo": "user",
+          "columnsFrom": [
+            "followingId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

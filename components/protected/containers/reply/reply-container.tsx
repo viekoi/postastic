@@ -11,8 +11,7 @@ import { SkeletonCard } from "../../cards/skeleton-card";
 import MediaList from "../../lists/media/media-list";
 import { useGetInfiniteMedias } from "@/queries/react-query/queris";
 import { getInfiniteMedias } from "@/actions/get-infinite-medias";
-const type = "reply";
-const parentType = "comment";
+
 const ReplyContainer = ({
   postId,
   parentId,
@@ -26,13 +25,8 @@ const ReplyContainer = ({
   const { data, error, refetch, hasNextPage, fetchNextPage, isPending } =
     useGetInfiniteMedias({
       parentId,
-      type: type,
+      type:"reply",
       queryFn: getInfiniteMedias,
-      queryKey: [
-        QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
-        "reply",
-        { parentId: parentId },
-      ],
     });
   const { ref, inView } = useInView();
   useEffect(() => {
@@ -75,7 +69,7 @@ const ReplyContainer = ({
       </div>
     );
 
-  if (data.pages[0].success?.length === 0) {
+  if (data.pages[0].data?.length === 0) {
     return (
       <div className="flex h-full flex-col  justify-center items-center bg-white rounded-3xl ">
         <MessageSquareText className="size-[20%]" />
@@ -92,7 +86,7 @@ const ReplyContainer = ({
           <MediaList
             className="flex flex-col gap-y-4 w-full"
             key={index}
-            medias={page.success ? page.success : []}
+            medias={page.data ? page.data : []}
             type="reply"
           />
         );

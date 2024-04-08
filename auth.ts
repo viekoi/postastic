@@ -77,6 +77,7 @@ export const authConfig = {
       token.email = existingUser.email;
       token.coverImage = existingUser.coverImage;
       token.avatarImage = existingUser.avatarImage;
+     
 
       return token;
     },

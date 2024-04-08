@@ -34,18 +34,22 @@ export const useGetInfiniteMedias = ({
   parentId,
   type,
   queryFn,
-  queryKey,
   route,
+  q,
 }: {
-  profileId?: string;
-  parentId?: string | null;
   type: (typeof MediaTypes)[number];
   queryFn: (pageParam: any) => Promise<any>;
-  queryKey: QueryKey;
+  profileId?: string;
+  parentId?: string | null;
   route?: (typeof InfinitePostsRoutes)[number];
+  q?: string;
 }) => {
   return useInfiniteQuery({
-    queryKey,
+    queryKey: [
+      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+      type,
+      { parentId: parentId, profileId: profileId, route: route, q: q },
+    ],
     queryFn: ({ pageParam }) => queryFn(pageParam),
     initialPageParam: {
       cursor: undefined,
@@ -53,6 +57,7 @@ export const useGetInfiniteMedias = ({
       type: type,
       profileId: profileId,
       route,
+      q: q,
     },
     getNextPageParam: (lastPage) => {
       return lastPage?.nextCursor
@@ -62,6 +67,7 @@ export const useGetInfiniteMedias = ({
             type,
             profileId: profileId,
             route,
+            q: q,
           }
         : undefined;
     },
@@ -72,6 +78,33 @@ export const getUserById = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS_PREFLIX.GET_USER, { userId }],
     queryFn: () => getUserByIdAction(userId),
+  });
+};
+
+export const useGetInfiniteUsers = ({
+  q,
+  queryFn,
+}: {
+  q: string;
+  queryFn: (pageParam: any) => Promise<any>;
+}) => {
+  return useInfiniteQuery({
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    queryKey: [QUERY_KEYS_PREFLIX.GET_INFINTE_USERS, { q: q }],
+    queryFn: ({ pageParam }) => queryFn(pageParam),
+    initialPageParam: {
+      cursor: undefined,
+      q: q,
+    },
+    getNextPageParam: (lastPage) => {
+      return lastPage?.nextCursor
+        ? {
+            cursor: lastPage.nextCursor,
+            q: q,
+          }
+        : undefined;
+    },
   });
 };
 
@@ -167,7 +200,9 @@ export const useUpdateUserProfile = () => {
       updateProfile(values),
     onSettled: (data, error, variables, context) => {
       if (data?.success) {
-        queryClient.invalidateQueries({ queryKey:[QUERY_KEYS_PREFLIX.GET_USER,{userId:variables.id}], });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS_PREFLIX.GET_USER, { userId: variables.id }],
+        });
       }
     },
   });

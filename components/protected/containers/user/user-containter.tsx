@@ -1,30 +1,19 @@
 "use client";
 
-import { useInView } from "react-intersection-observer";
+import { getIniniteUsers } from "@/actions/get-infinite-users";
+import { useGetInfiniteUsers } from "@/queries/react-query/queris";
 import React, { useEffect } from "react";
-
-import { Button } from "../../../ui/button";
-import { MessageSquareText } from "lucide-react";
+import { useInView } from "react-intersection-observer";
 import { SkeletonCard } from "../../cards/skeleton-card";
-import MediaList from "../../lists/media/media-list";
-import { useGetInfiniteMedias } from "@/queries/react-query/queris";
-import { InfinitePostsRoutes } from "@/constansts";
+import { Button } from "@/components/ui/button";
+import { MessageSquareText } from "lucide-react";
+import UserList from "../../lists/media/user-list";
 
-
-
-interface PostContainerProps {
-  profileId?: string;
-  queryFn: (pageParam: any) => Promise<any>;
-  route: (typeof InfinitePostsRoutes)[number];
-  q?: string;
+interface UserContainerProps {
+  q: string;
 }
 
-const PostContainer = ({
-  queryFn,
-  profileId,
-  route,
-  q,
-}: PostContainerProps) => {
+const UserContainer = ({ q }: UserContainerProps) => {
   const {
     data,
     fetchNextPage,
@@ -33,14 +22,11 @@ const PostContainer = ({
     refetch,
     isPending,
     isRefetching,
-  } = useGetInfiniteMedias({
-    profileId,
-    parentId: null,
-    type:"post",
+  } = useGetInfiniteUsers({
+    queryFn: getIniniteUsers,
     q: q,
-    queryFn: queryFn,
-    route,
   });
+
   const { ref, inView } = useInView();
   useEffect(() => {
     if (inView) {
@@ -73,16 +59,11 @@ const PostContainer = ({
       </div>
     );
   }
+
   return (
     <>
       {data.pages.flat().map((page, index) => {
-        return (
-          <MediaList
-            key={index}
-            medias={page.data ? page.data : []}
-            type="post"
-          />
-        );
+        return <UserList users={page.data} key={index} />;
       })}
 
       {hasNextPage && (
@@ -94,4 +75,4 @@ const PostContainer = ({
   );
 };
 
-export default PostContainer;
+export default UserContainer;

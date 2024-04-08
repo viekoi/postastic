@@ -1,14 +1,12 @@
 "use server";
 import {
   generateEmailResetToken,
-  generateVerificationToken,
 } from "@/lib/token";
 import { currentUser } from "@/lib/user";
 import { getUserByEmail, getUserById } from "@/queries/user";
 import { ResetSchema } from "@/schemas";
 import * as z from "zod";
 import { sendMail } from "./send-mail";
-import pageUrl from "@/lib/config";
 export const newEmail = async (values: z.infer<typeof ResetSchema>) => {
   try {
     const user = await currentUser();

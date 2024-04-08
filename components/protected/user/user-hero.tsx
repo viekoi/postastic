@@ -1,10 +1,11 @@
 "use client";
 import Image from "next/image";
 import UserAvatar from "./user-avatar";
-import { ExtendedUser } from "@/next-auth";
+import { SessionUser, UserWithData } from "@/type";
+
 
 interface UserHeroProps {
-  user: ExtendedUser;
+  user: UserWithData;
 }
 
 const UserHero = ({ user }: UserHeroProps) => {

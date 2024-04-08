@@ -1,5 +1,5 @@
 "use server";
-import { and, asc, count, desc, eq, lte } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import db from "../lib/db";
 import { currentUser } from "@/lib/user";
 import { medias as mediaTable } from "@/lib/db/schema";
@@ -8,20 +8,38 @@ import {
   getPofileMediasWhereClause,
 } from "../lib/db/util";
 import { MediaTypes } from "@/constansts";
+import { getUserById } from "@/queries/user";
 
 export const getInfiniteMedias = async ({
   cursor,
   profileId,
   parentId,
   type,
+  q,
 }: {
   cursor?: { id: string; createdAt: Date };
   parentId?: string | null;
   profileId?: string;
+  q?: string;
   type: (typeof MediaTypes)[number];
 }) => {
   const user = await currentUser();
-  if (!user) return { error: "Unauthenticated!!!" };
+  if (!user)
+    return { data: [], message: "Unauthenticated!!!", status: "failed" };
+
+  const followingUserIds = await db.query.follows
+    .findMany({
+      where: (f) => eq(f.followerId, user.id),
+      columns: {
+        followingId: true,
+      },
+    })
+    .then((data) => {
+      return data.map((fi) => fi.followingId);
+    });
+
+  if (!followingUserIds)
+    return { data: [], message: "something went wrong!!!", status: "failed" };
   try {
     const limit = 10;
     const totalPages = await db
@@ -35,7 +53,13 @@ export const getInfiniteMedias = async ({
               userId: user.id,
               type,
             })
-          : getMediasWhereClause({ userId: user.id, type, parentId })
+          : getMediasWhereClause({
+              userId: user.id,
+              type,
+              parentId,
+              followingUserIds,
+              q,
+            })
       );
 
     const medias = await db.query.medias.findMany({
@@ -48,7 +72,14 @@ export const getInfiniteMedias = async ({
               type,
               cursor,
             })
-          : getMediasWhereClause({ userId: user.id, type, parentId, cursor }),
+          : getMediasWhereClause({
+              userId: user.id,
+              type,
+              parentId,
+              cursor,
+              followingUserIds,
+              q,
+            }),
       with: {
         likes: {
           columns: {
@@ -92,10 +123,8 @@ export const getInfiniteMedias = async ({
       };
     }
 
-   
-
     return {
-      success: medias.map((post) => {
+      data: medias.map((post) => {
         return {
           ...post,
           type: post.type,
@@ -116,6 +145,8 @@ export const getInfiniteMedias = async ({
           },
         };
       }),
+      status: "success",
+      message: "success",
       nextCursor: nextCursor,
       totalPages: Math.ceil(totalPages[0].value / 10),
       total: totalPages[0].value,
@@ -123,6 +154,6 @@ export const getInfiniteMedias = async ({
     };
   } catch (error) {
     console.log(error);
-    return { error: `Could not fetch ${type}` };
+    return { data: [], message: `Could not fetch ${type}`, status: "failed" };
   }
 };

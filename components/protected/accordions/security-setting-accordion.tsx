@@ -2,12 +2,12 @@
 import React from "react";
 import CollapseMenu from "./accordion";
 import NewPasswordForm from "../forms/security/new-password-form";
-import { ExtendedUser } from "@/next-auth";
-import NewEmailForm from "../forms/security/new-email-form";
 
+import NewEmailForm from "../forms/security/new-email-form";
+import { SessionUser } from "@/type";
 
 interface EditProps {
-  user: ExtendedUser;
+  user: SessionUser;
 }
 
 const SecuritySettingAccordion = ({ user }: EditProps) => {

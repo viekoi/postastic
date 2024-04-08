@@ -116,15 +116,17 @@ export const InfiniteMediasQueryKeyBuilder = ({
   type,
   route,
   profileId,
+  q,
 }: {
   parentId: string | null;
   type: (typeof MediaTypes)[number];
   route: (typeof InfinitePostsRoutes)[number];
   profileId?: string;
+  q?: string;
 }) => {
   return [
     QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
     type,
-    { parentId: parentId, profileId: profileId, route: route },
+    { parentId: parentId, profileId: profileId, route: route, q: q },
   ];
 };

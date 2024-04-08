@@ -4,49 +4,37 @@ import TabMenu from "./tab";
 import PostContainer from "../containers/post/post-container";
 import PostFormCard from "../cards/post-form-card";
 import { getInfiniteMedias } from "@/actions/get-infinite-medias";
-import { InfiniteMediasQueryKeyBuilder } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { ExtendedUser } from "@/next-auth";
+import { SessionUser } from "@/type";
+
 
 interface UserProfileTabProps {
-  user: ExtendedUser;
+  user: SessionUser;
 }
 
 const UserProfileTab = ({ user }: UserProfileTabProps) => {
   const { user: currentUser } = useCurrentUser();
-  const searchParams = useSearchParams();
-  const defaultTab = searchParams.get("tab");
   const tabValues = ["post", "bio"];
   const tabContents = [
     <>
-      {user.id === currentUser?.id && <PostFormCard />}
-      <PostContainer
-        route="profile"
-        profileId={user.id}
-        queryFn={getInfiniteMedias}
-        queryKey={InfiniteMediasQueryKeyBuilder({
-          parentId: null,
-          type: "post",
-          route: "profile",
-          profileId: user.id,
-        })}
-      />
+      <div className="min-h-screen flex flex-col">
+        {user.id === currentUser?.id && <PostFormCard />}
+        <PostContainer
+          route="profile"
+          profileId={user.id}
+          queryFn={getInfiniteMedias}
+        />
+      </div>
     </>,
     <>
-      <div className="px-4">
+      <div className="px-4 min-h-screen">
         {user.bio.length ? user.bio : "This user has not given a bio yet"}
       </div>
     </>,
   ];
 
-  return (
-    <TabMenu
-      tabContents={tabContents}
-      tabValues={tabValues}
-      defaultValue={defaultTab ? defaultTab : tabValues[0]}
-    />
-  );
+  return <TabMenu tabContents={tabContents} tabValues={tabValues} />;
 };
 
 export default UserProfileTab;

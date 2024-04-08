@@ -9,7 +9,6 @@ import { getUserByEmail, getUserById } from "@/queries/user";
 import { eq } from "drizzle-orm";
 
 export const resetEmail = async (token: string) => {
-  console.log(token);
   try {
     const existingToken = await getEmailResetTokenByToken(token);
     if (!existingToken) {

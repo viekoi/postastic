@@ -17,6 +17,7 @@ interface ModalProps {
   onClose: () => void;
   children?: React.ReactNode;
   className?: string;
+  showCloseBtn?: boolean;
 }
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
@@ -28,6 +29,7 @@ const Modal: React.FC<ModalProps> = ({
   children,
   className,
   onClose,
+  showCloseBtn = false,
 }) => {
   const onChange = (open: boolean) => {
     if (!open) {
@@ -92,7 +94,7 @@ const Modal: React.FC<ModalProps> = ({
         )}
 
         {children}
-        {!title && (
+        {showCloseBtn && (
           <DialogClose className="border-none bg-red-400 opacity-70 hover:opacity-100 rounded-full absolute top-2 right-2 ">
             <X size={40} />
           </DialogClose>

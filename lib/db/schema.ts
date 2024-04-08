@@ -65,6 +65,20 @@ export const accounts = pgTable(
 
 export type Account = InferModel<typeof accounts>;
 
+export const follows = pgTable("follow", {
+  followerId: uuid("followerId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  followingId: uuid("followingId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type Follow = InferModel<typeof follows>;
+
 export const mailToken = pgTable(
   "verificationToken",
   {
@@ -84,8 +98,6 @@ export const mailToken = pgTable(
     compoundKey: primaryKey({ columns: [vt.id, vt.token] }),
   })
 );
-
-
 
 export const medias = pgTable("media", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
@@ -169,6 +181,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   likes: many(likes),
   avatarImages: many(profileImages, { relationName: "avatarImages" }),
   coverImages: many(profileImages, { relationName: "coverImages" }),
+  followers: many(follows, { relationName: "followers" }),
+  followings: many(follows, { relationName: "followings" }),
 }));
 
 export const mediasRelations = relations(medias, ({ one, many }) => ({
@@ -215,5 +229,18 @@ export const profileImagesRelations = relations(profileImages, ({ one }) => ({
     fields: [profileImages.userId],
     references: [users.id],
     relationName: "coverImages",
+  }),
+}));
+
+export const followsRelations = relations(follows, ({  one }) => ({
+  follower: one(users, {
+    fields: [follows.followerId],
+    references: [users.id],
+    relationName:"followers"
+  }),
+  following: one(users, {
+    fields: [follows.followerId],
+    references: [users.id],
+    relationName:"followings"
   }),
 }));

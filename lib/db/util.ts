@@ -6,6 +6,8 @@ import {
   lte,
   or,
   eq,
+  inArray,
+  ilike,
 } from "drizzle-orm";
 import * as schema from "./schema";
 
@@ -38,6 +40,8 @@ export const getMediasWhereClause = ({
   type,
   parentId,
   cursor,
+  followingUserIds,
+  q,
 }: {
   userId: string;
   type?: (typeof MediaTypes)[number];
@@ -46,6 +50,8 @@ export const getMediasWhereClause = ({
     id: string;
     createdAt: Date;
   };
+  followingUserIds?: string[];
+  q?: string;
 }) => {
   return and(
     cursor ? lte(medias.createdAt, cursor.createdAt) : undefined,
@@ -57,7 +63,11 @@ export const getMediasWhereClause = ({
       )
     ),
     type ? eq(medias.type, type) : undefined,
-    parentId ? eq(medias.parentId, parentId) : undefined
+    type === "post" && followingUserIds
+      ? inArray(medias.userId, [...followingUserIds, userId])
+      : undefined,
+    parentId ? eq(medias.parentId, parentId) : undefined,
+    q && q !== "" ? ilike(medias.content, `%${q}%`) : undefined
   );
 };
 

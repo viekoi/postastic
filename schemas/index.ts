@@ -143,3 +143,8 @@ export const EditUserProfileShcema = z.object({
   coverImage: z.custom<UploadFile>().nullable(),
   bio: z.string(),
 });
+
+
+export const SearchSchema = z.object({
+  searchTerm: z.string().min(1),
+});

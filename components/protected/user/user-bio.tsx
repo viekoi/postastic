@@ -1,12 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { User } from "next-auth";
+import { UserWithData } from "@/type";
+
 import { useRouter } from "next/navigation";
 import React from "react";
 
 interface UserBiopProps {
-  user: User;
+  user:UserWithData ;
 }
 
 const UserBio = ({ user }: UserBiopProps) => {
@@ -22,6 +23,14 @@ const UserBio = ({ user }: UserBiopProps) => {
               Edit Profile
             </Button>
           )}
+        </div>
+      </div>
+      <div className="flex gap-x-2">
+        <div className="font-semibold text-sm text-gray-600">
+          Followers: {user.followerCounts}
+        </div>
+        <div className="font-semibold text-sm text-gray-600">
+          Following: {user.followingCounts}
         </div>
       </div>
     </div>

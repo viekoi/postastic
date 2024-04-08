@@ -52,6 +52,12 @@ CREATE TABLE IF NOT EXISTS "attachment" (
 	"parentId" uuid
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "follow" (
+	"followerId" uuid NOT NULL,
+	"followingId" uuid NOT NULL,
+	"createdAt" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "like" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid NOT NULL,
@@ -112,6 +118,18 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "attachment" ADD CONSTRAINT "attachment_parentId_media_id_fk" FOREIGN KEY ("parentId") REFERENCES "media"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "follow" ADD CONSTRAINT "follow_followerId_user_id_fk" FOREIGN KEY ("followerId") REFERENCES "user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "follow" ADD CONSTRAINT "follow_followingId_user_id_fk" FOREIGN KEY ("followingId") REFERENCES "user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
