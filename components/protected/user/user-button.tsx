@@ -17,10 +17,10 @@ import { SessionUser } from "@/type";
 
 const UserButton = ({ user }: { user: SessionUser | undefined }) => {
   return (
-    <Link href={`/profile/${user?.id}`} className="group">
+    <Link href={`/profile/${user?.id}`} className="group w-full">
       <Button
         variant={"ghost"}
-        className="h-auto justify-between"
+        className="h-auto justify-between w-full"
         size={"link"}
       >
         <div className="flex space-x-2 items-center">
@@ -31,7 +31,7 @@ const UserButton = ({ user }: { user: SessionUser | undefined }) => {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="outline-none">
-            <div className="rounded-[50%] hover:bg-black  p-1">
+            <div className="rounded-[50%] group-hover:bg-black  p-1">
               <MoreHorizontal className="text-white" />
             </div>
           </DropdownMenuTrigger>

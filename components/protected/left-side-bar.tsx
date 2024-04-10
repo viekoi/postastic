@@ -37,20 +37,6 @@ const LeftSidebar = () => {
       onclick: openSearchModal,
     },
     {
-      icon: MessageSquareText,
-      type: "button",
-      route: "/message",
-      label: "Message",
-      onclick: () => {},
-    },
-    {
-      icon: Bell,
-      type: "button",
-      route: "/notification",
-      label: "Notification",
-      onclick: () => {},
-    },
-    {
       icon: Settings2,
       type: "link",
       route: "/settings",

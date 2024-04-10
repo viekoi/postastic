@@ -1,5 +1,5 @@
 {
-  "id": "69e9a8e5-0aaa-481d-8ca3-af09e63389ef",
+  "id": "db384bff-4519-40b4-8cd0-32d122138141",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -168,6 +168,13 @@
       "name": "follow",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "followerId": {
           "name": "followerId",
           "type": "uuid",

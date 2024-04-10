@@ -55,7 +55,7 @@ const UserContainer = ({ q }: UserContainerProps) => {
     return (
       <div className="flex flex-1  h-full flex-col  justify-center items-center">
         <MessageSquareText className="size-[20%]" />
-        <strong>Feed is empty</strong>
+        <strong>Search is empty</strong>
       </div>
     );
   }

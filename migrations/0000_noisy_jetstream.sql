@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS "attachment" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "follow" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"followerId" uuid NOT NULL,
 	"followingId" uuid NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT now() NOT NULL

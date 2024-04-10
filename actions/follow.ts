@@ -1,47 +1,54 @@
 "use server";
 
 import db from "@/lib/db";
-import { likes } from "@/lib/db/schema";
+import { follows} from "@/lib/db/schema";
 import { currentUser } from "@/lib/user";
 import { and, eq } from "drizzle-orm";
 
-export const like = async (id: string) => {
+export const follow = async (id: string) => {
   const user = await currentUser();
 
   if (!user) return { error: "Unauthenticated!!!" };
   try {
-    const existingMedia = await db.query.medias.findFirst({
-      where: (m) => eq(m.id, id),
+    const existingFollowing = await db.query.users.findFirst({
+      where: (u) => eq(u.id, id),
     });
 
-    if (!existingMedia) {
-      return { error: "something went wrong, this media may not exist or had been deleted!!!" };
+    if (!existingFollowing) {
+      return {
+        error:
+          "something went wrong, this user may not exist or had been disabled!!!",
+      };
     }
 
-    const existingLike = await db.query.likes.findFirst({
-      where: and(eq(likes.parentId, id), eq(likes.userId, user.id)),
+    const existingFollow = await db.query.follows.findFirst({
+      where: and(eq(follows.followerId, user.id), eq(follows.followingId, id)),
     });
-    if (existingLike) {
-      await db.delete(likes).where(eq(likes.id, existingLike.id));
+    if (existingFollow) {
+      await db
+        .delete(follows)
+        .where(
+          eq(follows.id,existingFollow.id)
+        );
 
-      return { success: "Removed Like" };
+      return { success: "Unfollowed" };
     }
 
-    if (!existingLike) {
-      const like = await db
-        .insert(likes)
+    if (!existingFollow) {
+      const follow = await db
+        .insert(follows)
         .values({
-          parentId: id,
-          userId: user.id,
+          followerId: user.id,
+          followingId: id,
         })
         .returning()
         .catch((error) => {
           if (error) return { error: error };
         });
-      return { success: like };
+      return { success: follow };
     }
   } catch (error) {
     console.log(error);
-    return { error: "Coud not like post!!!" };
+    return { error: "Coud not follow user!!!" };
   }
 };

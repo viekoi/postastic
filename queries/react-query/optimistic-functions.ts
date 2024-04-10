@@ -1,5 +1,6 @@
-import { MediaWithData } from "@/type";
+import { MediaWithData, UserWithData } from "@/type";
 import { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
+import { QUERY_KEYS_PREFLIX } from "./query-keys";
 
 export const updateLikesCount = async ({
   queryClient,
@@ -87,6 +88,99 @@ export const updateInteractCount = async ({
       };
     }
   );
+};
+
+export const updateFollowCount = async ({
+  queryClient,
+  followerId,
+  followingId,
+  action,
+}: {
+  queryClient: QueryClient;
+  followerId: string;
+  followingId: string;
+  action: "follow" | "unfollow";
+}) => {
+  if (!followingId.length && !followerId.length) return;
+  await queryClient.cancelQueries({
+    queryKey: [QUERY_KEYS_PREFLIX.GET_USER],
+  });
+
+  await queryClient.cancelQueries({
+    queryKey: [QUERY_KEYS_PREFLIX.GET_INFINTE_USERS],
+  });
+
+  queryClient.setQueriesData(
+    { queryKey: [QUERY_KEYS_PREFLIX.GET_INFINTE_USERS] },
+    (old: InfiniteData<{ data: UserWithData[] }> | undefined) => {
+      if (!old) {
+        return;
+      }
+      return {
+        ...old,
+        pages: old.pages.map((page) => {
+          return {
+            ...page,
+            data: page.data.map((user) => {
+              if (user.id === followerId) {
+                const countModifier = action === "unfollow" ? -1 : +1;
+                return {
+                  ...user,
+                  followingCounts: user.followingCounts + countModifier,
+                };
+              } else if (user.id === followingId) {
+                const countModifier = action === "unfollow" ? -1 : +1;
+                return {
+                  ...user,
+                  followerCounts: user.followerCounts + countModifier,
+                  isFollowedByMe: !user.isFollowedByMe,
+                };
+              } else return user;
+            }),
+          };
+        }),
+      };
+    }
+  );
+
+  queryClient.setQueriesData(
+    { queryKey: [QUERY_KEYS_PREFLIX.GET_USER, { userId: followingId }] },
+    (old: UserWithData | undefined) => {
+      if (!old) {
+        return;
+      }
+
+      const countModifier = action === "unfollow" ? -1 : +1;
+      return {
+        ...old,
+        followerCounts: old.followerCounts + countModifier,
+        isFollowedByMe: !old.isFollowedByMe,
+      };
+    }
+  );
+
+  queryClient.setQueriesData(
+    { queryKey: [QUERY_KEYS_PREFLIX.GET_USER, { userId: followerId }] },
+    (old: UserWithData | undefined) => {
+      if (!old) {
+        return;
+      }
+
+      const countModifier = action === "unfollow" ? -1 : +1;
+      return {
+        ...old,
+        followingCounts: old.followingCounts + countModifier,
+      };
+    }
+  );
+
+  queryClient.invalidateQueries({
+    queryKey: [
+      QUERY_KEYS_PREFLIX.GET_INFINITE_MEDIAS,
+      "post",
+      { route: "home" },
+    ],
+  });
 };
 
 export const optimisticInsert = async ({

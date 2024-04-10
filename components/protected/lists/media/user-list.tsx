@@ -9,7 +9,7 @@ interface UserListProps {
 
 const UserList = ({ users }: UserListProps) => {
   return (
-    <div>
+    <div className="flex flex-col gap-y-2">
       {users.map((user) => {
         return <UserCard type="card" user={user} key={user.id} />;
       })}

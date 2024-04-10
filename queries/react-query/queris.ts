@@ -11,6 +11,7 @@ import { like } from "@/actions/like";
 import {
   optimisticInsert,
   optimisticUpdate,
+  updateFollowCount,
   updateInteractCount,
   updateLikesCount,
 } from "./optimistic-functions";
@@ -26,6 +27,7 @@ import { newMedia } from "@/actions/new-media";
 import { InfinitePostsRoutes, MediaTypes } from "@/constansts";
 import { updateProfile } from "@/actions/update-user-profile";
 import { getUserByIdAction } from "@/actions/get-user-by-id";
+import { follow } from "@/actions/follow";
 
 // query
 
@@ -119,6 +121,20 @@ export const useLike = (querykeyPreflix: QueryKey) => {
         queryKeyPreflix: querykeyPreflix,
         id,
       });
+    },
+  });
+};
+
+export const useFollow = (
+  followerId: string,
+  followingId: string,
+  action: "follow" | "unfollow"
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => follow(id),
+    onMutate: () => {
+      updateFollowCount({ queryClient, followerId, followingId, action });
     },
   });
 };

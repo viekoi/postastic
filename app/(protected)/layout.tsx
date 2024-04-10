@@ -12,7 +12,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
           <LayoutTopbar />
           {children}
         </div>
-        <div className="lg:block hidden">right-side-bar</div>
+        <div className="lg:block hidden"></div>
         
       </div>
       

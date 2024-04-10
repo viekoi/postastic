@@ -66,6 +66,7 @@ export const accounts = pgTable(
 export type Account = InferModel<typeof accounts>;
 
 export const follows = pgTable("follow", {
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
   followerId: uuid("followerId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -232,15 +233,15 @@ export const profileImagesRelations = relations(profileImages, ({ one }) => ({
   }),
 }));
 
-export const followsRelations = relations(follows, ({  one }) => ({
+export const followsRelations = relations(follows, ({ one }) => ({
   follower: one(users, {
-    fields: [follows.followerId],
+    fields: [follows.followingId],
     references: [users.id],
-    relationName:"followers"
+    relationName: "followers",
   }),
   following: one(users, {
     fields: [follows.followerId],
     references: [users.id],
-    relationName:"followings"
+    relationName: "followings",
   }),
 }));

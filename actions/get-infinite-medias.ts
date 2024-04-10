@@ -8,7 +8,6 @@ import {
   getPofileMediasWhereClause,
 } from "../lib/db/util";
 import { MediaTypes } from "@/constansts";
-import { getUserById } from "@/queries/user";
 
 export const getInfiniteMedias = async ({
   cursor,

@@ -1,5 +1,5 @@
 "use server";
-import { and, count, desc, eq, ilike, lte } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNotNull, lte } from "drizzle-orm";
 import db from "../lib/db";
 import { currentUser } from "@/lib/user";
 import { users as dbUsers } from "@/lib/db/schema";
@@ -31,7 +31,11 @@ export const getIniniteUsers = async ({
 
     const users = await db.query.users.findMany({
       where: (u) =>
-        and(ilike(u.name, `%${q}%`), cursor ? lte(u.id, cursor.id) : undefined),
+        and(
+          ilike(u.name, `%${q}%`),
+          cursor ? lte(u.id, cursor.id) : undefined,
+          isNotNull(u.emailVerified)
+        ),
       with: {
         coverImages: {
           where: (p) =>
@@ -77,7 +81,7 @@ export const getIniniteUsers = async ({
           avatarImage: user.avatarImages.length ? user.avatarImages[0] : null,
           coverImage: user.coverImages.length ? user.coverImages[0] : null,
           followerCounts: user.followers.length,
-          ollowingCounts: user.followings.length,
+          followingCounts: user.followings.length,
           isFollowedByMe: user.followers
             .map((fl) => fl.followerId)
             .includes(sessionUser.id),

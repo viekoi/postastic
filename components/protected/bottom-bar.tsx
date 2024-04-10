@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MobilePostButton from "./mobile-post-button";
-import { Bell, Home, MessageSquareText, Search } from "lucide-react";
+import { Bell, Home, MessageSquareText, Search, Square } from "lucide-react";
 import { useSearchModal } from "@/hooks/use-modal-store";
 
 const Bottombar = () => {
@@ -23,20 +23,6 @@ const Bottombar = () => {
       label: "Search",
       route: "",
       onclick: openSearchModal,
-    },
-    {
-      icon: MessageSquareText,
-      type: "button",
-      route: "",
-      label: "Message",
-      onclick: () => {},
-    },
-    {
-      icon: Bell,
-      type: "button",
-      route: "",
-      label: "Notification",
-      onclick: () => {},
     },
   ];
   return (

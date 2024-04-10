@@ -5,25 +5,32 @@ import { UserWithData } from "@/type";
 
 import { useRouter } from "next/navigation";
 import React from "react";
+import FollowButton from "../follow-button";
 
 interface UserBiopProps {
-  user:UserWithData ;
+  user: UserWithData;
 }
 
 const UserBio = ({ user }: UserBiopProps) => {
   const { user: currentUser, isLoading } = useCurrentUser();
+
+  console.log(user);
   const router = useRouter();
   return (
     <div className="border-b-[0.5px] border-gray-600 pb-4 px-4">
       <div className="flex items-center w-full justify-between">
         <p className="text-2xl font-semibold">{user.name}</p>
-        <div>
-          {currentUser?.id === user.id && (
-            <Button onClick={() => router.push(`/settings?tab=profile`)}>
-              Edit Profile
-            </Button>
-          )}
-        </div>
+        {currentUser && (
+          <div>
+            {currentUser.id === user.id ? (
+              <Button onClick={() => router.push(`/settings?tab=profile`)}>
+                Edit Profile
+              </Button>
+            ) : (
+              <FollowButton currentUser={currentUser} user={user} />
+            )}
+          </div>
+        )}
       </div>
       <div className="flex gap-x-2">
         <div className="font-semibold text-sm text-gray-600">

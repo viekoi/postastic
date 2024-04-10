@@ -8,6 +8,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchModal } from "@/hooks/use-modal-store";
+import FollowButton from "../../follow-button";
 interface UserCard {
   user: UserWithData;
   type: "link" | "card";
@@ -32,7 +33,7 @@ const UserCard = ({ user, type }: UserCard) => {
       ) : (
         <Card
           className={cn(
-            " px-4 py-6 bg-black border-b-[0.5px] border-gray-600 text-black rounded-none "
+            " px-4 py-6 bg-black border-gray-600 rounded-3xl border-[3px] text-black  "
           )}
         >
           <div className="flex justify-between items-center">
@@ -54,9 +55,7 @@ const UserCard = ({ user, type }: UserCard) => {
               </div>
             </div>
             {currentUser && currentUser.id !== user.id && (
-              <div className="text-white">
-                {user.isFollowedByMe ? "following" : "follow"}
-              </div>
+              <FollowButton user={user} currentUser={currentUser} />
             )}
           </div>
         </Card>
