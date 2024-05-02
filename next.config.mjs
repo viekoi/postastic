@@ -6,7 +6,7 @@ const nextConfig = {
   transpilePackages: ["lucide-react"],
   experimental: {
     serverActions: {
-      bodySizeLimit: "20mb",
+      bodySizeLimit: "100mb",
     },
   },
 };
